@@ -1,6 +1,6 @@
 # STARTPROMPT — GPT-6 Pro · WattGoedkoper als volledig consumentenplatform
 
-> Kopieer de onderstaande tekst vanaf **BEGIN STARTPROMPT** naar een nieuwe ChatGPT-agent. De echte actuele \`main\`-branch en repositorydocumenten blijven de bron van waarheid, ook wanneer het gesprek later plaatsvindt.
+> Kopieer de onderstaande tekst vanaf **BEGIN STARTPROMPT** naar een nieuwe ChatGPT-agent. De echte actuele `main`-branch en repositorydocumenten blijven de bron van waarheid, ook wanneer het gesprek later plaatsvindt.
 
 ---
 
@@ -16,18 +16,18 @@ Je neemt de volledige technische en productverantwoordelijkheid over voor **Watt
 
 ## 1. Neem eerst de volledige overdracht door
 
-Begin met het ophalen van de **actuele \`main\`-branch**, niet met de aanname dat een oude SHA nog de nieuwste is. Lees daadwerkelijk en in deze volgorde:
+Begin met het ophalen van de **actuele `main`-branch**, niet met de aanname dat een oude SHA nog de nieuwste is. Lees daadwerkelijk en in deze volgorde:
 
-1. \`AGENTS.md\`
-2. \`docs/HANDOFF-FULL-PRODUCT-2026-11-14.md\`
-3. \`docs/ROADMAP-SEO-PRODUCT-LEADGEN.md\`
-4. \`docs/BRAND-AND-HERO-V07.md\`, \`docs/HOME-COCKPIT-V06.md\`, \`docs/PLAN-STUDIO.md\`
-5. \`docs/RELEASE-V05.md\`, \`docs/backend.md\`, \`docs/frontend-contract.md\`
-6. \`scripts/build-content.py\`, \`index.html\`, \`assets/app.mjs\`, \`assets/model.mjs\`, \`assets/playground-model.mjs\`
-7. \`api/index.php\`, \`lib/report.php\`, \`privacy.html\`, \`robots.txt\`, \`sitemap.xml\`, \`.htaccess\`
+1. `AGENTS.md`
+2. `docs/HANDOFF-FULL-PRODUCT-2026-11-14.md`
+3. `docs/ROADMAP-SEO-PRODUCT-LEADGEN.md`
+4. `docs/BRAND-AND-HERO-V07.md`, `docs/HOME-COCKPIT-V06.md`, `docs/PLAN-STUDIO.md`
+5. `docs/RELEASE-V05.md`, `docs/backend.md`, `docs/frontend-contract.md`
+6. `scripts/build-content.py`, `index.html`, `assets/app.mjs`, `assets/model.mjs`, `assets/playground-model.mjs`
+7. `api/index.php`, `lib/report.php`, `privacy.html`, `robots.txt`, `sitemap.xml`, `.htaccess`
 8. Alle tests, GitHub Actions, huidige PR's en issues **#2, #3, #14, #15, #16, #17 en #18**.
 
-De laatste **gecontroleerde** fase-eindcommit op 14 november 2026 was \`d7be722c3baff7a2a02fa61a0514fa4a485fd8a8\`, met groene technische en browser-CI. De overdrachts-PR kan hier bovenop een documentatiecommit zetten; controleer daarom de echte head SHA.
+De laatste **gecontroleerde** fase-eindcommit op 14 november 2026 was `d7be722c3baff7a2a02fa61a0514fa4a485fd8a8`, met groene technische en browser-CI. De overdrachts-PR kan hier bovenop een documentatiecommit zetten; controleer daarom de echte head SHA.
 
 **Jouw eerste gebruikersantwoord moet een volledige maar leesbare overdrachtsamenvatting zijn:** wat gebouwd en operationeel is, architectuur, productbesluiten, wat nog niet geverifieerd is, bestaande issues, prioriteiten en je concrete ontwikkelmethode. Ga daarna zelfstandig aan het werk; stel geen vragen die bovenstaande bronnen al beantwoorden.
 
@@ -50,19 +50,19 @@ Kwaliteit, vertrouwen en bruikbare keuzeondersteuning gaan vóór het aantal SEO
 - Nieuwe adviesaanvragen worden **uitsluitend NIVO Groep Holland** toegewezen, ook server-side. Geen keuzescherm NIVO/TBT/beide.
 - Contactconsent: vrijwillig, niet vooraf aangevinkt, met expliciete NIVO-identificatie en serveraudit. Historische aanvragen/consentregels blijven intact.
 - Alleen een rapport per e-mail aanvragen betekent **geen toestemming** voor commerciële opvolging of CRM-marketing.
-- De rapportmail-API bestaat maar de publieke verzending blijft **default OFF** totdat de eigen Hostinger-mailbox \`info@wattgoedkoper.nl\` veilig is verbonden en met een **zelfgeadresseerde** bezorgtest is geverifieerd.
+- De rapportmail-API bestaat maar de publieke verzending blijft **default OFF** totdat de eigen Hostinger-mailbox `info@wattgoedkoper.nl` veilig is verbonden en met een **zelfgeadresseerde** bezorgtest is geverifieerd.
 - De werkende Hostinger MySQL, beheerdersconfig, encryptiesleutels en mogelijk aanwezige testlead **niet resetten of opnieuw installeren**.
 - Geen betaalde diensten of subscriptions, extra hosting of externe tracking zonder afzonderlijke goedkeuring.
 - Geen valse besparingsgaranties, verzonnen reviews of subsidies, onafhankelijkheidsclaims of live-prijzen die niet geverifieerd zijn.
 - Oude PDF-concepten over maximaal 3 offertes, andere partners, €100-aankoopbonus en WordPress zijn **historisch, niet de huidige roadmap**.
-- Op \`main\` is Hostinger Git-auto-deploy verbonden. Werk op featurebranches, test, maak PR met screenshots; **geen ongeteste automatische merge naar \`main\`**.
+- Op `main` is Hostinger Git-auto-deploy verbonden. Werk op featurebranches, test, maak PR met screenshots; **geen ongeteste automatische merge naar `main`**.
 - NIVO Portal/Odoo-integratie kan later relevant zijn, maar activeer geen automatische externe leadpush zonder expliciete autorisatie en privacyreview.
 
 ## 4. Wat je daadwerkelijk gaat ontwikkelen
 
 **Werkstroom A — nulmeting en SEO-fundament** (issue #15). Controleer echte live/deploystatus en hoofdbroncode; SEO-crawlbaarheid, sitemap, canonicals, index/noindex, metadata, interne links, performance, toegankelijkheid, relevante bronactualiteit, privacyverantwoordelijke. Gebruik Search Console alleen wanneer correct verbonden. Verzin geen rankings of bezoekerscijfers. Verifieer ook welke publieke pagina's en zoekvragen werkelijk bestaan.
 
-**Werkstroom B — complete informatiearchitectuur** (issue #16). Ontwerp een navigeerbare hub/spoke-structuur, zoekintentie- en contentmatrix, gerichte premium landingspagina's voor kernmaatregelen en goede URL-/redirectregels. De site heeft momenteel pas vier kennisroutes plus rekenmodel/privacy. Verbeter de bestaande Python-contentgenerator met herbruikbare templates, unieke titles/H1, bruikbare structured data, breadcrumbs, bronnen, interne links en een sitemap met echte \`lastmod\` in plaats van hardcoded datum. Geen massale AI-tekst of duplicatie.
+**Werkstroom B — complete informatiearchitectuur** (issue #16). Ontwerp een navigeerbare hub/spoke-structuur, zoekintentie- en contentmatrix, gerichte premium landingspagina's voor kernmaatregelen en goede URL-/redirectregels. De site heeft momenteel pas vier kennisroutes plus rekenmodel/privacy. Verbeter de bestaande Python-contentgenerator met herbruikbare templates, unieke titles/H1, bruikbare structured data, breadcrumbs, bronnen, interne links en een sitemap met echte `lastmod` in plaats van hardcoded datum. Geen massale AI-tekst of duplicatie.
 
 **Werkstroom C — verbonden interactieve consumentenreis** (issue #17). Maak van content en tool één geheel: zoekvraag → helder antwoord → relevante maatregelen proberen → transparant persoonlijk scenario → optionele vervolgstap. Gebruik uitsluitend de bestaande rekenkern; voorkom tweede tegenstrijdige rekenimplementatie. Test expliciet negatieve besparingen, afhankelijkheden en huurwoningen. Deep links mogen geen PII lekken.
 
@@ -77,7 +77,7 @@ Ga niet alleen een plan schrijven. Maak na de overdrachtsamenvatting de eerste s
 3. Kies op basis van bruikbaarheid en bronnen een eerste samenhangend onderwerpcluster (voorlopig **zonnepanelen + thuisbatterij**), met een hoogwaardige hub en 2–3 echt nuttige verdiepingspagina's, inclusief contextuele koppeling naar de interactieve woning.
 4. Implementeer de relevante templates, interne links, metadata, sitemap/structured data en UX in de **bestaande repository** op een featurebranch.
 5. Controleer berekeningen, contentclaims, links, technische SEO, desktop/mobiele screenshots, toetsenbord en privacy. Maak de offline preview waar relevant actueel.
-6. Lever een **PR voor eigenaaracceptatie** inclusief commits, tests, screenshots, wat wel/niet live is en een duidelijke korte testchecklist. Daarna pas naar \`main\` wanneer de eigenaar akkoord geeft.
+6. Lever een **PR voor eigenaaracceptatie** inclusief commits, tests, screenshots, wat wel/niet live is en een duidelijke korte testchecklist. Daarna pas naar `main` wanneer de eigenaar akkoord geeft.
 
 Bouw iteratief; niet eerst tientallen pagina's publiceren zonder toetsbare kwaliteitsbasis. Jij bepaalt de technische route binnen de bestaande architectuur, maar onderbouw belangrijke keuzes.
 
