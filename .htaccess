@@ -1,0 +1,35 @@
+Options -Indexes
+DirectoryIndex index.html
+AddType text/javascript .mjs
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Canonical origin matches the server-side CSRF origin check.
+RewriteCond %{HTTP_HOST} ^(www\.)?wattgoedkoper\.nl$ [NC]
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} ^www\.wattgoedkoper\.nl$ [NC]
+RewriteRule ^ https://wattgoedkoper.nl%{REQUEST_URI} [R=301,L,NE]
+# Private sources and repository metadata must never be served.
+RewriteRule (^|/)\.(?!well-known/) - [F,L]
+RewriteRule ^(lib|scripts|tests|docs|preview)(/|$) - [F,L]
+RewriteRule ^(AGENTS\.md|README\.md|package(-lock)?\.json|LICENSE|composer\.(json|lock)|config\.php~?)$ - [F,L,NC]
+RewriteRule \.(sqlite|sqlite3|db|log|bak|sql|env|ya?ml|zip|tar|gz|old|orig)$ - [F,L,NC]
+# Route only explicit API paths; missing pages should remain real 404s.
+RewriteRule ^api/?$ api/index.php [L,QSA]
+</IfModule>
+
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+<FilesMatch "\.(html|mjs|css)$">
+Header set Cache-Control "no-cache"
+</FilesMatch>
+</IfModule>
+
+<FilesMatch "(^\.|\.(sqlite|sqlite3|db|log|sql|bak|env|zip|tar|gz|old|orig)$)">
+Require all denied
+</FilesMatch>
+ErrorDocument 404 /404.html

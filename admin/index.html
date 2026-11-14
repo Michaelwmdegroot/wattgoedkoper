@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Beheer · WattGoedkoper</title><meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="color-scheme" content="light"><link rel="stylesheet" href="/admin/admin.css">
+  <script type="module" src="/admin/admin.mjs"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="WattGoedkoper website"><span class="brand-icon">w</span>watt<span>goedkoper</span><i>.</i></a>
+      <div class="workspace-label">JOUW WERKPLEK</div>
+      <nav aria-label="Beheernavigatie"><a href="#overzicht" class="nav-link active">◫ <span>Overzicht</span></a><a href="#aanvragen" class="nav-link">↗ <span>Adviesaanvragen</span></a><a href="/" class="nav-link">⌂ <span>Naar de website</span></a></nav>
+      <div class="sidebar-bottom"><span class="status-dot"></span> Eerste partij, eigen data<p>Inzicht dat mensen verder helpt.</p></div>
+    </aside>
+    <main>
+      <header class="topbar"><span>WattGoedkoper <span class="slash">/</span> Beheer</span><button id="logout" class="text-button" hidden>Uitloggen ↗</button></header>
+      <div id="message" role="status" aria-live="polite" class="message" hidden></div>
+      <section id="login-section" class="login-section">
+        <span class="eyebrow">WELKOM TERUG</span><h1>Goed inzicht.<br>Betere gesprekken.</h1><p>Log in voor de adviesaanvragen en statistieken van WattGoedkoper.</p>
+        <form id="login-form" class="login-card">
+          <label for="username">Gebruikersnaam</label><input id="username" name="username" autocomplete="username" required maxlength="120">
+          <label for="password">Wachtwoord</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="200">
+          <button class="button" type="submit">Open het dashboard <span>→</span></button>
+          <p class="small">Toegang is alleen beschikbaar na de beveiligde serverinstallatie.</p>
+        </form>
+      </section>
+      <section id="dashboard" hidden>
+        <div class="page-heading" id="overzicht"><div><span class="eyebrow">ENERGIE IN BEWEGING</span><h1>Het begint met inzicht.</h1><p>Wat bezoekers ontdekken. Wie je verder kunt helpen.</p></div><div class="period-pill">Laatste 30 dagen</div></div>
+        <div id="stats-grid" class="stats-grid"></div>
+        <section class="funnel-card"><div><span class="eyebrow">VAN SCAN NAAR GESPREK</span><h2>De gemeten route</h2><p>Alleen gebeurtenissen van bezoekers die statistieken toestaan. Dit zijn aantallen acties, geen unieke personen.</p></div><div class="funnel" id="funnel"></div><p class="small">Het conversiepercentage gebruikt uitsluitend aanvragen met meettoestemming en gemeten voltooide scans. Herhaalgebruik en ontbrekende metingen beïnvloeden dit cijfer.</p></section>
+        <section class="leads-section" id="aanvragen">
+          <div class="section-heading"><div><span class="eyebrow">MAAK HET PERSOONLIJK</span><h2>Adviesaanvragen <span id="lead-count" class="count-pill">0</span></h2></div><button id="export" class="outline-button">Exporteer CSV ↓</button></div>
+          <div class="table-tools"><label for="status-filter">Status</label><select id="status-filter"><option value="">Alle aanvragen</option><option value="new">Nieuw</option><option value="contacted">Benaderd</option><option value="qualified">In gesprek</option><option value="closed">Afgerond</option></select><button id="refresh" class="text-button">Vernieuwen ↻</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Naam & contact</th><th>Interesse</th><th>Adviespartner</th><th>Ontvangen</th><th>Status</th><th><span class="sr-only">Details</span></th></tr></thead><tbody id="lead-table"></tbody></table></div>
+          <div class="pagination"><button id="previous" class="outline-button" disabled>← Vorige</button><span id="page-label"></span><button id="next" class="outline-button" disabled>Volgende →</button></div>
+          <p id="retention" class="small"></p>
+        </section>
+        <footer class="dashboard-footer"><span>Een goed plan begint met een eerlijk gesprek.</span><span>Geen automatisch verstuurde e-mails. Volg aanvragen hier op.</span></footer>
+      </section>
+    </main>
+  </div>
+  <dialog id="lead-dialog" aria-labelledby="detail-title"><form method="dialog" class="dialog-close"><button class="text-button" aria-label="Sluiten">Sluiten ×</button></form><div id="lead-detail"></div></dialog>
+</body>
+</html>

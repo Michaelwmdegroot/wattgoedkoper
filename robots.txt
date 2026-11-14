@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /lib/
+Disallow: /scripts/
+Disallow: /tests/
+Disallow: /docs/
+Disallow: /preview/
+Sitemap: https://wattgoedkoper.nl/sitemap.xml

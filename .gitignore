@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.DS_Store
+*.sqlite
+*.sqlite-*
+*.db
+*.log
+*.zip
+coverage/
+.playwright/
+test-results/
+artifacts/
+# Private setup and customer data never belong in the repository.
+config.php
+wattgoedkoper-private/
