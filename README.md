@@ -1,5 +1,7 @@
 # WattGoedkoper
 
+> **PROJECTOVERDRACHT — 14 november 2026:** De v0.7-ontwikkelfase (één-scherm energiehuis, interactieve Plan Studio, branding, beveiligde NIVO-leadflow) is door de eigenaar afgesloten. De volgende agent bouwt **één compleet consumentenplatform**: SEO-onderwerpen, hoogwaardige landingspagina's, relevante interactieve vergelijkingen en een vrijwillige NIVO-adviesfunnel. Lees [formele overdracht](docs/HANDOFF-FULL-PRODUCT-2026-11-14.md), [roadmap](docs/ROADMAP-SEO-PRODUCT-LEADGEN.md) en [startprompt](docs/START-PROMPT-NEXT-AGENT.md). Open epics: [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14) t/m [#18](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/18). De laatst geverifieerde applicatie-baseline was `d7be722c3baf` (beide CI-workflows groen); een doc-only handoffcommit kan daarop volgen.
+
 > **Release v0.7 · 14 november 2026:** Het goedgekeurde nieuwe WattGoedkoper-logo, het losse favicon en de compacte driestappenbalk boven het energiehuis zijn via [PR #13](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/13) naar `main` gemerged (mergecommit `2c693848b82a`). Zie [brand-/home-implementatie en browsertests](docs/BRAND-AND-HERO-V07.md). `main` is gekoppeld aan Hostinger; de daadwerkelijke live-uitrol wordt afzonderlijk gecontroleerd. De rapportmail blijft standaard uit. MySQL, leads, privésleutels en NIVO-toestemming zijn ongewijzigd.
 
 > **Release v0.6 · 14 november 2026:** Het nieuwe energiehuis toont op laptopformaat het vertrekpunt, de interactieve woning, de live resultaatkaart en alle vijf verduurzamingsmaatregelen in één scherm. De goedgekeurde wijziging is via [PR #12](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/12) naar `main` gemerged (commit `843912bdec`). [Bekijk ontwerp en browseracceptatie](docs/HOME-COCKPIT-V06.md). De Hostinger-live-uitrol moet afzonderlijk worden bevestigd. Rapportmail blijft standaard uit.
@@ -27,7 +29,7 @@ Zie [de nieuwe backoffice, mailbox en leadmagnet-roadmap](docs/OPERATIONS-V04.md
 - Zie direct variabele jaarkosten, besparingsbandbreedte, eigen stroomgebruik en investering.
 - Probeer combinaties zelf of vraag een startplan binnen je budget. Handmatige plannen boven budget of met negatief financieel effect blijven zichtbaar.
 - Speel met paneelaantal, batterijcapaciteit en budget. Exacte jaarcijfers, tarieven en offertes zijn optionele verfijningen.
-- Draai een keuze terug en bewaar je huis expliciet op je apparaat. In de v0.5-branch kun je een indicatief rapport per e-mail aanvragen zodra de Hostinger-mailfunctie is geactiveerd.
+- Draai een keuze terug en bewaar je huis expliciet op je apparaat. Een indicatief rapport per e-mail kan via de bestaande, **standaard uitgeschakelde** rapport-API worden verzonden zodra de juiste Hostinger-mailbox veilig is gekoppeld en getest.
 - Contactgegevens zijn pas nodig als je zelf om advies vraagt. Nieuwe adviesaanvragen gaan alleen naar NIVO Groep Holland na een afzonderlijke, expliciete toestemming.
 
 ## Onderbouwde berekening
@@ -40,7 +42,7 @@ Geen live meter-, adres-, PVGIS-, leveranciers- of CRM-koppelingen. De optionele
 
 ## Hostinger-installatie
 
-Voor de nieuwe WattGoedkoper MySQL-omgeving gebruik je **`bash scripts/setup-mysql.sh`** in de SSH-terminal. Hostinger blokkeert de PHP-functie `system()` standaard; de veilige Bash-wrapper gebruikt `read -s` zonder wachtwoordecho en stuurt de geheimen via stdin naar PHP. **Niet** het oude `php scripts/setup-mysql.php` direct uitvoeren. Zie [Hostinger MySQL-installatie](docs/HOSTINGER-MYSQL.md).
+**Productie is al geïnstalleerd. Herhaal geen enkele installatiestap op de bestaande WattGoedkoper MySQL.** Het historische initiële installatiecommando was `bash scripts/setup-mysql.sh`; het staat alleen als referentie in [Hostinger MySQL-installatie](docs/HOSTINGER-MYSQL.md). De database, private configuratie en encryptiesleutel moeten ongewijzigd blijven.
 
 ## Techniek
 
@@ -50,7 +52,7 @@ HTML, CSS en native ES-modules worden direct geserveerd; geen frontendframework 
 php -S 127.0.0.1:8080 scripts/router.php
 ```
 
-Het energiehuis werkt direct. `/admin/` en echte adviesopslag blijven gesloten tot de beveiligde serverinstallatie is voltooid. **Gebruik voor de nieuwe Hostinger-database de [MySQL-installatie](docs/HOSTINGER-MYSQL.md), niet het oude SQLite-setupcommando.**
+Het energiehuis werkt direct. De beheeromgeving en adviesopslag zijn volgens de eigenaar eerder succesvol op de bestaande Hostinger MySQL getest; nieuwe agents mogen de private setup **niet** opnieuw uitvoeren. Controleer bereikbaarheid en beveiliging uitsluitend zonder klantdata te exporteren.
 
 ## Controles
 
@@ -66,8 +68,8 @@ npx playwright install chromium
 node scripts/visual-review.cjs
 ```
 
-- 47 model- en scenariotests, inclusief combinaties, afhankelijkheden, negatieve uitkomsten en energiebehoud.
-- De bestaande backend heeft 55 integratiechecks; GitHub Actions voert die opnieuw uit bij een push.
+- Node-model-/scenario-/Plan Studio-tests zijn onderdeel van de actuele GitHub Actions (zie CI-run in de overdracht), inclusief combinaties, afhankelijkheden, negatieve uitkomsten en energiebehoud.
+- De backend-, mailveiligheids-, MySQL- en installatie-regressies worden bij een push/PR opnieuw uitgevoerd; raadpleeg de laatste CI-runs voor de geldende aantallen.
 - 125 browsercontroles geslaagd, verdeeld over acht gevallen: desktop, tablet, mobiel, informatiepagina’s en de zelfstandige preview. Onder meer geometrie, alle vijf woningtypen, apparatuur, kiezen/verwijderen, toetsenbord, dagbediening en bewaren/herstellen. De preview doet geen netwerkverzoeken.
 - De workflow `visual-review.yml` maakt desktop-, tablet- en mobiele screenshots en controleert de interactieve bronwebsite en zelfstandige preview. De complete 33 screenshots staan bij de workflow-artifacts; representatieve beelden en het controlerapport staan ook blijvend in [docs/visual-review](docs/visual-review/README.md). Zie de actuele releasenotities voor de resultaatstatus en grenzen.
 
