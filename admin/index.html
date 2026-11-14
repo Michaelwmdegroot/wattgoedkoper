@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Beheer · WattGoedkoper</title><meta name="robots" content="noindex,nofollow,noarchive">
-  <meta name="color-scheme" content="light"><link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/admin/admin.css"><link rel="stylesheet" href="/admin/operations.css">
+  <meta name="color-scheme" content="light"><link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/admin/admin.css"><link rel="stylesheet" href="/admin/operations.css"><link rel="stylesheet" href="/admin/dashboard-v2.css">
   <script type="module" src="/admin/admin.mjs"></script>
 </head>
 <body>
@@ -11,7 +11,7 @@
     <aside class="sidebar">
       <a class="brand admin-brand-v07" href="/" aria-label="WattGoedkoper website"><span class="admin-brand-tile"><img src="/assets/brand-mark.svg" width="38" height="38" alt=""></span><span class="admin-brand-word">wattgoedkoper<span>.</span></span></a>
       <div class="workspace-label">JOUW WERKPLEK</div>
-      <nav aria-label="Beheernavigatie"><a href="#overzicht" class="nav-link active">◫ <span>Overzicht</span></a><a href="#aanvragen" class="nav-link">↗ <span>Adviesaanvragen</span></a><a href="#inbox" class="nav-link">✉ <span>Inbox</span></a><a href="/" class="nav-link">⌂ <span>Naar de website</span></a></nav>
+      <nav aria-label="Beheernavigatie"><a href="#overzicht" class="nav-link active" data-admin-tab="overzicht" aria-current="page">◫ <span>Overzicht</span></a><a href="#aanvragen" class="nav-link" data-admin-tab="aanvragen">↗ <span>Aanvragen</span></a><a href="#seo" class="nav-link" data-admin-tab="seo">⌁ <span>SEO</span></a><a href="#tools" class="nav-link" data-admin-tab="tools">⚙ <span>Tools &amp; status</span></a></nav>
       <div class="sidebar-bottom"><span class="status-dot"></span> Eerste partij, eigen data<p>Inzicht dat mensen verder helpt.</p></div>
     </aside>
     <main>
@@ -27,27 +27,51 @@
         </form>
       </section>
       <section id="dashboard" hidden>
-        <div class="page-heading" id="overzicht"><div><span class="eyebrow">ENERGIE IN BEWEGING</span><h1>Het begint met inzicht.</h1><p>Wat bezoekers ontdekken. Wie je verder kunt helpen.</p></div><div class="period-pill">Laatste 30 dagen</div></div>
-        <div id="stats-grid" class="stats-grid"></div>
-        <section class="funnel-card"><div><span class="eyebrow">VAN SCAN NAAR GESPREK</span><h2>De gemeten route</h2><p>Alleen gebeurtenissen van bezoekers die statistieken toestaan. Dit zijn aantallen acties, geen unieke personen.</p></div><div class="funnel" id="funnel"></div><p class="small">Het conversiepercentage gebruikt uitsluitend aanvragen met meettoestemming en gemeten voltooide scans. Herhaalgebruik en ontbrekende metingen beïnvloeden dit cijfer.</p></section>
-        <section class="operations-section" aria-label="Opvolging en activiteit">
+        <div class="page-heading" id="overzicht" data-admin-view="overzicht"><div><span class="eyebrow">ENERGIE IN BEWEGING</span><h1>Het begint met inzicht.</h1><p>Wat bezoekers ontdekken. Wie je verder kunt helpen.</p></div><div class="period-pill">Laatste 30 dagen</div></div>
+        <div id="stats-grid" class="stats-grid" data-admin-view="overzicht"></div>
+        <section class="wg2-status-strip" data-admin-view="overzicht" aria-label="Operationele kernstatus">
+          <div class="wg2-status-tile"><span>Website &amp; API</span><strong id="overview-api-state">Controleren…</strong><small>Live healthcheck, geen uptimegarantie</small></div>
+          <div class="wg2-status-tile"><span>NIVO-overdracht</span><strong id="overview-delivery-state">Niet gekoppeld</strong><small>Opslag in dashboard; geen ontvangstbewijs</small></div>
+          <div class="wg2-status-tile"><span>Onderhoud &amp; back-up</span><strong id="overview-maintenance-state">Nog niet geverifieerd</strong><small>Hostinger-controle is vereist</small></div>
+        </section>
+        <section class="funnel-card" data-admin-view="overzicht"><div><span class="eyebrow">VAN SCAN NAAR GESPREK</span><h2>De gemeten route</h2><p>Alleen gebeurtenissen van bezoekers die statistieken toestaan. Dit zijn aantallen acties, geen unieke personen.</p></div><div class="funnel" id="funnel"></div><p class="small">Het conversiepercentage gebruikt uitsluitend aanvragen met meettoestemming en gemeten voltooide scans. Herhaalgebruik en ontbrekende metingen beïnvloeden dit cijfer.</p></section>
+        <section class="operations-section" data-admin-view="overzicht" aria-label="Opvolging en activiteit">
           <div class="section-heading"><div><span class="eyebrow">WAT VRAAGT AANDACHT?</span><h2>Opvolging &amp; activiteit</h2></div></div>
           <div class="operations-grid">
             <div class="operations-card"><h3>Adviesaanvragen per status</h3><div id="pipeline" class="pipeline" aria-live="polite"></div><p class="small">Statussen van ontvangen aanvragen, binnen de bewaartermijn.</p></div>
-            <div class="operations-card"><h3>Per adviespartner</h3><div id="partner-breakdown" class="partner-breakdown"></div><p class="small">Geen automatische overdracht aan partners.</p></div>
+            <div class="operations-card"><h3>Per adviespartner</h3><div id="partner-breakdown" class="partner-breakdown"></div><p class="small">Historische partners blijven bewaard; nieuwe aanvragen zijn NIVO-only. Technische afleverstatus volgt uit de outbox.</p></div>
             <div class="operations-card"><h3>Actie nodig</h3><div id="overdue" class="overdue-value">—</div><p class="small">Nieuwe aanvragen ouder dan 24 uur. Prioriteit voor handmatige opvolging.</p></div>
           </div>
           <div class="operations-card trend-card"><div><h3>Scans voltooid · afgelopen 14 dagen</h3><p class="small">Alleen geaggregeerde gebeurtenissen met meettoestemming; geen unieke bezoekers.</p></div><div id="activity-chart" class="activity-chart" role="img" aria-label="Aantal gemeten voltooide scans per dag"></div></div>
         </section>
-        <section class="leads-section" id="aanvragen">
+        <section class="leads-section" id="aanvragen" data-admin-view="aanvragen" hidden>
           <div class="section-heading"><div><span class="eyebrow">MAAK HET PERSOONLIJK</span><h2>Adviesaanvragen <span id="lead-count" class="count-pill">0</span></h2></div><button id="export" class="outline-button">Exporteer CSV ↓</button></div>
-          <div class="table-tools"><label for="status-filter">Status</label><select id="status-filter"><option value="">Alle aanvragen</option><option value="new">Nieuw</option><option value="contacted">Benaderd</option><option value="qualified">In gesprek</option><option value="closed">Afgerond</option></select><button id="refresh" class="text-button">Vernieuwen ↻</button></div>
+          <div class="table-tools"><label for="status-filter">Status</label><select id="status-filter"><option value="">Alle aanvragen</option><option value="new">Nieuw</option><option value="contacted">Benaderd</option><option value="qualified">In gesprek</option><option value="closed">Afgerond</option></select><label class="wg2-search-label" for="lead-search">Zoek op pagina</label><input id="lead-search" class="wg2-lead-search" type="search" autocomplete="off" placeholder="Naam, e-mail, postcode of code"><button id="refresh" class="text-button">Vernieuwen ↻</button></div>
+          <p id="lead-search-note" class="small wg2-search-note">Zoeken filtert alleen de maximaal 50 geladen aanvragen op deze pagina.</p>
           <div class="table-wrap"><table><thead><tr><th>Naam & contact</th><th>Interesse</th><th>Adviespartner</th><th>Ontvangen</th><th>Status</th><th><span class="sr-only">Details</span></th></tr></thead><tbody id="lead-table"></tbody></table></div>
           <div class="pagination"><button id="previous" class="outline-button" disabled>← Vorige</button><span id="page-label"></span><button id="next" class="outline-button" disabled>Volgende →</button></div>
           <p id="retention" class="small"></p>
         </section>
-        <section class="mail-section" id="inbox" aria-labelledby="inbox-title">
-          <div class="section-heading"><div><span class="eyebrow">KLANTCOMMUNICATIE</span><h2 id="inbox-title">Inbox · info@wattgoedkoper.nl</h2><p>Lees klantvragen en beantwoord ze vanuit je eigen mailbox. Niets wordt automatisch verzonden.</p></div><button id="mail-refresh" class="outline-button" type="button">Vernieuwen ↻</button></div>
+        <section class="wg2-view wg2-seo" id="seo" data-admin-view="seo" hidden aria-labelledby="wg2-seo-title">
+          <header class="wg2-view-heading"><span class="eyebrow">ORGANISCHE VINDBAARHEID</span><h1 id="wg2-seo-title">SEO in beeld.</h1><p>Technische controles en alleen verifieerbare zoekmachinedata.</p></header>
+          <div class="wg2-card-grid">
+            <article class="wg2-panel"><span class="eyebrow">GOOGLE SEARCH CONSOLE</span><h2>Zoekprestaties</h2><p class="wg2-large-state">Niet verbonden</p><p>Clicks, impressies, zoekopdrachten en indexatie worden pas getoond na een geautoriseerde Search Console-koppeling. Geen geschatte cijfers.</p></article>
+            <article class="wg2-panel"><span class="eyebrow">PUBLICATIECHECK</span><h2>Technische basis</h2>
+              <dl class="wg2-status-list"><div><dt>Sitemap</dt><dd id="seo-sitemap">Nog niet gecontroleerd</dd></div><div><dt>Robots.txt</dt><dd id="seo-robots">Nog niet gecontroleerd</dd></div><div><dt>Indexatie</dt><dd>Onbekend · Search Console vereist</dd></div></dl>
+              <button class="outline-button" id="seo-check" type="button">Controleer publicatiebestanden ↻</button>
+            </article>
+          </div>
+          <p class="wg2-resource-links"><a href="/kennis/" target="_blank" rel="noopener">Kenniscentrum</a><a href="/sitemap.xml" target="_blank" rel="noopener">Sitemap</a><a href="/robots.txt" target="_blank" rel="noopener">Robots.txt</a></p>
+        </section>
+        <section class="wg2-view wg2-tools" id="tools" data-admin-view="tools" hidden aria-labelledby="wg2-tools-title">
+          <header class="wg2-view-heading"><span class="eyebrow">OPERATIONEEL BEHEER</span><h1 id="wg2-tools-title">Tools &amp; status.</h1><p>Wat gecontroleerd is en waar nog bewijs ontbreekt.</p></header>
+          <div class="wg2-card-grid">
+            <article class="wg2-panel"><span class="eyebrow">BESCHIKBAARHEID</span><h2>Website &amp; API</h2><dl class="wg2-status-list"><div><dt>API en database</dt><dd id="tools-api">Nog niet gecontroleerd</dd></div><div><dt>Rapportmail</dt><dd id="tools-report">Nog niet gecontroleerd</dd></div><div><dt>Beheermailbox</dt><dd id="tools-mail">Nog niet gecontroleerd</dd></div></dl><button class="outline-button" id="tools-check" type="button">Status verversen ↻</button></article>
+            <article class="wg2-panel"><span class="eyebrow">AUTOMATISERING</span><h2>Onderhoud &amp; overdracht</h2><dl class="wg2-status-list"><div><dt>Onderhoudscron</dt><dd id="tools-cron">Geen laatste run gemeten</dd></div><div><dt>Back-up en herstel</dt><dd id="tools-backup">Niet onafhankelijk geverifieerd</dd></div><div><dt>NIVO-leadtransport</dt><dd id="tools-delivery">Nog geen geautoriseerde ontvanger</dd></div></dl><p class="small">Een ontbrekend controlesignaal betekent onbekend, niet gezond of defect. Automatische overdracht vereist een apart beveiligd ontvangstbewijs.</p></article>
+          </div>
+        </section>
+        <section class="mail-section" id="inbox" data-admin-view="tools" hidden aria-labelledby="inbox-title">
+          <div class="section-heading"><div><span class="eyebrow">KLANTCOMMUNICATIE</span><h2 id="inbox-title">Inbox · info@wattgoedkoper.nl</h2><p>Optionele handmatige mailwerkplek. Echte bezorging is apart te verifiëren.</p></div><button id="mail-refresh" class="outline-button" type="button">Vernieuwen ↻</button></div>
           <p id="mail-status" class="mail-status" role="status">Mailboxstatus wordt opgehaald…</p>
           <div class="mail-workspace">
             <div class="mail-list-column"><div class="mail-toolbar"><strong>Postvak IN</strong><button id="mail-compose" type="button" class="outline-button">Nieuw bericht +</button></div><div id="mail-list" class="mail-list"><div class="mail-placeholder">Laad je berichten zodra de mailbox is verbonden.</div></div></div>
