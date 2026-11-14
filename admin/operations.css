@@ -28,7 +28,7 @@
 /* v0.5 — concise, accessible operational lead detail. No raw data removed. */
 #lead-dialog.lead-dialog-v05[open]{
   width:min(1060px,calc(100vw - 30px));max-width:calc(100vw - 30px);
-  height:min(700px,calc(100dvh - 28px));max-height:calc(100dvh - 28px);
+  height:min(572px,calc(100dvh - 28px));max-height:calc(100dvh - 28px);
   display:flex;flex-direction:column;padding:0;overflow:hidden;background:#fffefa;
   border:1px solid #dce4d8;border-radius:22px;
 }
