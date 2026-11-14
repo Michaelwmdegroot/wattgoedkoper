@@ -1,40 +1,45 @@
-# Oplevering 2026-11-14 — eerste werkende versie
+# Oplevering 2026-11-14 — interactief energiehuis 0.2
 
-## Bereikt
+## Aanleiding en productkeuze
 
-Consumentenscan, brononderbouwde rekenkern, rapport, optionele adviesflow, beveiligde backoffice, inhoudspagina's en rechtstreeks deploybare repository. De volledige consumentenpreview is `preview/wattgoedkoper-preview.html`.
+De eerste versie was functioneel een formulier met een rapport. De gebruiker vroeg om een speelse tool waarmee consumenten hun situatie ontdekken en direct resultaat zien. Daarom is de consumentenervaring opnieuw opgebouwd rond een interactieve woning. De eerder gebouwde rekenkern en beveiligde backend zijn hergebruikt.
 
-## Gecontroleerd
+De huidige opdracht is ontwikkeling en beoordeling van de ervaring. De WordPress-site, Hostinger-instellingen en DNS zijn niet gewijzigd.
 
-- 33 modeltests: salderen, import/export, netto kosten, batteryverliezen, vaste vs variabele terugleverkosten, nulverbruik, invalide invoer, budget en gecombineerde maatregelen.
-- 55 PHP-integratiechecks met echte PHP 8.4-server en tijdelijke SQLite-configuratie.
-- Browser-DOM-flow: vijf stappen → rapport, 2026/2027, contract met jaarlijkse kosten, lokale bewaarkeuze, verkeerd opgegeven energiebalans, verborgen lege velden en ongeconfigureerde adviesfunctie.
-- Geen API-verkeer op landing of tijdens de scan zonder meettoestemming.
-- Geen default partner of vooraf aangevinkte adviesconsent.
-- Alle 45 genormaliseerde modelvelden passen door de backend-allowlist; server behandelt berekende bedragen als ongeverifieerde klantindicatie.
-- Consenttekst zichtbaar in formulier en opgeslagen tekst zijn exact gelijk.
-- JavaScript-syntaxcontrole en git whitespacecheck.
+## Wat is veranderd
 
-## Concrete grenzen van de verificatie
+1. De homepage is direct het werkvlak: woningkeuzes, een grote isometrische woning, directe cijfers en een strook met vijf verbeteringen. Geen startscherm of verplichte vragenvolgorde.
+2. Woningtype en bewoners veranderen de illustratie. Bestaande zonnepanelen, batterij, warmtepomp en auto zijn afzonderlijk van nieuwe investeringen.
+3. Toevoegen/weghalen via kaartjes, de hotspots op het huis of optioneel slepen. De huidige situatie en het plan zijn apart te bekijken.
+4. Het resultaat reageert direct met kosten vóór/na, bandbreedte, investering en aandeel eigen stroom.
+5. Een aparte scenariolaag maakt vrije combinaties mogelijk, inclusief nieuwe zonnepanelen met batterij. Afhankelijkheden blijven geldig en losse besparingen worden niet opgeteld.
+6. Budget stuurt het voorgestelde startplan. Een handmatige combinatie mag erboven liggen; dat wordt zichtbaar aangegeven. Negatieve besparing wordt niet verborgen.
+7. Paneelaantal, batterijcapaciteit en budget zijn schuifregelaars. De voorbeeldprijs van nieuwe panelen groeit evenredig mee met het aantal. Exacte cijfers en tarieven blijven optionele detailpanelen.
+8. Ongedaan maken, opnieuw beginnen, expliciet bewaren/herstellen en een afdrukbaar plan zijn ingebouwd.
+9. Dag/nacht, licht en geanimeerde energiestromen maken de samenhang zichtbaar. Ze zijn duidelijk als illustratie aangeduid en veranderen de jaarberekening niet.
+10. Het optionele adviesformulier deelt het samengestelde plan alleen na expliciete partnerkeuze en toestemming. De zelfstandige preview kan geen aanvraag versturen.
 
-Lokale Chromium kon door de uitvoeromgeving niet starten (socket permission error). De beschikbare cloudbrowser kon de lokale testserver niet bereiken (connection refused). Responsive CSS en DOM-gedrag zijn gebouwd/gecontroleerd; visuele desktop/mobiele controle en een volledige browsertest tegen productie zijn nog niet afgerond.
+## Bestanden en architectuur
 
-Hostinger beheer is niet verbonden. De oude WordPress-site is niet veranderd. Geen productieaanvraag ontvangen, geen email verstuurd, geen DNS- of hostingmutaties uitgevoerd. Een succesvolle lokale test is geen bewijs van livegang.
+De nieuwe modules `assets/playground-model.mjs` en `assets/house-scene.mjs` scheiden het rekenen van de visuele ervaring. `assets/app.mjs` beheert keuzes, omkeerbare state, live resultaten, detailpanelen en de bestaande API. De previewbuilder bundelt de lokale moduleketen, stylesheets en uitlegpagina’s tot één bestand dat zonder server werkt.
 
-## Productgrenzen
+Geen runtimeafhankelijkheden, externe lettertypen, trackers of betaalde plugins toegevoegd. De bronwebsite blijft direct geschikt voor de eerder voorbereide HTML/PHP-route.
 
-Het model is een jaarlijkse eerste oriëntatie. Jaarlijkse profielaannames zijn geen kwartiersimulatie, dakscan of officiële woninginspectie. De bandbreedte varieert maatregel-effecten, niet toekomstige marktprijzen. Subsidies zijn niet in de investering verrekend; 2027-voornemens worden niet als definitieve rechten gepresenteerd.
+## Verificatie
 
-Een eigen onderneming profiteert van een mogelijke adviesaanvraag, maar het resultaat adviseert niet automatisch een batterij. Consumenten kunnen de volledige uitkomst gebruiken zonder contactgegevens.
+- 47 reken- en scenariotests geslaagd: de bestaande 33 plus 14 voor vrije combinaties, voorwaarden, energiebehoud, dubbeltellingen, nulverbruik, budget en negatieve batterijuitkomsten.
+- JavaScript-syntax van alle vijf modules gecontroleerd.
+- 16 functionele DOM-testgroepen op de module-app, 18 op de zelfstandige preview. Onder meer woning/huishouden, panelen+batterij, verwijderen van afhankelijke stappen, bestaande systemen, huur, budget, meterinvoer, onmogelijke export, schatmodus, nul/negatief resultaat, dag/nacht, undo, bewaren, toetsenbord, slepen, hotspots en adviesfouten.
+- Preview: nul netwerkverzoeken, alle lokale assets ingebed, uitlegpagina’s en terugnavigatie werken.
+- Native SVG gerenderd en visueel bekeken. CSS geparseerd, unieke HTML-IDs gecontroleerd, essentiële tekstkleuren met contrastberekening aangescherpt. Labels/invoer en bediening zijn voor mobiel vergroot; verminderde beweging wordt gerespecteerd.
+- De bestaande 55 backendchecks zijn ongewijzigd en blijven een CI-gate. Geen echte persoonsgegevens gebruikt of berichten verstuurd.
 
-## Vervolg met de meeste productwaarde
+## Grenzen van de verificatie
 
-1. Ondersteunde Hostinger-beheertoegang, beheerorganisatie en livegang volgens `DEPLOYMENT.md`.
-2. Echte gebruikerstests op mobiel/desktop en concrete offerteprijzen van partners als optionele rekeninput (met geldigheidsdatum).
-3. Gratis PDOK-locatie en PVGIS-opbrengstindicatie, met toestemming en fouttolerante caching; geen betaalde adresdienst nodig voor eerste uitbreiding.
-4. Import van een jaar slimme-meter/omvormerdata, met bestandsvalidatie en lokale analyse waar mogelijk. Daarmee pas batterijcapaciteit en uur-/kwartierprijssturing verfijnen.
-5. Een geautoriseerde contractfeed of handmatige geverifieerde aanbiedingen met datum, voorwaarden en totalen. Geen fictieve ranglijst.
-6. Emailmeldingen/CRM-koppeling, rolgebaseerde partnerinzage, MFA en bewaking van vastgelopen opvolging.
-7. Subsidiescreening op woning, uitvoering en meldcodes, met actueel gecontroleerde regels en bronversies.
+Een DOM-test controleert gedrag, geen uiteindelijke layout. De lokale browser kon eerder niet starten; de beschikbare browser weigert lokale bestands-URLs en de native invoerroute gaf een toegankelijkheidsproviderfout. De volledige desktop-/mobiele browserervaring is daardoor niet visueel geverifieerd. De zelfstandige HTML-preview is beschikbaar voor die beoordeling. Er is geen claim dat een live productieflow is getest.
 
-Deze uitbreidingen zijn geen reeds opgeleverde functies.
+Het model blijft een eerste jaaroriëntatie. Het is geen kwartiersimulatie, technisch dakplan, officieel woningadvies of productoptimalisatie. Beprijzen per paneel is een zichtbare rekenaanname en geen offerte. Subsidies, toekomstige tarieven, degradatie, onderhoud en financiering vragen aanvullende informatie.
+
+## Reviewrichting
+
+Beoordeel eerst of de woning direct uitnodigt tot spelen, of het verschil van een keuze begrijpelijk is en of de overgang van voorbeeld naar persoonlijke situatie soepel voelt. Daarna volgen concrete gebruikerstests op mobiel en desktop. Verdere gegevenskoppelingen en productieactivering zijn afzonderlijke stappen, niet onderdeel van deze revisie.

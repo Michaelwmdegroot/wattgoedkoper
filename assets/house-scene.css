@@ -1,0 +1,39 @@
+.energy-scene{position:relative;width:100%;isolation:isolate;aspect-ratio:760/570;min-width:0;user-select:none;-webkit-tap-highlight-color:transparent}
+.house-illustration{display:block;width:100%;height:auto;overflow:visible}
+.house-hotspots{position:absolute;inset:0;pointer-events:none}
+.house-hotspot{position:absolute;display:flex;align-items:center;gap:7px;min-height:40px;padding:5px 9px 5px 6px;border:1px solid rgba(78,99,85,.13);border-radius:999px;background:rgba(255,253,243,.95);box-shadow:0 4px 14px rgba(38,62,48,.07);color:#344a44;font-family:inherit;font-size:12px;line-height:1.2;font-weight:600;cursor:pointer;pointer-events:auto;white-space:nowrap;transition:transform .2s ease,box-shadow .2s ease,background .2s ease;border-style:solid}
+.house-hotspot:hover{background:#fffdf2;transform:translateY(-3px);box-shadow:0 7px 18px rgba(38,62,48,.12)}
+.house-hotspot:active{transform:translateY(-1px) scale(.97)}
+.house-hotspot:focus-visible{outline:3px solid #315c67;outline-offset:4px}
+.house-hotspot-icon{display:grid;place-items:center;width:25px;height:25px;flex:none;border-radius:50%;background:#e8eee1;color:#68816a}
+.house-hotspot-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.house-hotspot-mark{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;margin-left:1px;background:#edf0e6;color:#68816a;font-size:13px;line-height:1;font-weight:700}
+.house-hotspot.is-present .house-hotspot-mark{background:#d3dfc7;color:#365542;font-size:10px}
+.house-hotspot.is-planned{border-color:#d5bc66;background:#fff7d7}
+.house-hotspot.is-planned .house-hotspot-icon,.house-hotspot.is-planned .house-hotspot-mark{background:#efda8b;color:#796425}
+.house-hotspot-solar{top:14%;right:12%}
+.house-hotspot-insulation{top:40%;left:4%}
+.house-hotspot-battery{top:67%;right:0}
+.house-hotspot-heatpump{top:80%;left:9%}
+.is-apartment .house-hotspot-solar{top:7%;right:11%}
+.house-plot-label{position:absolute;left:50%;bottom:-1.5%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;color:#63796a;font-size:10px;line-height:1.2;white-space:nowrap;letter-spacing:.02em;font-weight:500}
+.house-plot-label span{color:#829b70;font-size:10px}
+.house-flow{stroke-width:3;stroke-dasharray:3 9;animation:house-flow 2.2s linear infinite;filter:drop-shadow(0 1px 2px #fff7ca)}
+.house-flow-solar{stroke:#f8df76}
+.house-flow-stored{stroke:#e0f1b6;animation-direction:reverse}
+.house-flow-heat{stroke:#efbe87;animation-duration:3s}
+.house-flow-grid{stroke:#f0edda;animation-direction:reverse;animation-duration:3.2s}
+.house-fan{animation:house-fan 9s linear infinite}
+.house-new{animation:house-appear .45s ease-out both}
+.house-sun,.house-moon{transition:opacity .25s ease}
+.is-evening .house-building{filter:saturate(.82)}
+.is-evening .house-landscape,.is-evening .house-tree{filter:saturate(.65) brightness(.92)}
+.is-evening .house-hotspot{background:rgba(247,249,235,.96)}
+.is-evening .house-hotspot.is-planned{background:#f8edc4}
+@keyframes house-flow{to{stroke-dashoffset:-48}}
+@keyframes house-fan{to{transform:rotate(360deg)}}
+@keyframes house-appear{from{opacity:0}to{opacity:1}}
+@media(min-width:1450px){.house-hotspot{font-size:12px;min-height:40px;padding-right:11px}.house-hotspot-icon{width:28px;height:28px}.house-hotspot-icon svg{width:18px;height:18px}.house-hotspot-mark{width:19px;height:19px}}
+@media(max-width:1190px) and (min-width:901px){.house-hotspot{font-size:12px;gap:4px;min-height:36px;padding:4px 7px 4px 4px}.house-hotspot-icon{width:21px;height:21px}.house-hotspot-icon svg{width:14px;height:14px}.house-hotspot-mark{width:14px;height:14px}.house-hotspot-insulation{left:0}.house-hotspot-battery{right:-1%}.house-hotspot-heatpump{left:3%}}
+@media(max-width:500px){.house-hotspot{font-size:12px;gap:4px;min-height:40px;padding:5px 7px 5px 4px}.house-hotspot-icon{width:22px;height:22px}.house-hotspot-icon svg{width:15px;height:15px}.house-hotspot-mark{width:15px;height:15px;font-size:11px}.house-hotspot-solar{right:4%;top:12%}.house-hotspot-battery{right:-1%;top:65%}.house-hotspot-insulation{left:-1%;top:36%}.house-hotspot-heatpump{left:2%;top:78%}.house-plot-label{font-size:9px;bottom:-2%}}
+@media(prefers-reduced-motion:reduce){.house-flow,.house-fan,.house-new{animation:none}.house-hotspot,.house-sun,.house-moon{transition:none}.house-hotspot:hover{transform:none}}

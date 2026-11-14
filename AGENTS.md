@@ -13,8 +13,14 @@ Dutch consumer energy planning tool and lead generation for NIVO Groep Holland a
 ## Architecture
 - Plain HTML/CSS/ES modules at the repository root for direct PHP/static Hostinger Git deployment.
 - PHP 8.2+ / PDO SQLite backend, persistent private storage outside web root.
-- Node built-in tests for calculation engine. PHP integration tests for lead storage and access control. Browser smoke test for desktop/mobile, keyboard and scan flow.
+- Node built-in tests for calculation engine. PHP integration tests for lead storage and access control. Browser smoke test for desktop/mobile, keyboard and interactive house flow.
 - Main is the intended deployment branch. No force pushes. Avoid editing another contributor's files.
+
+## Interactive product rules
+- The home is immediately usable; do not restore a sequential questionnaire as the main experience.
+- Existing equipment is distinct from proposed upgrades. Day/night is illustrative only.
+- Free scenario selections may exceed budget or lose money; show those outcomes, never silently optimize away a manual choice.
+- Keep click/touch/keyboard alternatives to drag and drop and preserve undo.
 
 ## Work split
 - Root: assets/model.mjs, tests/model.test.mjs, source registry, project/deploy docs and integration.

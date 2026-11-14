@@ -1,54 +1,42 @@
 # WattGoedkoper
 
-Een gratis, persoonlijk energieplan voor Nederlandse huishoudens, met optionele adviesaanvragen voor **NIVO Groep Holland** en **Thuisbatterij Team**.
+Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Persoonlijk advies via **NIVO Groep Holland** en **Thuisbatterij Team** is een optionele vervolgstap.
 
-## Status — 14 november 2026
+## Status — interactieve versie 0.2
 
-De eerste werkende versie is gebouwd en getest. **Productie op wattgoedkoper.nl is nog niet omgeschakeld.** Er is in deze sessie geen Hostinger-beheerverbinding beschikbaar; de bestaande WordPress-installatie is niet gewijzigd. De lead-API weigert aanvragen totdat veilige serverconfiguratie buiten de webroot bestaat.
+De consumentenscan is vervangen door een direct bruikbare speeltuin rond een getekend huis. **Wattgoedkoper.nl is niet omgeschakeld; de bestaande WordPress-site is niet gewijzigd.** Deze versie is bedoeld om de nieuwe productervaring te beoordelen.
 
-- [Zelfstandige preview downloaden](preview/wattgoedkoper-preview.html): complete consumentenscan, voorbeeldrapport en uitlegpagina's in één HTML-bestand. Download en open in een browser; adviesverzending is bewust uitgeschakeld.
-- [Rekenmodel en bronnen](docs/research.md)
-- [Backend en beheer](docs/backend.md)
-- [Deploy- en hervatplan](docs/DEPLOYMENT.md)
-- [Oplevering en controles](docs/RELEASE.md)
+**[Download de speelbare preview](preview/wattgoedkoper-preview.html)** en open het bestand in een browser. Huis, berekeningen, scenario’s en uitleg werken in één bestand. Adviesverzending en netwerkverkeer zijn in deze preview uitgeschakeld.
 
-## Wat werkt
+## De ervaring
 
-1. Responsive consumentenwebsite met eigen woningillustratie, vijfstappenscan en volledig resultaat zonder account of contactgegevens.
-2. Deterministisch jaarmodel voor stroom, gas, zonnepanelen, eigengebruik, thuisbatterij, isolatie en hybride warmtepomp.
-3. Scheiding tussen netto meterafname en totaal huishoudelijk verbruik; schattingen herkenbaar gemarkeerd.
-4. Vergelijking van twee volledige rekenjaren: salderen in 2026 en afzonderlijke afrekening vanaf 2027.
-5. Gecombineerd maatregelenplan binnen de bovengrens van het ingevoerde budget; overlappende besparingen worden opnieuw berekend.
-6. Handmatige contractscenariovergelijking met eigen tarieven en aparte bruto vergoeding / terugleverkosten.
-7. Bewaren op eigen apparaat na expliciete keuze, verwijderen en browserprint/PDF.
-8. Zes openbare inhoudspagina's, canonieke URLs, sitemap, robots en een echte 404.
-9. PHP-backend voor adviesaanvragen met gekozen partner, expliciete toestemming, ontvangstnummer en idempotentie.
-10. Beveiligde backoffice met dagtotalen, opt-in conversieverhouding, aanvragen, status, details, CSV en verwijderen.
+- Begin meteen met een voorbeeldhuis; geen startformulier of verplichte stappen.
+- Kies je woning, bewoners, isolatie en aanwezige installaties met visuele keuzes.
+- Klik op het huis of voeg verbeteringen toe vanuit de strook: slim verbruiken, isolatie, zonnepanelen, hybride warmtepomp en batterij. Slepen werkt als extra bediening; klik, touch en toetsenbord blijven beschikbaar.
+- Het huis verandert mee: panelen op het dak, batterij aan de gevel, buitenunit en bewoners. Bekijk de huidige situatie naast het plan.
+- Zie direct variabele jaarkosten, besparingsbandbreedte, eigen stroomgebruik en investering.
+- Probeer combinaties zelf of vraag een startplan binnen je budget. Handmatige plannen boven budget of met negatief financieel effect blijven zichtbaar.
+- Speel met paneelaantal, batterijcapaciteit en budget. Exacte jaarcijfers, tarieven en offertes zijn optionele verfijningen.
+- Draai een keuze terug, bewaar je huis expliciet op je apparaat of druk het energieplan af als PDF.
+- Contactgegevens zijn pas nodig als je zelf om advies vraagt. De gekozen partner en toestemming worden expliciet vastgelegd.
 
-## Bewuste grenzen
+## Onderbouwde berekening
 
-- De ingevulde prijzen zijn **voorbeelden**, geen actuele marktprijzen, prijzen van NIVO/TBT of leveranciersaanbod.
-- De hoofdgetallen zijn **variabele energiekosten**, geen volledige jaarrekening.
-- Geen live slimme meter, PDOK/BAG, PVGIS, leveranciersfeed, email- of CRM-koppeling.
-- Geen gegarandeerd rendement, handelsopbrengst, definitieve subsidie of technisch installatieadvies.
-- Batterijcapaciteit is een scenario, geen geoptimaliseerd productadvies. Een batterij wordt niet automatisch in het aanschafplan geplaatst.
-- Isolatievoordeel bij bestaande warmtepompen/warmtenetten is nog niet gekwantificeerd.
-- De privacytekst beschrijft de scan en ontwikkelstatus. Beheerorganisatie en privacycontact moeten vóór activering worden vastgesteld.
-- Responsive gedrag is gebouwd; echte visuele desktop/mobiele browserinspectie kon in deze uitvoeromgeving niet worden voltooid. DOM-flow en servergedrag zijn wel gecontroleerd.
+De deterministische jaarberekening onderscheidt totaalverbruik, netafname, opwek en teruglevering. Zij rekent maatregelen samen door om dubbeltellingen te voorkomen. Salderen in 2026 en afzonderlijke afrekening in 2027 zijn twee aparte rekenjaren. Een combinatie van nieuwe zonnepanelen en batterij is handmatig te simuleren; een batterij wordt niet automatisch als aankoop aanbevolen.
+
+Het dag-/nachtbeeld is een illustratie, geen uurprognose. De hoofdgetallen zijn **variabele energiekosten**, zonder netbeheer, vaste leveringskosten en belastingvermindering. Vooraf ingevulde prijzen zijn **bewerkbare voorbeelden**, geen actuele aanbiedingen. De paneelregel schaalt de voorbeeldprijs evenredig mee met het aantal panelen; batterijcapaciteit en prijs zijn afzonderlijke aannames.
+
+Geen live meter-, adres-, PVGIS-, leveranciers-, e-mail- of CRM-koppelingen. Geen gegarandeerde besparing, handelsopbrengst, subsidietoekenning of technisch installatieadvies. De advies-API weigert aanvragen zolang veilige productieconfiguratie ontbreekt.
 
 ## Techniek
 
-HTML, CSS en ES-modules worden rechtstreeks geserveerd; geen frontendbuild, framework-runtime, Composer-pakketten of betaald pluginabonnement nodig. PHP 8.2+ met PDO SQLite en OpenSSL verzorgt de backend. Persoonsgegevens staan versleuteld in private opslag buiten `public_html`; configuratie en data blijven buiten Git.
-
-Hostinger kan een PHP/HTML-site rechtstreeks uit een GitHub-branch deployen. De repository is daarvoor ingericht met `main` als beoogde bron. Dat is nog **niet geconfigureerd of live geverifieerd** voor dit domein.
-
-## Lokaal gebruiken
+HTML, CSS en native ES-modules worden direct geserveerd; geen frontendframework of productiebouwstap. De interactieve SVG-woning werkt zonder externe afbeeldingen of scripts. PHP 8.2+ met PDO SQLite en OpenSSL verzorgt de bestaande advies-API en backoffice. Persoonsgegevens worden versleuteld buiten de openbare webroot opgeslagen, nooit in Git.
 
 ```bash
 php -S 127.0.0.1:8080 scripts/router.php
 ```
 
-De scan werkt direct. `/admin/` en echte adviesopslag blijven gesloten tot de configuratie uit [docs/backend.md](docs/backend.md) is voltooid. Gebruik uitsluitend fictieve gegevens voor lokale tests.
+Het energiehuis werkt direct. `/admin/` en echte adviesopslag blijven gesloten tot de configuratie uit [docs/backend.md](docs/backend.md) is voltooid.
 
 ## Controles
 
@@ -56,29 +44,29 @@ De scan werkt direct. `/admin/` en echte adviesopslag blijven gesloten tot de co
 npm test
 npm run check
 python3 tests/backend_test.py --php php
-```
-
-33 rekenkundige tests en 55 backendintegratiechecks zijn lokaal geslaagd. DOM-controles zijn uitgevoerd op de volledige scan, jaartoggle, contractkosten, optioneel bewaren, expliciete toestemming, foutpaden en verborgen/lege invoervelden. Browserinspectie blijft een livegangtaak. GitHub Actions bevat dezelfde reken- en backendgates; de remote runstatus is een afzonderlijk gegeven.
-
-## Inhoud en preview opnieuw genereren
-
-```bash
 python3 scripts/build-content.py
 python3 scripts/build-preview.py
 ```
 
-De HTML-uitvoer staat in Git zodat Hostinger geen Python of Node-build hoeft te draaien. `preview/`, interne bronmappen, dotfiles en back-ups zijn via `.htaccess` niet publiek bereikbaar.
+- 47 model- en scenariotests, inclusief combinaties, afhankelijkheden, negatieve uitkomsten en energiebehoud.
+- De bestaande backend heeft 55 integratiechecks; GitHub Actions voert die opnieuw uit bij een push.
+- De interactieve module-app en gebundelde preview zijn functioneel in een DOM-omgeving gecontroleerd: 16 respectievelijk 18 groepen, inclusief foutpaden en geen netwerkverkeer in de preview.
+- De woningillustratie is gerenderd en bekeken. Kleuren zijn op contrast gecontroleerd. Een volledige visuele desktop-/mobiele browsertest kon in deze omgeving niet worden voltooid; dit blijft een concrete beoordelingsstap.
 
 ## Projectstructuur
 
-- `index.html`, `assets/`: consumentenwebsite en rekenkern.
-- `rekenmodel.html`, `privacy.html`, `kennis/`: crawlbare uitleg en bronnen.
-- `api/`, `lib/`: PHP-API, beveiliging en opslag.
-- `admin/`: afgeschermde beheerfuncties.
-- `scripts/`: CLI-installatie, onderhoud, lokale router en content/previewgenerators.
-- `tests/`: rekenregressies en echte PHP-integratietest.
-- `docs/`: onderbouwing, werking, oplevering en hervatplan.
+- `index.html`, `assets/app.mjs`, `assets/styles.css`: interactieve ervaring en bediening.
+- `assets/house-scene.mjs`, `assets/house-scene.css`: dynamische SVG-woning en hotspots.
+- `assets/model.mjs`: onderliggende jaarberekening en bronregister.
+- `assets/playground-model.mjs`: handmatig gekozen scenario’s en afhankelijkheden.
+- `rekenmodel.html`, `privacy.html`, `kennis/`: openbare uitleg en bronnen.
+- `api/`, `lib/`, `admin/`: beveiligde adviesopslag en beheer.
+- `scripts/`: installatie, onderhoud en zelfstandige content-/previewbuilds.
+- `tests/`: rekenkundige en backendregressies.
+- `preview/`: downloadbare, zelfstandige reviewversie; geblokkeerd op productie via `.htaccess`.
 
-## Uitgangspunt
+## Documentatie
 
-Eerst nuttig inzicht. Daarna een vrijwillige adviesvraag. De commerciële relatie met NIVO en Thuisbatterij Team is zichtbaar en beïnvloedt het rekenresultaat niet.
+[Productkeuzes en controlegrenzen](docs/RELEASE.md) · [Rekenmodel en bronnen](docs/research.md) · [Frontendcontract](docs/frontend-contract.md) · [Backend](docs/backend.md) · [Hostinger-route voor later](docs/DEPLOYMENT.md)
+
+De commerciële relatie met NIVO Groep Holland en Thuisbatterij Team blijft zichtbaar. Het resultaat is bruikbaar zonder contactgegevens en verandert niet door de gekozen adviespartner.

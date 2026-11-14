@@ -1,5 +1,39 @@
 # Frontend / model contract
 
+## Interactive energy house (v0.2)
+
+The consumer entry point is a continuously usable energy playground, not a sequential scan. The initial example is clearly marked. Housing/household choices alter the baseline. Installed equipment (`input.hasSolar`, etc.) is separate from proposed upgrades (`selectedIds`). Results do not require contact details.
+
+```js
+import {simulateHome, UPGRADES} from './playground-model.mjs';
+const result = simulateHome(input, ['solar', 'battery']);
+```
+
+`result` exposes `baseline` and `scenario`, each with `{flow,bill,selfSufficiency,selfUsePercent}`. It also exposes `selectedIds`, `blocked`, `available`, `savings`, `savingsLow`, `savingsHigh`, `investmentLow`, `investmentHigh`, `budget`, `recommendedIds`, `warnings` and `assumptions`.
+
+- All monetary savings refer to annual variable energy costs; investment is one-off.
+- `selfSufficiency` is useful own electricity / total household electricity. `selfUsePercent` uses PV production as denominator. Both are percentages 0–100.
+- Each available upgrade has `eligible`, `existing`, `selected`, `reason`, investment and marginal effect fields. Never sum marginal effects.
+- New solar + battery can be deliberately selected together. Removing a prerequisite removes its dependent step. Existing installations cannot be bought again.
+- Manual choices may exceed the budget or cost more annually. Show both outcomes honestly; never clip negative savings.
+- Budget controls the suggested start plan, not manual selection.
+- The panel quantity control scales the current example set price proportionally. An explicit investment editor lets visitors use a total quote. Battery capacity and price remain separate assumptions.
+- `usageKnown:false` always pairs with `inputMode:'total'` in the UI.
+- Day/night changes the illustration only, never the annual calculation.
+
+```js
+import {renderHouseScene} from './house-scene.mjs';
+const scene = renderHouseScene(container, {
+  input, selectedIds, view:'current', daylight:65,
+  flows:result.baseline.flow, onAction(id) { /* toggle or explain */ }
+});
+scene.update({view:'plan',selectedIds});
+```
+
+The house is an SVG diagram with native HTML hotspot buttons. Click, touch, keyboard and optional drag/drop share the same action. Reduced-motion preferences disable decorative animations. Explicit save stores only the house/plan locally; reset and undo are reversible. Contact submission remains a separate opt-in step through the API below.
+
+## Underlying annual engine
+
 `import { DEFAULT_INPUT, calculatePlan, formatEuro, SOURCES, MODEL_VERSION } from './model.mjs'`.
 `calculatePlan({...DEFAULT_INPUT, ...answers})` returns deterministic figures; throws a user-facing Error on invalid data.
 
@@ -52,7 +86,7 @@ Every monetary default is a visible editable EXAMPLE, not a live market quote. `
  assumptions:[{label,value,sourceId?}], warnings:[string], nextSteps:[string]
 }
 ```
-Measures IDs: smart-use, solar, battery, insulation, heatpump. `status` one of recommended/consider/not-now/already. `payback` number or null. `plan` selected scenarios recomputed together, no sum of individual savings. Main summary: indicative annual savings, **variable energy costs** (not whole utility bill), excludes standing charges/network/tax credit unless explicitly in differences. Show economic lower bound >=0 only for headline chosen good plan; individual measures may be negative and must show this.
+Measures IDs: smart-use, solar, battery, insulation, heatpump. `status` one of recommended/consider/not-now/already. `payback` number or null. `plan` selected scenarios recomputed together, no sum of individual savings. Main summary: indicative annual savings, **variable energy costs** (not whole utility bill), excludes standing charges/network/tax credit unless explicitly in differences. All manually selected scenarios retain their calculated range, including negative outcomes.
 
 ## Backend
 Base `/api/index.php?action=`.

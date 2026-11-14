@@ -12,6 +12,8 @@ coverage/
 .playwright/
 test-results/
 artifacts/
+__pycache__/
+*.pyc
 # Private setup and customer data never belong in the repository.
 config.php
 wattgoedkoper-private/
