@@ -20,7 +20,7 @@
 - [#12](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/12) — één-scherm energiehuis.
 - [#13](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/13) — merkidentiteit en compacte bovenbalk.
 
-**Laatste geverifieerde applicatiecommit:** \`d7be722c3baff7a2a02fa61a0514fa4a485fd8a8\`, met groen:
+**Laatste geverifieerde applicatiecommit:** `d7be722c3baff7a2a02fa61a0514fa4a485fd8a8`, met groen:
 - [Calculation and data safety checks](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43634944631)
 - [Premium visual and interaction review](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43634944643)
 
@@ -29,7 +29,7 @@ Een eventuele documentatie-only afsluitcommit komt later bovenop deze baseline e
 ## Wat *niet* als afgerond wordt verklaard
 
 - [ ] Werkelijke Hostinger deploy-SHA onafhankelijk herlezen en huidige live-up-to-date status vastleggen (eigenaar heeft layout/branding visueel bevestigd).
-- [ ] Veilige koppeling en daadwerkelijke inboxbezorging van \`info@wattgoedkoper.nl\`; \`report_mail_enabled\` blijft **uit**.
+- [ ] Veilige koppeling en daadwerkelijke inboxbezorging van `info@wattgoedkoper.nl`; `report_mail_enabled` blijft **uit**.
 - [ ] Formele verantwoordelijke onderneming/privacycontact en eventuele operationele autorisaties voor uitbreiding definitief vaststellen.
 - [ ] SEO-/index-/Search Console-/traffic-/Core-Web-Vitals-nulmeting; geen rankings of bezoekersaantallen bewezen.
 - [ ] Onderliggende premium SEO-clusters, contenttemplates, landingspagina's, interne links, geverifieerde bronnen en effectieve opt-in CTA-strategie.
@@ -42,7 +42,7 @@ Een eventuele documentatie-only afsluitcommit komt later bovenop deze baseline e
 - Alleen NIVO-contact na aparte toestemming; rapportmail nooit automatisch marketingconsent.
 - Verander geen bestaande MySQL, private secrets of encryptiesleutels. Geen setup opnieuw.
 - Rekenmodel en productclaims blijven indicatief, met actuele, controleerbare bronnen.
-- Geen nieuwe betaalde diensten. Geen ongeteste wijzigingen naar \`main\`.
+- Geen nieuwe betaalde diensten. Geen ongeteste wijzigingen naar `main`.
 
 ## Formele overdracht naar volgende agent
 
