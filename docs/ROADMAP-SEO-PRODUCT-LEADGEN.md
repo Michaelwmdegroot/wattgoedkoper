@@ -19,7 +19,7 @@ Dat betekent: home is een **tool**, content is een **integraal productonderdeel*
 
 ## Productonderdelen als één geheel
 
-1. **Energiehuis** (\`/\`): directe personalisatie van woning/verbruik, visuele maatregelen, live resultaat, Plan Studio.
+1. **Energiehuis** (`/`): directe personalisatie van woning/verbruik, visuele maatregelen, live resultaat, Plan Studio.
 2. **Onderwerpen/keuzehulp**: per categorie een premium overzicht/hub met werkingsprincipe, geschiktheid, belangrijke kosten en beperkingen, scenario's, bronnen en relevante CTA naar het energiehuis.
 3. **Diepgaande kennis/vergelijkingen**: uitleg van energiestromen, beslisfactoren, combinaties, rekenregels en veelgestelde vragen met bron-datum en controleerbare voorbeelden.
 4. **Reken-/methodieklaag**: bestaande centrale, deterministische engine, begrijpelijke beperkingen, aannames, verschillende jaren en relevante startinstellingen. Geen tegenstrijdige rekenimplementaties per SEO-pagina.
@@ -29,8 +29,8 @@ Dat betekent: home is een **tool**, content is een **integraal productonderdeel*
 ## Werkstroom P0 — foundation en nulmeting (issue #15)
 
 ### Audit van het echte product
-- Vergelijk huidige \`main\` met werkelijke Hostinger-deploy; leg exacte SHA of controleerbaar bewijs vast; wijzig geen private config.
-- Audit \`robots.txt\`, \`sitemap.xml\`, canonicals, HTML headings, redirections, 404, interne links, crawlbaarheid van statische pagina's, onbedoelde indexatie van admin/API en renderbelasting.
+- Vergelijk huidige `main` met werkelijke Hostinger-deploy; leg exacte SHA of controleerbaar bewijs vast; wijzig geen private config.
+- Audit `robots.txt`, `sitemap.xml`, canonicals, HTML headings, redirections, 404, interne links, crawlbaarheid van statische pagina's, onbedoelde indexatie van admin/API en renderbelasting.
 - Doe een Lighthouse/axe-/Chromium-controle op relevante templates bij desktop en mobiel; beeldoptimalisatie, LCP/CLS/INP waar betrouwbaar meetbaar, caching en keyboardfocus.
 - Inspecteer alle bestaande bron/kenniscontent, waarschuwingslabels en gedateerde modelaannames.
 - Gebruik Search Console/Bing als **connected, read-only en consent-/toegangsmatig toegestaan**; indien geen toegang, definieer een aansluitchecklist en rapporteer “onbekend”, niet nul.
@@ -44,15 +44,15 @@ Dat betekent: home is een **tool**, content is een **integraal productonderdeel*
 ### Aanbevolen informatiekaart, **nog te toetsen met zoekintentieonderzoek**
 | Relevante route | Type/intentie | Consumentenwaarde en toolkoppeling |
 |---|---|---|
-| \`/\` | Tool, energiehuis | Direct situatie simuleren |
-| \`/zonnepanelen/\` | Hub / oriëntatie | Geschiktheid, investering, zelfverbruik, saldering, rekenvoorbeeld |
-| \`/thuisbatterij/\` | Hub / overweging | Wanneer wel/niet nuttig, capaciteit, verliezen, afhankelijkheid |
-| \`/warmtepomp/\` | Hub / vergelijking | Isolatie, verbruik, hybride versus volledig elektrisch — alleen als model dit kan ondersteunen |
-| \`/isolatie/\` | Hub / advies | Thermische schil, comfort, kostenbandbreedte |
-| \`/energiecontract/\` | Hub / keuze | Vast/variabel/dynamisch, terugleverkosten en nuance |
-| \`/combinaties/\` | Tooluitleg / vergelijking | PV + batterij, isolatie + warmtepomp, synergie en voorwaarden |
-| \`/kennis/…\` | Onderliggende verdieping | De bestaande vier pagina's uitbreiden of intelligent hergebruiken zonder duplicatie |
-| \`/rekenmodel.html\` | Vertrouwen/methodiek | Claims, aannames, bronnen, actualisatie en beperkingen |
+| `/` | Tool, energiehuis | Direct situatie simuleren |
+| `/zonnepanelen/` | Hub / oriëntatie | Geschiktheid, investering, zelfverbruik, saldering, rekenvoorbeeld |
+| `/thuisbatterij/` | Hub / overweging | Wanneer wel/niet nuttig, capaciteit, verliezen, afhankelijkheid |
+| `/warmtepomp/` | Hub / vergelijking | Isolatie, verbruik, hybride versus volledig elektrisch — alleen als model dit kan ondersteunen |
+| `/isolatie/` | Hub / advies | Thermische schil, comfort, kostenbandbreedte |
+| `/energiecontract/` | Hub / keuze | Vast/variabel/dynamisch, terugleverkosten en nuance |
+| `/combinaties/` | Tooluitleg / vergelijking | PV + batterij, isolatie + warmtepomp, synergie en voorwaarden |
+| `/kennis/…` | Onderliggende verdieping | De bestaande vier pagina's uitbreiden of intelligent hergebruiken zonder duplicatie |
+| `/rekenmodel.html` | Vertrouwen/methodiek | Claims, aannames, bronnen, actualisatie en beperkingen |
 
 Een eindbesluit over slugs, redirects, taxonomie en prioriteit volgt uit de audit. Maak geen twee pagina's voor vrijwel identieke intenties. Nieuwe regelingen/financiering alleen met officiële bronnen; waar WattGoedkoper naast een ander merk/domein zoals SubsidieReady bestaat, voorkom ongeautoriseerd kopiëren of cannibalisatie.
 
@@ -68,8 +68,8 @@ Elke belangrijke pagina moet waar relevant bevatten:
 - Unieke titel/H1, juiste canonieke URL, meta description, indexability, OG-image, mobiele presentatie, juiste taal en toegankelijke koppenstructuur.
 
 ### Technische SEO
-- Behoud de huidige lichte, semantische pagina's; verbeter \`scripts/build-content.py\` tot data-/templategedreven contentgenerator met publicatievalidatie.
-- Automatiseer sitemap op basis van **werkelijk gepubliceerde** pagina's en juiste \`lastmod\` (nu hardcoded \`2026-11-14\`), geen dummy-datums of indexatie van previews.
+- Behoud de huidige lichte, semantische pagina's; verbeter `scripts/build-content.py` tot data-/templategedreven contentgenerator met publicatievalidatie.
+- Automatiseer sitemap op basis van **werkelijk gepubliceerde** pagina's en juiste `lastmod` (nu hardcoded `2026-11-14`), geen dummy-datums of indexatie van previews.
 - Validatie vóór elke PR: canonical/URL uniqueness, interne links 200, H1-hygiëne, metadata, responsive CLS, JSON-LD, afbeeldingen met betekenisvol alt, robots/noindex, toegankelijkheid en redactioneel bewijs.
 - Overweeg aanvullende schema-markup alleen als inhoud de entiteiten en feiten ondersteunt (Organization/WebSite/WebPage/BreadcrumbList/FAQ waar passend). Geen review-/productclaims uit de lucht.
 
@@ -79,7 +79,7 @@ Elke belangrijke pagina moet waar relevant bevatten:
 
 De route die de agent moet bouwen en daadwerkelijk testen:
 
-\`Zoekintentie / zoekmachine → inhoud met actuele context → kies wat voor jouw huis relevant is → bestaande energiehuis met passende (niet-persoonlijke) beginsituatie → varianten en Plan Studio → optioneel rapport of NIVO-advies\`
+`Zoekintentie / zoekmachine → inhoud met actuele context → kies wat voor jouw huis relevant is → bestaande energiehuis met passende (niet-persoonlijke) beginsituatie → varianten en Plan Studio → optioneel rapport of NIVO-advies`
 
 - Deep-link/API-interface mag pas worden vastgelegd na security/validatie: geen persoonsgegevens/vertrouwelijke scenario's in URL's of onbedoeld gelogde querystrings. Een queryparameter mag geen rapport verzenden, advieslead aanmaken of andere onomkeerbare handeling triggeren.
 - Behoud de vijf huidige maatregelen en mogelijkheid om een ongeschikte of negatieve uitkomst eerlijk te laten zien.
@@ -109,12 +109,12 @@ De route die de agent moet bouwen en daadwerkelijk testen:
 | Guardrail | Consent-incidenten / ongewenste opvolging | Aantal meldingen, correcte audit, nooit mail-only → CRM | Nul tolerantie voor doelbewuste ongeautoriseerde opvolging |
 | Guardrail | Model/UX-betrouwbaarheid | Geen rekenregressies, broncontrole, geautomatiseerde browser-/foutmetingen | Geen fictieve nauwkeurigheid uit één voorbeeld |
 
-Niet zomaar \`lead_accepted/scan_complete\` als universele conversie presenteren: opt-in events, meerdere sessies en ontbrekende events vertekenen de noemer. Stel per KPI vast wie meet, wanneer gecheckt wordt en welke beslissing het resultaat stuurt. Gebruik vóór het stellen van doelen daadwerkelijk gemeten baselines, of label voorlopige doelen als hypotheses.
+Niet zomaar `lead_accepted/scan_complete` als universele conversie presenteren: opt-in events, meerdere sessies en ontbrekende events vertekenen de noemer. Stel per KPI vast wie meet, wanneer gecheckt wordt en welke beslissing het resultaat stuurt. Gebruik vóór het stellen van doelen daadwerkelijk gemeten baselines, of label voorlopige doelen als hypotheses.
 
 ## Delivery-fasen en gates
 
 ### Gate 0 — Analyse
-Werkelijke \`main\`, site/deploystatus, juridische/privacy-verantwoordelijkheid, zoek-/contentbaseline. Geen productiegegevens aanraken.
+Werkelijke `main`, site/deploystatus, juridische/privacy-verantwoordelijkheid, zoek-/contentbaseline. Geen productiegegevens aanraken.
 
 ### Gate 1 — SEO-fundament
 Informatiekaart en contenttemplate; canonicals, sitemap, interne links, contentbronnen en technische kwaliteit. PR met screenshots en tests.
@@ -130,8 +130,8 @@ Search Console + app-kwaliteitsmetingen vergelijken met eerste baseline; tweede 
 
 ## Gewenste volgende sprint (uitvoerbaar zonder nieuwe eigenaarsvragen)
 
-1. Maak audit \`docs/SEO-PRODUCT-BASELINE.md\` met feiten, onzekerheden en security/crawlissues.
-2. Ontwerp goed onderbouwde route-/onderwerpmatrix \`docs/SEO-INFORMATION-ARCHITECTURE.md\`; leg prioriteiten vast.
+1. Maak audit `docs/SEO-PRODUCT-BASELINE.md` met feiten, onzekerheden en security/crawlissues.
+2. Ontwerp goed onderbouwde route-/onderwerpmatrix `docs/SEO-INFORMATION-ARCHITECTURE.md`; leg prioriteiten vast.
 3. Kies één cluster (voorlopig logisch: zonnepanelen en thuisbatterij, mits zoekintentie en inhoud dit bevestigen) en bouw herbruikbare pagina-template + gekoppelde actuele uitleg.
 4. Voeg diepere interne links/CTA's naar rekenhuis toe en valideer dat de scenario-instellingen niet misleidend of privacygevoelig zijn.
 5. Update generator, metadata, sitemap en geautomatiseerde SEO-/browserchecks.
