@@ -13,25 +13,27 @@ Het dashboard bevat gemeten starts, voltooide scans, adviesinteresse, opgeslagen
 - Een schrijfbare privémappenstructuur buiten de documentroot (`public_html`).
 - Root `.htaccess` actief op Apache/LiteSpeed. Blokkeer bij andere servers de mappen `lib`, `scripts`, `tests`, `docs`, dotfiles en configuratie/back-upbestanden ook in de serverconfiguratie.
 
-De code gebruikt geen Composer- of JavaScript-pakketten voor de backend. SQLite past bij een eerste kleinschalige consumentenwebsite en één beheerwerkplek. Bij groei of meerdere gelijktijdige beheerders hoort een MySQL/PostgreSQL-migratie, gebruikersrollen en MFA bij de volgende operationele stap.
+De code heeft geen Composer- of JavaScript-pakketten nodig voor de backend. De nieuwe WattGoedkoper Hostinger-website gebruikt **MySQL** via PDO. SQLite blijft ondersteund voor bestaande installaties en tests. Gebruikersrollen en MFA zijn aanvullende veiligheidsstappen zodra meerdere beheerders toegang krijgen.
 
 ## Eerste serverinstallatie
 
-Ga in een SSH-sessie naar de Git-deployment/documentroot en voer uit:
+Voor de nieuwe, aan wattgoedkoper.nl gekoppelde Hostinger MySQL-database is het juiste commando:
 
 ```bash
-php scripts/setup.php --origin=https://wattgoedkoper.nl --username=gekozen-beheernaam
+php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=gekozen-beheernaam
 ```
+
+Zie [de volledige MySQL-instructies](HOSTINGER-MYSQL.md). Het oude `scripts/setup.php` is uitsluitend voor SQLite-installaties; draai deze twee scripts niet allebei.
 
 Het script vraagt het wachtwoord via standaardinvoer. Gebruik een uniek wachtwoord van minstens 14 tekens. Zet het wachtwoord nooit in de commandoregel, GitHub, een issue of chat. In een terminal wordt de invoer verborgen. Er zijn geen standaardinloggegevens.
 
-Standaard maakt het script `../wattgoedkoper-private/` buiten de documentroot. De configuratie bevat alleen de wachtwoordhash, twee willekeurige serversleutels, de canonieke origin en de bewaartermijn. De database en PHP-sessies staan in diezelfde private map. De setup weigert bestaande configuratie te overschrijven of private bestanden onder de documentroot op te slaan.
+De MySQL-installer vraagt de database- en gebruikersnaam en de twee wachtwoorden via een interactieve SSH-terminal. Standaard maakt het script `../wattgoedkoper-private/` buiten de documentroot. De configuratie bevat alleen de wachtwoordhash, twee willekeurige serversleutels, de canonieke origin en de bewaartermijn. PHP-sessies en de geheime configuratie staan in diezelfde private map; bij MySQL worden de applicatietabellen in de aparte Hostinger-database aangemaakt. De setup weigert bestaande configuratie te overschrijven of private bestanden onder de documentroot op te slaan.
 
 Een afwijkend pad kan via `--private-dir=/absoluut/privepad`. Stel dan dezelfde `WG_PRIVATE_DIR`-omgevingsvariabele in voor PHP-webverzoeken, de CLI en het onderhoud. Gebruik bij Hostinger bij voorkeur het standaardpad; dan is geen omgevingsvariabele nodig.
 
 Verifieer na inrichting:
 
-1. `/api/index.php?action=health` geeft `configured:true`.
+1. `/api/index.php?action=health` geeft `configured:true` én `databaseReady:true`.
 2. `/admin/` accepteert het ingestelde account.
 3. Dien één duidelijk herkenbare eigen testaanvraag in en controleer de ontvangst in het dashboard; verwijder die vervolgens.
 4. Verifieer dat `/.git/config`, `/lib/bootstrap.php`, `/scripts/setup.php`, `/docs/` en backup/configbestanden niet publiek bereikbaar zijn.
@@ -51,7 +53,7 @@ Voer het nieuwe wachtwoord via standaardinvoer in. Bestaande beheersessies worde
 
 | Gegevens | Opslag | Termijn |
 | --- | --- | --- |
-| Naam, e-mail, telefoon, postcode, toelichting, meegestuurde scan en toestemmingsbewijs | AES-256-GCM versleutelde payload in private SQLite | Standaard 90 dagen |
+| Naam, e-mail, telefoon, postcode, toelichting, meegestuurde scan en toestemmingsbewijs | AES-256-GCM versleutelde payload in aparte MySQL (SQLite voor bestaande installaties) | Standaard 90 dagen |
 | Aanvraagcode, status, gekozen partner, aanmaakdatum en HMAC-deduplicatie | Private SQLite; nodig voor triage/idempotentie | Met de aanvraag, 90 dagen |
 | Anti-misbruikvensters | HMAC van IP/scope/tijdvenster; geen raw IP, user-agent of fingerprint | Maximaal circa 48 uur vóór dagelijkse opruiming |
 | Geaggregeerde events per dag | Alleen datum, eventnaam, aantal; uitsluitend na toestemming | 400 dagen |
@@ -67,7 +69,7 @@ php /absoluut/pad/naar/public_html/scripts/maintenance.php
 
 De onderhoudstaak verwijdert oude aanvragen en oude counters/rate-limitvensters en truncates de SQLite WAL. Het script print uitsluitend het aantal verwijderde aanvragen. Het maakt geen externe verbindingen.
 
-**Back-ups:** kopieer database én configuratie via een beveiligde backupstrategie buiten Git. Een recente SQLite `.backup` of een snapshot na checkpoint verdient de voorkeur boven losse kopieën van een actieve database. De bewaartermijn geldt ook voor back-ups. Een direct in het dashboard verwijderde aanvraag verdwijnt niet automatisch uit oudere back-ups; leg de backuprotatie en herstelprocedure vast.
+**Back-ups:** kopieer de MySQL-database én de private configuratie inclusief encryptiesleutel via een beveiligde backupstrategie buiten Git. Voor MySQL maak je een consistente database-export; voor bestaande SQLite-installaties verdient `.backup` of een snapshot na checkpoint de voorkeur boven losse kopieën van een actieve database. De bewaartermijn geldt ook voor back-ups. Een direct in het dashboard verwijderde aanvraag verdwijnt niet automatisch uit oudere back-ups; leg de backuprotatie en herstelprocedure vast.
 
 ## Toestemming & analytics
 
