@@ -1,14 +1,15 @@
 # WattGoedkoper — agentregels en projectstatus
 
-**Huidige fase:** v0.7 energiehuis + Plan Studio + branding **afgesloten** op 14 november 2026. Volgende ontwikkelfase: compleet consumentenplatform, SEO-informatiearchitectuur, hoogwaardige landingspagina's en privacyvriendelijke NIVO-leadgeneratie.
+**Huidige fase (14 november 2026):** v0.8 SEO-/productcluster **afgesloten en via PR #20 gemerged** op `main` (`5d5dac9`); rekenkern, Plan Studio, NIVO-only advies en eerste SEO-cluster blijven bewaard. Nieuwe opdracht: afronden tot een **zelfstandig werkend SEO- en NIVO-leadplatform**, met een compact eigen dashboard en een toekomstige gecontroleerde NIVO Portal-koppeling. **Uitvoeringsplan: `docs/FINISHLINE-AUTONOMOUS-PLATFORM-V09.md`, issues #21–#26, regie #14.**
 
 ## Leesvolgorde vóór nieuwe werkzaamheden
 
-1. `docs/HANDOFF-FULL-PRODUCT-2026-11-14.md` — feitelijke status, beslissingen, tests, operatierisico's.
-2. `docs/ROADMAP-SEO-PRODUCT-LEADGEN.md` — productsamenhang en gefaseerde nieuwe roadmap.
-3. `docs/START-PROMPT-NEXT-AGENT.md` — volledige overdrachtsopdracht.
-4. `docs/PLAN-STUDIO.md`, `docs/HOME-COCKPIT-V06.md`, `docs/BRAND-AND-HERO-V07.md`, `docs/RELEASE-V05.md`.
-5. `docs/frontend-contract.md`, `docs/backend.md` en daarna de actuele broncode.
+1. `docs/FINISHLINE-AUTONOMOUS-PLATFORM-V09.md` — leidend afgerond uitvoeringsplan, P0/P1, operationele en NIVO-leveringsgates.
+2. `docs/HANDOFF-FULL-PRODUCT-2026-11-14.md` — eerdere basis, beslissingen, tests, operatierisico's.
+3. `docs/ROADMAP-SEO-PRODUCT-LEADGEN.md` — productsamenhang en gefaseerde nieuwe roadmap.
+4. `docs/START-PROMPT-NEXT-AGENT.md` — volledige overdrachtsopdracht.
+5. `docs/PLAN-STUDIO.md`, `docs/HOME-COCKPIT-V06.md`, `docs/BRAND-AND-HERO-V07.md`, `docs/RELEASE-V05.md`.
+6. `docs/frontend-contract.md`, `docs/backend.md` en daarna de actuele broncode.
 
 **Geldigheid:** actuele eigenaarsbesluiten + werkelijk actuele `main` + nieuwste documenten hebben voorrang boven oudere v0.1–v0.4 documenten en de historische PDF's. Die PDF's beschrijven een oud WordPress- en drie-offerte-/€100-bonus-/multi-partnermodel. Bouw dat **niet** opnieuw zonder expliciet nieuw eigenaarsbesluit.
 
@@ -42,7 +43,18 @@
 - Geen nieuwe betaalde diensten of hostingupgrades zonder akkoord.
 - Beoordeel externe pagina's/URLs en SEO-regelgeving actueel; rapporteer onbevestigde feiten expliciet.
 
-## Volgende ontwikkelwerkstroom
+## Definitieve afrondingswerkstroom (v0.9)
+
+- **P0 #21:** live/productiehardening, mail en MySQL-geschikte onderhoudscron met herstelbewijs.
+- **P0 #22:** bestaand `/admin/` compact en duidelijk maken; alle leads, afleverstatus, stats, SEO en tools op één plek.
+- **P0 #23:** server-to-server NIVO-afleveradapter met veilige outbox, idempotente ACK, retries en aparte Portal-activatiegate.
+- **P1 #24:** hoogwaardige SEO-content en optionele consumenten-CTA's verbeteren, geen AI-massapublicaties.
+- **P0 #25:** automatisch onderhoud, monitoren en alleen actiegerichte alerts.
+- **P0 #26:** eindacceptatie inclusief echte NIVO-ontvangst, herstel, a11y en privacyguards; NIVO-CRM opvolging buiten scope.
+- **Niet blokkeren met #3:** optionele consumentenaccounts vallen buiten de noodzakelijke finish line.
+- **Geen nieuwe externe NIVO-datastroom** voordat bestemming, privacy en beveiliging door eigenaar en NIVO zijn goedgekeurd.
+
+## Eerdere bredere ontwikkelwerkstroom (historie)
 
 - #14 NEXT — compleet SEO- en leadgeneratieproduct.
 - #15 nulmeting/crawl/privacy/deploy-audit.
