@@ -89,4 +89,4 @@ try {
     @unlink($private.'/config.php');
     @rmdir($private);
 }
-echo "MySQL backend integration and maintenance CLI: passed\\n";
+echo "MySQL backend integration and maintenance CLI: passed\n";
