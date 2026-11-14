@@ -9,7 +9,7 @@
 @media (min-width: 1101px) {
   .playground-page {
     --cockpit-header: 68px;
-    --cockpit-intro: clamp(112px, 15.6dvh, 144px);
+    --cockpit-intro: clamp(126px, 15.6dvh, 144px);
     --cockpit-main: clamp(340px, calc(100dvh - var(--cockpit-header) - var(--cockpit-intro) - 184px), 470px);
     --cockpit-tile: clamp(108px, 15dvh, 128px);
   }
@@ -31,11 +31,12 @@
     line-height: .96;
     letter-spacing: -1.35px;
   }
-  .playground-page .app-intro p {
-    font-size: 11px;
-    line-height: 1.45;
-    margin-top: 8px;
-    max-width: 360px;
+  /* The title already explains the experience: avoid a paragraph crossing the
+     top border of the controls on shorter desktop viewports. */
+  .playground-page .app-intro p { display: none; }
+  .playground-page .app-intro h1 > span::after {
+    height: 4px;
+    bottom: 3px;
   }
   .playground-page .intro-note { display: none; }
   .playground-page .intro-actions { top: 11px; right: 0; }
