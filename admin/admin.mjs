@@ -2,6 +2,8 @@ const $ = (s, root = document) => root.querySelector(s);
 const apiBase = '/api/index.php?action=';
 const state = {csrf:null, leads:[], total:0, offset:0, status:'', search:'', current:null};
 const statusNames = {new:'Nieuw',contacted:'Benaderd',qualified:'In gesprek',closed:'Afgerond'};
+const deliveryNames = {pending:'In wachtrij',processing:'Aflevering bezig',acknowledged:'Bevestigd',failed:'Afleverfout'};
+function deliveryName(delivery) { return delivery?.status?(deliveryNames[delivery.status]||'Onbekend'):'Historisch / onbekend'; }
 const partners = {nivo:'NIVO Groep Holland',tbt:'Thuisbatterij Team',either:'NIVO + Thuisbatterij Team'};
 const interests = {solar:'Zonnepanelen',battery:'Thuisbatterij',heatpump:'Warmtepomp',insulation:'Isolatie',contract:'Energiecontract',planning:'Energieplan'};
 const inputNames = {homeType:'Woningtype',ownership:'Eigendom',people:'Personen',buildPeriod:'Bouwperiode',area:'Oppervlakte (m²)',insulation:'Isolatie',daytime:'Aanwezig overdag',usageKnown:'Verbruik bekend',electricityUse:'Stroomverbruik (kWh/jaar)',gasUse:'Gasverbruik (m³/jaar)',hasGas:'Gasaansluiting',inputMode:'Soort invoer',gridImport:'Netafname (kWh)',gridExport:'Teruglevering (kWh)',hasSolar:'Zonnepanelen',panels:'Aantal panelen',pvProduction:'Zonnestroom (kWh)',roofAvailable:'Dak beschikbaar',roofOrientation:'Dakrichting',roofShade:'Schaduw',hasBattery:'Batterij aanwezig',batteryCapacity:'Batterijcapaciteit (kWh)',hasHeatPump:'Warmtepomp aanwezig',hasEv:'Elektrische auto',contractType:'Contract',electricityPrice:'Stroomprijs (€/kWh)',gasPrice:'Gasprijs (€/m³)',feedInPrice:'Terugleververgoeding (€/kWh)',feedInCost:'Terugleverkosten (€/kWh)',feedInCostMode:'Berekening terugleverkosten',feedInAnnualCost:'Jaarlijkse terugleverkosten',budget:'Budget (€)',goal:'Hoofddoel',year:'Rekenjaar',solarInvestment:'Investering zonnepanelen (€)',batteryInvestment:'Investering batterij (€)',alternativeElectricityPrice:'Alternatieve stroomprijs',alternativeGasPrice:'Alternatieve gasprijs',alternativeFeedInPrice:'Alternatieve terugleververgoeding',alternativeFeedInCost:'Alternatieve terugleverkosten',alternativeFixedDifference:'Verschil vaste kosten (€)',insulationInvestment:'Investering isolatie (€)',heatPumpInvestment:'Investering warmtepomp (€)',alternativeFeedInCostMode:'Berekening alternatieve terugleverkosten',alternativeFeedInAnnualCost:'Alternatieve jaarlijkse terugleverkosten'};
@@ -103,7 +105,23 @@ function renderStats(data) {
     statCard('Adviesaanvragen · 30 dagen',count(data.leadCount),'Servergeaccepteerd, ongeacht meettoestemming'),
     statCard('Nieuwe aanvragen',count(newLeads),'Nog nieuw · volledige bewaartermijn'),
     statCard('Voltooide scans · 30 dagen',count(t.scan_complete),'Opt-in gebeurtenissen, geen personen'),
-    statCard('Technisch afgeleverd','Onbekend','NIVO-transport nog niet aangesloten'));
+    statCard('Technisch afgeleverd',data.delivery?count(data.delivery.acknowledged):'—',
+      data.delivery?'Met geldig technisch ontvangstbewijs':'NIVO-outbox nog niet aangesloten'));
+  const d=data.delivery;
+  if(d&&typeof d==='object'){
+    const waiting=Number(d.pending||0)+Number(d.processing||0);
+    const failed=Number(d.failed||0),ack=Number(d.acknowledged||0);
+    $('#overview-delivery-state').textContent=failed?count(failed)+' afleverfout'+(failed===1?'':'en'):
+      data.deliveryConfigured===true?count(ack)+' bevestigd · '+count(waiting)+' in wachtrij':count(waiting)+' in wachtrij · uit';
+    $('#tools-delivery').textContent=
+      (data.deliveryConfigured===true?'Transport geconfigureerd':'Transport uitgeschakeld')+
+      ' · '+count(waiting)+' wachtend · '+count(ack)+' bevestigd · '+count(failed)+' fout';
+    $('#delivery-summary').textContent=count(waiting)+' in wachtrij · '+count(ack)+' technisch bevestigd · '+count(failed)+' fout. Alleen bevestigde ontvangsten tellen als afgeleverd.';
+  }else{
+    $('#overview-delivery-state').textContent='Nog geen afleverstatus beschikbaar';
+    $('#tools-delivery').textContent='Outbox niet beschikbaar; NIVO-ontvangst niet bewezen';
+    $('#delivery-summary').textContent='Technische afleverstatus is nog niet beschikbaar op deze backendversie.';
+  }
   $('#funnel').replaceChildren(...[['scan_start','Scans gestart'],['scan_complete','Plannen bekeken'],['advice_open','Adviesformulier geopend'],['lead_accepted','Aanvragen opgeslagen']].map(([key,label])=>{const step=el('div','funnel-step');step.append(el('strong','',count(t[key])),el('span','',label));return step;}));
   $('#retention').textContent=`Aanvragen worden na ${data.retentionDays} dagen verwijderd. Exporteer alleen wat je nodig hebt en bewaar exports veilig. De grafiek telt gebeurtenissen, geen unieke bezoekers.`;
   renderOperationalStats(data);
@@ -114,12 +132,14 @@ function renderLeads(data) {
   const search=state.search.trim().toLocaleLowerCase('nl-NL');
   const visible=search?data.leads.filter(lead=>[lead.id,lead.data.name,lead.data.email,lead.data.phone,lead.data.postcode].some(value=>String(value||'').toLocaleLowerCase('nl-NL').includes(search))):data.leads;
   $('#lead-search-note').textContent=search?`${visible.length} van ${data.leads.length} geladen aanvragen op deze pagina gevonden. Andere pagina's zijn niet doorzocht.`:'Zoeken filtert alleen de maximaal 50 geladen aanvragen op deze pagina.';
-  if(!visible.length) { const row=el('tr');const cell=el('td','empty',search?'Geen matches op deze pagina.':state.status?'Er zijn geen aanvragen met deze status.':'Nog geen aanvragen. Nieuwe adviesaanvragen verschijnen hier zodra iemand het formulier verstuurt.');cell.colSpan=6;row.append(cell);body.append(row); }
+  if(!visible.length) { const row=el('tr');const cell=el('td','empty',search?'Geen matches op deze pagina.':state.status?'Er zijn geen aanvragen met deze status.':'Nog geen aanvragen. Nieuwe adviesaanvragen verschijnen hier zodra iemand het formulier verstuurt.');cell.colSpan=7;row.append(cell);body.append(row); }
   for(const lead of visible) {
     const row=el('tr');const person=el('td');person.append(el('strong','',lead.data.name),el('small','',lead.data.email||lead.data.phone));
     const interest=el('td');interest.append(el('span','tag',lead.data.interests.map(x=>interests[x]||x).join(', ')||'Energieplan'));
     const partner=el('td','',partners[lead.partner]||lead.partner);const received=el('td','',date(lead.createdAt));const status=el('td');status.append(el('span','tag '+lead.status,statusNames[lead.status]));
-    const open=el('td');const button=el('button','text-button','Bekijk →');button.type='button';button.setAttribute('aria-label','Bekijk aanvraag van '+lead.data.name);button.addEventListener('click',()=>showDetail(lead));open.append(button);row.append(person,interest,partner,received,status,open);body.append(row);
+    const delivery=el('td');
+    delivery.append(el('span','tag wg2-delivery-status '+(lead.delivery?.status||'legacy'),deliveryName(lead.delivery)));
+    const open=el('td');const button=el('button','text-button','Bekijk →');button.type='button';button.setAttribute('aria-label','Bekijk aanvraag van '+lead.data.name);button.addEventListener('click',()=>showDetail(lead));open.append(button);row.append(person,interest,partner,received,status,delivery,open);body.append(row);
   }
   $('#previous').disabled=state.offset===0;$('#next').disabled=state.offset+50>=state.total;
   $('#page-label').textContent=state.total?`${state.offset+1}–${Math.min(state.offset+50,state.total)} van ${state.total}`:'0 aanvragen';
@@ -193,6 +213,15 @@ function showDetail(lead) {
   if(d.note)consentBody.append(el('p','small','Volledige toelichting: '+d.note));
   consent.append(consentBody);
   extras.append(scan,consent);root.append(extras);
+  if(lead.delivery){
+    const deliveryCard=el('section','wg2-delivery-detail');
+    deliveryCard.append(el('strong','','NIVO-aflevering: '+deliveryName(lead.delivery)));
+    const note=lead.delivery.status==='acknowledged'?
+      'Ontvangstbewijs: '+(lead.delivery.reference||'Niet beschikbaar'):
+      'Pogingen: '+count(lead.delivery.attempts)+' · Laatste foutcode: '+(lead.delivery.errorCode||'geen');
+    deliveryCard.append(el('span','',note));
+    root.append(deliveryCard);
+  }
   const actions=el('footer','detail-v05-actions');
   const emailClient=el('button','outline-button','Mail klant ↗');
   emailClient.type='button';emailClient.disabled=!d.email;
@@ -212,6 +241,20 @@ function showDetail(lead) {
       message('Status bijgewerkt.',true);await refresh();}
     catch(error){message(error.message);}finally{save.disabled=false;}
   });
+  if(lead.delivery?.status==='failed'){
+    const retry=el('button','outline-button','Aflevering opnieuw proberen');
+    retry.type='button';
+    retry.addEventListener('click',async()=>{
+      retry.disabled=true;
+      try{
+        await api('admin_delivery_retry',{id:lead.id});
+        $('#lead-dialog').close();
+        await refresh();
+        message('Mislukte levering opnieuw ingepland. Dit bevestigt nog geen ontvangst.',true);
+      }catch(error){message(error.message);retry.disabled=false;}
+    });
+    actions.append(retry);
+  }
   const remove=el('button','text-button danger','Verwijderen');
   remove.type='button';
   remove.addEventListener('click',()=>{
