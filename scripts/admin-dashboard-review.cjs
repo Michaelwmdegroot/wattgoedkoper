@@ -35,6 +35,11 @@ function responseFor(action){
   if(action==='health')return {ok:true,configured:true,databaseReady:true};
   if(action==='admin_stats')return stats;
   if(action==='admin_leads')return {ok:true,leads:[lead],total:1,offset:0,limit:50};
+  if(action==='admin_operations')return {ok:true,
+    cron:{monitorEnabled:true,status:'fresh',lastSuccessAt:'2026-11-14T22:00:00Z',lastStartAt:'2026-11-14T22:00:00Z',ageSeconds:120,maxAgeSeconds:1800},
+    delivery:{pending:1,processing:0,acknowledged:0,failed:0},transportConfigured:false,
+    editorial:{status:'recently_checked',checkedOn:'2026-11-14',ageDays:1},
+    seo:{sitemapOnDisk:true,robotsOnDisk:true},backup:{status:'not_verified',lastVerifiedAt:null},warnings:[]};
   if(action==='admin_mail_status')return {ok:true,configured:false,imapAvailable:false,sendAvailable:false};
   if(action==='admin_mail_list')return {ok:true,messages:[]};
   return {ok:false,error:{message:'No synthetic response for '+action}};
@@ -81,6 +86,9 @@ async function mockApi(page){
     await page.locator('#tools-api').filter({hasText:'Database bereikbaar'}).waitFor();
     check(vp.width+' no unverified delivery promise',(await page.locator('#tools-delivery').innerText()).includes('Transport uitgeschakeld'));
     check(vp.width+' stored delivery states are correctly reconciled',(await page.locator('#tools-delivery').innerText()).includes('1 wachtend'));
+    await page.locator('#tools-cron').filter({hasText:'Laatste geslaagde tick'}).waitFor();
+    check(vp.width+' no invented backup success',(await page.locator('#tools-backup').innerText()).includes('Niet onafhankelijk geverifieerd'));
+    check(vp.width+' real content check date shown',(await page.locator('#tools-source').innerText()).includes('2026-11-14'));
     await screenshot(page,'wg2-tools-'+vp.width);
     const widths=await page.evaluate(()=>({document:document.documentElement.scrollWidth,viewport:innerWidth}));
     check(vp.width+' no horizontal viewport overflow',widths.document<=widths.viewport+2);
