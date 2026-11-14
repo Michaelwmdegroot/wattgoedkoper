@@ -1,41 +1,54 @@
-# WattGoedkoper
+# WattGoedkoper — agentregels en projectstatus
 
-Dutch consumer energy planning tool and lead generation for NIVO Groep Holland and Thuisbatterij Team.
+**Huidige fase:** v0.7 energiehuis + Plan Studio + branding **afgesloten** op 14 november 2026. Volgende ontwikkelfase: compleet consumentenplatform, SEO-informatiearchitectuur, hoogwaardige landingspagina's en privacyvriendelijke NIVO-leadgeneratie.
 
-## Product rules
-- Show the full useful calculation without requiring contact details. Advice requests are optional and consent is explicit.
-- Declare the commercial relationship. Never claim independence, guaranteed return, live supplier prices, certified audit or live meter data without evidence.
-- Use documented deterministic calculations with editable assumptions, uncertainty ranges and primary source URLs. Distinguish household use, grid import, PV production and export.
-- Scenarios must not double count savings. 2026 saldering and 2027 onward are separate models.
-- Personal information is submitted only by explicit advice request. No trackers or third party marketing scripts. Use aggregate events only after optional analytics consent.
-- No secrets or real customer data in Git, build output, logs or frontend. Backend fails closed before secure setup.
-- Admin mail is optional, server-only, read-only IMAP and explicit human SMTP send. Never embed passwords in client code or Git. Keep wattgoedkoper.nl and zonlio.nl separated; do not use the Hostinger MySQL DB linked to zonlio.nl without verification.
+## Leesvolgorde vóór nieuwe werkzaamheden
 
-## Architecture
-- Plain HTML/CSS/ES modules at the repository root for direct PHP/static Hostinger Git deployment.
-- PHP 8.2+ backend, PDO MySQL on new Hostinger production database or legacy PDO SQLite; private config and keys always outside web root.
-- Node built-in tests for calculation engine. PHP integration tests for lead storage and access control. Browser smoke test for desktop/mobile, keyboard and interactive house flow.
-- Main is the intended deployment branch. No force pushes. Avoid editing another contributor's files.
+1. `docs/HANDOFF-FULL-PRODUCT-2026-11-14.md` — feitelijke status, beslissingen, tests, operatierisico's.
+2. `docs/ROADMAP-SEO-PRODUCT-LEADGEN.md` — productsamenhang en gefaseerde nieuwe roadmap.
+3. `docs/START-PROMPT-NEXT-AGENT.md` — volledige overdrachtsopdracht.
+4. `docs/PLAN-STUDIO.md`, `docs/HOME-COCKPIT-V06.md`, `docs/BRAND-AND-HERO-V07.md`, `docs/RELEASE-V05.md`.
+5. `docs/frontend-contract.md`, `docs/backend.md` en daarna de actuele broncode.
 
-## Interactive product rules
-- The home is immediately usable; do not restore a sequential questionnaire as the main experience.
-- Existing equipment is distinct from proposed upgrades. Day/night is illustrative only.
-- Free scenario selections may exceed budget or lose money; show those outcomes, never silently optimize away a manual choice.
-- Keep click/touch/keyboard alternatives to drag and drop and preserve undo.
+**Geldigheid:** actuele eigenaarsbesluiten + werkelijk actuele `main` + nieuwste documenten hebben voorrang boven oudere v0.1–v0.4 documenten en de historische PDF's. Die PDF's beschrijven een oud WordPress- en drie-offerte-/€100-bonus-/multi-partnermodel. Bouw dat **niet** opnieuw zonder expliciet nieuw eigenaarsbesluit.
 
-## Work split
-- Root: assets/model.mjs, tests/model.test.mjs, source registry, project/deploy docs and integration.
-- Frontend contributor: index.html, assets/app.mjs, assets/styles.css, assets visual files.
-- Backend contributor: api/, lib/, admin/, scripts/ backend setup, tests/backend* and dev router.
+## Productregels
 
-## Handoff / next workstream — 14 November 2026
+- De homepage is een **premium interactief energiehuis**; geen geforceerde meerstappenquiz of contactformulier als uitgangspunt.
+- Volledige bruikbare berekening en scenario's **gratis zonder account of verplicht contact**. Opslaan op eigen apparaat, undo, touch/keyboard en het gebruik zonder tracking blijven mogelijk.
+- De bezoeker kan vijf maatregelen selecteren: slim gebruik, isolatie, zonnepanelen, hybride warmtepomp en thuisbatterij. Bestaande installaties zijn **niet** hetzelfde als nieuw geselecteerde stappen.
+- De Plan Studio toont eerlijke combinaties en onzekerheidsbandbreedtes. De deterministische rekenkern telt geen marginale effecten op; 2026 en 2027 zijn afzonderlijke scenariojaren. Negatieve besparingen, budgetoverschrijdingen en ongeschikte maatregelen blijven zichtbaar.
+- Day/night is visueel, geen uurprognose. Variabele energiekosten zijn niet de hele factuur; tarieven en investeringen zijn voorbeelden, geen leveranciersoffertes.
+- Claim nooit onafhankelijkheid, gegarandeerde terugverdientijd, actuele prijzen, overheidserkenning, subsidie, fiscale voordelen, meterdata of bewezen installatieprestaties zonder controleerbaar actueel bewijs.
+- Nieuwe **adviesleads gaan uitsluitend naar NIVO Groep Holland**; geen NIVO/TBT/beide keuze. Consent `2026-11-v2` expliciet, ongevinkt, server-side afgedwongen. Historische records/toestemming blijven intact.
+- Alleen een **energieplan per e-mail** aanvragen is **geen commerciële consent**, marketingopt-in of advieslead. Statistiekentoestemming is afzonderlijk. Publieke `report_email` is **default OFF** totdat Hostinger `info@wattgoedkoper.nl` privé is geconfigureerd én echte zelfgeadresseerde bezorging is geverifieerd.
+- Alleen geaggregeerde app-events bij opt-in; deze zijn geen unieke bezoekers of complete user journeys. Geen ongeoorloofde externe tracking, scripts of verborgen gegevensoverdracht.
+- Geldende privacy- en reclameverplichtingen voor de exploitant moeten vóór nieuwe commerciële features en claims worden geverifieerd; tekst met ontwikkelvoorbehoud niet stilzwijgend als juridisch voldongen feit behandelen.
 
-- Read [docs/HANDOFF-2026-11-14-GPT6PRO.md](docs/HANDOFF-2026-11-14-GPT6PRO.md) and [docs/UX-LEAD-FUNNEL-V05.md](docs/UX-LEAD-FUNNEL-V05.md) before coding. The project is LIVE with a confirmed MySQL lead test; do not reinitialize database, rotate encryption keys, or copy real data.
-- Owner decision for new advice requests: **NIVO Groep Holland only**. Remove partner selector in UI AND enforce server-side routing; keep historical partner records intact.
-- A **transactional report email** requested by a visitor does NOT grant consent for NIVO contact, CRM processing or marketing. Keep advice consent and analytics opt-in separate; report sending is not built yet. Public mail must remain disabled until the correct Hostinger mailbox has been configured and verified.
-- Premium primary plan dialog and admin lead detail must fit essential content and CTA/actions in one desktop viewport (test 1366x768 and 1440x900); responsive mobile needs accessible action without obscured elements. Preserve numerical model and accessibility.
-- Deliver implementation on a feature branch with PR, privacy/docs, real browser screenshots and CI evidence. Main auto-deploys to Hostinger; treat production mail and live customer data as high-risk.
+## Architectuur
 
+- Direct deploybare statische HTML/CSS en ES modules; PHP 8.2+ backend met PDO MySQL, legacy/test SQLite.
+- Kern: `index.html`, `assets/app.mjs`, `assets/model.mjs`, `assets/playground-model.mjs`, `assets/plan-ui.mjs`, `assets/house-scene.mjs`, `assets/home-cockpit.css`, `assets/brand-refresh.css`.
+- Publicatiepagina's: `scripts/build-content.py`, `assets/content.css`, `kennis/`, `rekenmodel.html`, `privacy.html`, `robots.txt`, `sitemap.xml`.
+- API/beheer: `api/`, `lib/`, `admin/` en `scripts/maintenance.php`.
+- Designsysteem: de bestaande fotorealistische huisassets, `assets/brand-logo.svg`, `assets/brand-mark.svg`, lokale Manrope/DM Serif Display en bestaande iconen; bouw coherent verder.
+- `main` is gekoppeld aan Hostinger Git-deploy. Een **GitHub-merge is geen onafhankelijk bewijs van echte Hostinger-uitrol**.
 
-## Plan Studio owner revision (14 November 2026)
-The owner rejected the static v0.5 plan as 60/100. The review branch now contains an interactive three-view Plan Studio; see `docs/PLAN-STUDIO.md`. Keep the pure annual engine unchanged, preserve annual email payloads when displaying monthly averages, and test clipping ancestors as well as viewport bounds. Local reference variants are transient and must not be presented as cloud accounts. `lib/report.php` now exists on the branch, but public mail is still default-off pending safe Hostinger verification.
+## Productieveiligheid
+
+- **NOOIT** de reeds werkende WattGoedkoper MySQL opnieuw installeren, een database resetten, de encryptiesleutel roteren of privésleutels/klantgegevens in de repo/logs/screenshot zetten.
+- `info@wattgoedkoper.nl` en productieconfiguratie blijven buiten Git/webroot; geen bulkmail- of externe CRM-actie zonder expliciete toestemming.
+- Gebruik featurebranches, PR's, alle reken-/API-/MySQL-/mail-/browsertests en screenshots. **Niet autonoom mergen naar `main` vóór eigenaaracceptatie.** Geen force-push.
+- Geen nieuwe betaalde diensten of hostingupgrades zonder akkoord.
+- Beoordeel externe pagina's/URLs en SEO-regelgeving actueel; rapporteer onbevestigde feiten expliciet.
+
+## Volgende ontwikkelwerkstroom
+
+- #14 NEXT — compleet SEO- en leadgeneratieproduct.
+- #15 nulmeting/crawl/privacy/deploy-audit.
+- #16 SEO-informatiearchitectuur en kwaliteitsvolle content-engine.
+- #17 interactieve landingspagina's en een verbonden gebruikersreis.
+- #18 consentgescheiden leadfunnel en meetplan.
+- #2 legacy Hostinger/operations, niet opnieuw installeren; #3 lokaal langer bewaren, optioneel.
+
+**Eerste antwoord van nieuwe agent:** overdrachtsamenvatting met actuele repositoryfeiten, open/afgeronde afhankelijkheden en fasering. Daarna eerst een feitelijke audit en een samenhangende SEO-/productreleasesprint daadwerkelijk bouwen.
