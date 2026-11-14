@@ -1,0 +1,54 @@
+/* Dashboard 2.0: compact, source-honest control room. Existing admin components stay intact. */
+.admin-shell main{max-width:1500px}
+.sidebar .nav-link[aria-current="page"]{background:#fffef519;border:1px solid #fffef52c;color:#fffdf2}
+.wg2-status-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:15px 0 8px}
+.wg2-status-tile{padding:18px 20px;border:1px solid #dfe6dc;background:#fffefa;border-radius:15px;display:flex;flex-direction:column;gap:7px;min-width:0;box-shadow:0 5px 15px #123c4608}
+.wg2-status-tile>span{font-size:11px;font-weight:750;color:#667c77}
+.wg2-status-tile>strong{font-size:16px;font-weight:800;letter-spacing:-.35px;color:#103f51;line-height:1.3}
+.wg2-status-tile>small{font-size:10px;line-height:1.5;color:#71827b}
+.wg2-view{padding-top:38px}
+.wg2-view-heading{padding-bottom:23px}
+.wg2-view-heading h1{margin:9px 0;font:400 clamp(31px,3vw,43px)/1.14 "DM Serif Display",Georgia,serif;letter-spacing:-.9px;color:#10394b}
+.wg2-view-heading p{margin:0}
+.wg2-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.wg2-panel{padding:27px;background:#fffefa;border:1px solid #e1e6dc;border-radius:18px;box-shadow:0 9px 30px #0b30400a;min-width:0}
+.wg2-panel h2{font:400 27px/1.2 "DM Serif Display",Georgia,serif;margin:11px 0 19px;color:#0e3e50}
+.wg2-panel p{max-width:520px;line-height:1.7}
+.wg2-large-state{font-size:24px!important;font-weight:800;color:#163e4e;letter-spacing:-.6px;margin-top:25px}
+.wg2-status-list{margin:6px 0 23px}
+.wg2-status-list div{padding:13px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #e5e9e1}
+.wg2-status-list dt{font-size:12px;font-weight:750;color:#203f45}
+.wg2-status-list dd{margin:0;font-size:11px;text-align:right;line-height:1.5;color:#667b73;max-width:57%;overflow-wrap:anywhere}
+.wg2-resource-links{display:flex;gap:19px;flex-wrap:wrap;margin-top:20px}
+.wg2-resource-links a{font-size:12px;font-weight:700;text-underline-offset:4px}
+.wg2-search-label{white-space:nowrap}
+.wg2-lead-search{width:min(270px,100%);padding:9px 11px;font-size:12px}
+.wg2-search-note{margin-top:-6px}
+.leads-section[data-admin-view="aanvragen"]{margin-top:38px}
+.mail-section[data-admin-view="tools"]{margin-top:28px}
+#dashboard .stat-card:last-child{background:#fffefa;border-color:#e1e6dc}
+#dashboard .stat-card:last-child .stat-value{font-size:20px;letter-spacing:-.4px;padding-top:10px}
+@media(max-width:1050px){
+  .wg2-status-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wg2-status-tile:last-child{grid-column:1/-1}
+  .table-tools{flex-wrap:wrap}
+}
+@media(max-width:720px){
+  .wg2-status-strip,.wg2-card-grid{grid-template-columns:1fr}
+  .wg2-status-tile:last-child{grid-column:auto}
+  .wg2-view{padding-top:25px}
+  .wg2-panel{padding:20px}
+  .wg2-panel h2{font-size:24px}
+  .wg2-view-heading h1{font-size:34px}
+  .wg2-status-list{margin-bottom:15px}
+  .table-tools{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px}
+  .wg2-search-label{grid-column:1}
+  .wg2-lead-search{grid-column:2;width:100%}
+  #refresh{grid-column:2;justify-self:end}
+  nav .nav-link{min-height:40px}
+}
+@media(max-width:390px){
+  nav .nav-link{font-size:10px;padding:8px}
+  .wg2-status-list div{display:block}
+  .wg2-status-list dd{text-align:left;max-width:100%;margin-top:5px}
+}
