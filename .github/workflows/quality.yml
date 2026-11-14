@@ -22,5 +22,6 @@ jobs:
       - run: npm test
       - run: npm run check
       - run: python3 tests/backend_test.py --php php
+      - run: php tests/mail_safety_test.php
       - name: Check PHP syntax
         run: find api lib scripts -name '*.php' -print0 | xargs -0 -n1 php -l

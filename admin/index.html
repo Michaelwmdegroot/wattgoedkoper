@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Beheer · WattGoedkoper</title><meta name="robots" content="noindex,nofollow,noarchive">
-  <meta name="color-scheme" content="light"><link rel="stylesheet" href="/admin/admin.css">
+  <meta name="color-scheme" content="light"><link rel="stylesheet" href="/admin/admin.css"><link rel="stylesheet" href="/admin/operations.css">
   <script type="module" src="/admin/admin.mjs"></script>
 </head>
 <body>
@@ -11,7 +11,7 @@
     <aside class="sidebar">
       <a class="brand" href="/" aria-label="WattGoedkoper website"><span class="brand-icon">w</span>watt<span>goedkoper</span><i>.</i></a>
       <div class="workspace-label">JOUW WERKPLEK</div>
-      <nav aria-label="Beheernavigatie"><a href="#overzicht" class="nav-link active">◫ <span>Overzicht</span></a><a href="#aanvragen" class="nav-link">↗ <span>Adviesaanvragen</span></a><a href="/" class="nav-link">⌂ <span>Naar de website</span></a></nav>
+      <nav aria-label="Beheernavigatie"><a href="#overzicht" class="nav-link active">◫ <span>Overzicht</span></a><a href="#aanvragen" class="nav-link">↗ <span>Adviesaanvragen</span></a><a href="#inbox" class="nav-link">✉ <span>Inbox</span></a><a href="/" class="nav-link">⌂ <span>Naar de website</span></a></nav>
       <div class="sidebar-bottom"><span class="status-dot"></span> Eerste partij, eigen data<p>Inzicht dat mensen verder helpt.</p></div>
     </aside>
     <main>
@@ -30,6 +30,15 @@
         <div class="page-heading" id="overzicht"><div><span class="eyebrow">ENERGIE IN BEWEGING</span><h1>Het begint met inzicht.</h1><p>Wat bezoekers ontdekken. Wie je verder kunt helpen.</p></div><div class="period-pill">Laatste 30 dagen</div></div>
         <div id="stats-grid" class="stats-grid"></div>
         <section class="funnel-card"><div><span class="eyebrow">VAN SCAN NAAR GESPREK</span><h2>De gemeten route</h2><p>Alleen gebeurtenissen van bezoekers die statistieken toestaan. Dit zijn aantallen acties, geen unieke personen.</p></div><div class="funnel" id="funnel"></div><p class="small">Het conversiepercentage gebruikt uitsluitend aanvragen met meettoestemming en gemeten voltooide scans. Herhaalgebruik en ontbrekende metingen beïnvloeden dit cijfer.</p></section>
+        <section class="operations-section" aria-label="Opvolging en activiteit">
+          <div class="section-heading"><div><span class="eyebrow">WAT VRAAGT AANDACHT?</span><h2>Opvolging &amp; activiteit</h2></div></div>
+          <div class="operations-grid">
+            <div class="operations-card"><h3>Adviesaanvragen per status</h3><div id="pipeline" class="pipeline" aria-live="polite"></div><p class="small">Statussen van ontvangen aanvragen, binnen de bewaartermijn.</p></div>
+            <div class="operations-card"><h3>Per adviespartner</h3><div id="partner-breakdown" class="partner-breakdown"></div><p class="small">Geen automatische overdracht aan partners.</p></div>
+            <div class="operations-card"><h3>Actie nodig</h3><div id="overdue" class="overdue-value">—</div><p class="small">Nieuwe aanvragen ouder dan 24 uur. Prioriteit voor handmatige opvolging.</p></div>
+          </div>
+          <div class="operations-card trend-card"><div><h3>Scans voltooid · afgelopen 14 dagen</h3><p class="small">Alleen geaggregeerde gebeurtenissen met meettoestemming; geen unieke bezoekers.</p></div><div id="activity-chart" class="activity-chart" role="img" aria-label="Aantal gemeten voltooide scans per dag"></div></div>
+        </section>
         <section class="leads-section" id="aanvragen">
           <div class="section-heading"><div><span class="eyebrow">MAAK HET PERSOONLIJK</span><h2>Adviesaanvragen <span id="lead-count" class="count-pill">0</span></h2></div><button id="export" class="outline-button">Exporteer CSV ↓</button></div>
           <div class="table-tools"><label for="status-filter">Status</label><select id="status-filter"><option value="">Alle aanvragen</option><option value="new">Nieuw</option><option value="contacted">Benaderd</option><option value="qualified">In gesprek</option><option value="closed">Afgerond</option></select><button id="refresh" class="text-button">Vernieuwen ↻</button></div>
@@ -37,7 +46,24 @@
           <div class="pagination"><button id="previous" class="outline-button" disabled>← Vorige</button><span id="page-label"></span><button id="next" class="outline-button" disabled>Volgende →</button></div>
           <p id="retention" class="small"></p>
         </section>
-        <footer class="dashboard-footer"><span>Een goed plan begint met een eerlijk gesprek.</span><span>Geen automatisch verstuurde e-mails. Volg aanvragen hier op.</span></footer>
+        <section class="mail-section" id="inbox" aria-labelledby="inbox-title">
+          <div class="section-heading"><div><span class="eyebrow">KLANTCOMMUNICATIE</span><h2 id="inbox-title">Inbox · info@wattgoedkoper.nl</h2><p>Lees klantvragen en beantwoord ze vanuit je eigen mailbox. Niets wordt automatisch verzonden.</p></div><button id="mail-refresh" class="outline-button" type="button">Vernieuwen ↻</button></div>
+          <p id="mail-status" class="mail-status" role="status">Mailboxstatus wordt opgehaald…</p>
+          <div class="mail-workspace">
+            <div class="mail-list-column"><div class="mail-toolbar"><strong>Postvak IN</strong><button id="mail-compose" type="button" class="outline-button">Nieuw bericht +</button></div><div id="mail-list" class="mail-list"><div class="mail-placeholder">Laad je berichten zodra de mailbox is verbonden.</div></div></div>
+            <div class="mail-detail-column">
+              <div id="mail-reader" class="mail-reader"><h3>Je berichten op één plek.</h3><p>Kies links een bericht of schrijf een nieuw antwoord.</p><p class="small">Alle berichten worden als platte tekst getoond; HTML en bijlagen zijn hier bewust uitgeschakeld.</p></div>
+              <form id="mail-form" class="mail-form" hidden>
+                <h3>Schrijf een e-mail</h3><label for="mail-to">Aan</label><input id="mail-to" type="email" required maxlength="254" autocomplete="off">
+                <label for="mail-subject">Onderwerp</label><input id="mail-subject" required maxlength="140">
+                <label for="mail-body">Bericht</label><textarea id="mail-body" required rows="9" maxlength="15000" placeholder="Schrijf je bericht…"></textarea>
+                <div class="mail-actions"><button type="button" id="mail-cancel" class="outline-button">Annuleren</button><button type="submit" id="mail-send" class="button">E-mail versturen ↗</button></div>
+                <p class="small">Verzenden kan alleen na een bewuste bevestiging. Bij onduidelijke afleverstatus niet zomaar opnieuw sturen.</p>
+              </form>
+            </div>
+          </div>
+        </section>
+        <footer class="dashboard-footer"><span>Een goed plan begint met een eerlijk gesprek.</span><span>E-mails worden uitsluitend op jouw uitdrukkelijke actie verstuurd.</span></footer>
       </section>
     </main>
   </div>

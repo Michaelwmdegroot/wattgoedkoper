@@ -2,9 +2,9 @@
 
 ## Wat werkt
 
-De consumentenscan rekent volledig in de browser. Daarvoor hoeft de bezoeker geen contactgegevens in te vullen en is de PHP-backend niet nodig. Een expliciete adviesaanvraag wordt pas bevestigd nadat PHP de gegevens duurzaam heeft opgeslagen. De aanvraag komt in `/admin/` terecht. **Er wordt geen e-mail verstuurd en er wordt geen externe CRM-koppeling aangeroepen.** De geselecteerde adviespartner is een routeringskeuze voor menselijke opvolging in dit dashboard.
+De consumentenscan rekent volledig in de browser. Daarvoor hoeft de bezoeker geen contactgegevens in te vullen en is de PHP-backend niet nodig. Een expliciete adviesaanvraag wordt pas bevestigd nadat PHP de gegevens duurzaam heeft opgeslagen. De aanvraag komt in `/admin/` terecht. **Er worden geen automatische e-mails verstuurd.** De optionele mailwerkplek in 0.4 leest de juiste Hostinger-mailbox en verstuurt uitsluitend na handmatige bevestiging; zie [operations](OPERATIONS-V04.md). Er is geen externe CRM-koppeling. De geselecteerde adviespartner is een routeringskeuze voor menselijke opvolging in dit dashboard.
 
-Het dashboard bevat een overzicht van gemeten starts, voltooide scans, adviesinteresse, opgeslagen aanvragen, een opt-in conversieverhouding, statusbeheer, CSV-export en definitieve verwijdering. Het bevat geen fictieve voorbeeldleads.
+Het dashboard bevat gemeten starts, voltooide scans, adviesinteresse, opgeslagen aanvragen, opt-in conversie, statusbeheer, CSV-export, definitieve verwijdering, operationele status-/partneraantallen, nieuwe aanvragen ouder dan 24 uur en optionele inbox. Het bevat geen fictieve voorbeeldleads.
 
 ## Hostingvereisten
 
@@ -95,6 +95,10 @@ Basis: `/api/index.php?action=...`. JSON-responsen gebruiken `{ok:true,...}` of 
 | `admin_status` | POST | `{id,status}` met status `new/contacted/qualified/closed` |
 | `admin_delete` | POST | `{id}`; definitieve verwijdering |
 | `admin_export` | POST | CSV van maximaal 5.000 aanvragen, spreadsheetformules geneutraliseerd |
+| `admin_mail_status` | GET | Geeft uitsluitend beschikbaarheid/configuratiestatus, nooit wachtwoorden |
+| `admin_mail_list` | GET | Laatste 40 inboxberichten, IMAP read-only |
+| `admin_mail_read` | GET | Platte tekst van inbox-bericht op UID |
+| `admin_mail_send` | POST | Expliciet bevestigd handmatig bericht via SMTP |
 
 Alle `admin_`-acties behalve login vereisen een actieve beheersessie. Exports en persoonlijke API-responsen gebruiken `no-store`. De frontend plaatst onbetrouwbare velden met DOM-`textContent`, niet als HTML.
 

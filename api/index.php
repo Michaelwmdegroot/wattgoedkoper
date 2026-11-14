@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/lib/bootstrap.php';
+require dirname(__DIR__) . '/lib/mail.php';
 wg_headers();
 ini_set('display_errors', '0');
 try {
@@ -71,7 +72,11 @@ try {
         foreach($events as $e){if(array_key_exists($e['event'],$totals)){$totals[$e['event']]+=(int)$e['count'];}}
         $q=$db->prepare('SELECT COUNT(*) FROM leads WHERE created_at >= ?');$q->execute([$since]);$leadCount=(int)$q->fetchColumn();
         $statuses=$db->query('SELECT status,COUNT(*) AS count FROM leads GROUP BY status')->fetchAll();
-        wg_json(['ok'=>true,'days'=>30,'since'=>$since,'events'=>$events,'totals'=>$totals,'leadCount'=>$leadCount,'statuses'=>$statuses,'retentionDays'=>$config['retention_days'],'conversion'=>$totals['scan_complete']>0?round($totals['lead_accepted']/$totals['scan_complete']*100,1):null]);
+        $byPartner=$db->query('SELECT partner,COUNT(*) AS count FROM leads GROUP BY partner')->fetchAll();
+        $overdue=$db->prepare("SELECT COUNT(*) FROM leads WHERE status='new' AND created_at < ?");
+        $overdue->execute([gmdate('Y-m-d\TH:i:s\Z',time()-86400)]);
+        $overdueNew=(int)$overdue->fetchColumn();
+        wg_json(['ok'=>true,'days'=>30,'since'=>$since,'events'=>$events,'totals'=>$totals,'leadCount'=>$leadCount,'statuses'=>$statuses,'partners'=>$byPartner,'overdueNew'=>$overdueNew,'retentionDays'=>$config['retention_days'],'conversion'=>$totals['scan_complete']>0?round($totals['lead_accepted']/$totals['scan_complete']*100,1):null]);
     }
     if ($action === 'admin_leads') {
         wg_method('GET');$status=(string)($_GET['status']??'');$offset=max(0,min(100000,(int)($_GET['offset']??0)));
@@ -90,6 +95,29 @@ try {
     if ($action === 'admin_delete') {
         $data=wg_input($config);$id=wg_text($data['id']??'','aanvraagcode',40,true);$q=$db->prepare('DELETE FROM leads WHERE id=?');$q->execute([$id]);
         if(!$q->rowCount()){wg_fail(404,'NOT_FOUND','Aanvraag niet gevonden.');}wg_json(['ok'=>true]);
+    }
+    // All mail endpoints are protected by wg_auth above and never expose credentials.
+    if ($action === 'admin_mail_status') {
+        wg_method('GET'); wg_json(['ok'=>true] + wg_mail_ready($config));
+    }
+    if ($action === 'admin_mail_list') {
+        wg_method('GET'); wg_rate($db,$config,'admin_mail_read',50,600);
+        wg_json(['ok'=>true,'messages'=>wg_mail_list($config)]);
+    }
+    if ($action === 'admin_mail_read') {
+        wg_method('GET'); wg_rate($db,$config,'admin_mail_read',50,600);
+        $uid=filter_var($_GET['uid']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
+        if($uid===false) { wg_fail(422,'VALIDATION','Ongeldige berichtcode.'); }
+        wg_json(['ok'=>true,'message'=>wg_mail_read($config,$uid)]);
+    }
+    if ($action === 'admin_mail_send') {
+        $data=wg_input($config);
+        wg_rate($db,$config,'admin_mail_send',15,3600);
+        $to=wg_text($data['to']??'','e-mailadres',254,true);
+        $subject=wg_text($data['subject']??'','onderwerp',220,true);
+        $body=wg_text($data['body']??'','bericht',15000,true);
+        wg_mail_send($config,$to,$subject,$body);
+        wg_json(['ok'=>true,'sent'=>true]);
     }
     if ($action === 'admin_export') {
         wg_input($config);$rows=$db->query('SELECT * FROM leads ORDER BY created_at DESC LIMIT 5000');

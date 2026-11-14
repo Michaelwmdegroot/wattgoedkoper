@@ -19,11 +19,47 @@ function showLogin() { $('#dashboard').hidden=true;$('#login-section').hidden=fa
 function showDashboard() { $('#dashboard').hidden=false;$('#login-section').hidden=true;$('#logout').hidden=false; }
 async function session() { const data=await api('session');state.csrf=data.csrf;return data; }
 function statCard(label, value, note) { const card=el('div','stat-card');card.append(el('div','stat-label',label),el('div','stat-value',value),el('div','stat-note',note));return card; }
+
+const mailState={connected:false};
+function renderOperationalStats(data) {
+  const statusCounts=Object.fromEntries((data.statuses||[]).map(s=>[s.status,Number(s.count)]));
+  const total=Object.values(statusCounts).reduce((a,b)=>a+b,0);
+  const pipeline=$('#pipeline');pipeline.replaceChildren();
+  for(const [id,label] of Object.entries(statusNames)){
+    const n=statusCounts[id]||0,row=el('div','pipeline-row');
+    const heading=el('div','pipeline-heading');heading.append(el('span','',label),el('strong','',count(n)));
+    const track=el('div','pipeline-track'),fill=el('span','pipeline-fill');
+    fill.style.width=total?((n/total)*100).toFixed(1)+'%':'0%';track.append(fill);row.append(heading,track);pipeline.append(row);
+  }
+  const partnersRoot=$('#partner-breakdown');partnersRoot.replaceChildren();
+  const partnerCounts=Object.fromEntries((data.partners||[]).map(p=>[p.partner,Number(p.count)]));
+  for(const [id,label] of Object.entries(partners)){
+    const row=el('div','partner-row');row.append(el('span','',label),el('strong','',count(partnerCounts[id]||0)));partnersRoot.append(row);
+  }
+  $('#overdue').textContent=count(data.overdueNew||0);
+  const byDate=new Map((data.events||[]).filter(e=>e.event==='scan_complete').map(e=>[e.day,Number(e.count)]));
+  const days=Array.from({length:14},(_,i)=>{
+    const key=new Date(Date.now()-(13-i)*86400000).toISOString().slice(0,10);
+    return {key,count:byDate.get(key)||0};
+  });
+  const chart=$('#activity-chart');chart.replaceChildren();
+  const peak=Math.max(1,...days.map(d=>d.count));
+  for(const day of days){
+    const group=el('div','activity-column'),bar=el('div','activity-column-bar'),label=el('small','',day.key.slice(8));
+    bar.style.height=day.count?Math.max(5,Math.round(day.count/peak*100))+'%':'2px';
+    bar.title=day.key+': '+count(day.count)+' voltooide scans';
+    group.setAttribute('aria-label',bar.title);
+    group.append(el('span','activity-count',day.count?count(day.count):''),bar,label);chart.append(group);
+  }
+  chart.setAttribute('aria-label',days.map(d=>d.key+': '+d.count).join('; '));
+}
+
 function renderStats(data) {
   const t=data.totals;
   $('#stats-grid').replaceChildren(statCard('Gestarte scans',count(t.scan_start),'Met meettoestemming'),statCard('Voltooide scans',count(t.scan_complete),'Met meettoestemming'),statCard('Adviesaanvragen',count(data.leadCount),'Alle ontvangen aanvragen'),statCard('Scan → aanvraag',data.conversion===null?'—':data.conversion.toLocaleString('nl-NL')+'%','Alleen met meettoestemming'));
   $('#funnel').replaceChildren(...[['scan_start','Scans gestart'],['scan_complete','Plannen bekeken'],['advice_open','Adviesformulier geopend'],['lead_accepted','Aanvragen opgeslagen']].map(([key,label])=>{const step=el('div','funnel-step');step.append(el('strong','',count(t[key])),el('span','',label));return step;}));
   $('#retention').textContent=`Aanvragen worden na ${data.retentionDays} dagen verwijderd. Exporteer alleen wat je nodig hebt en bewaar exports veilig. De grafiek telt gebeurtenissen, geen unieke bezoekers.`;
+  renderOperationalStats(data);
 }
 function renderLeads(data) {
   state.leads=data.leads;state.total=data.total;$('#lead-count').textContent=count(data.total);
@@ -54,10 +90,92 @@ function showDetail(lead) {
   const consent=el('section','detail-section');consent.append(el('h3','','Toestemming'),el('p','',d.consentText),el('p','small',`Versie ${d.consentVersion} · geregistreerd ${date(d.acceptedAt)} · geselecteerde partner: ${partners[lead.partner]}. Statistieken: ${d.analyticsConsent?'toegestaan':'niet toegestaan'}.`));root.append(consent);
   const actions=el('div','detail-actions');const label=el('label','','Status');label.htmlFor='detail-status';const select=el('select');select.id='detail-status';for(const [key,value] of Object.entries(statusNames)){const option=el('option','',value);option.value=key;option.selected=key===lead.status;select.append(option);}
   const save=el('button','outline-button','Opslaan');save.type='button';save.addEventListener('click',async()=>{save.disabled=true;try{await api('admin_status',{id:lead.id,status:select.value});$('#lead-dialog').close();message('Status bijgewerkt.',true);await refresh();}catch(error){message(error.message);}finally{save.disabled=false;}});
+  const emailClient=el('button','outline-button','Mail klant ↗');
+  emailClient.type='button';emailClient.disabled=!d.email;
+  emailClient.addEventListener('click',()=>{
+    $('#lead-dialog').close();openComposer({to:d.email,subject:'Jouw energieplan bij WattGoedkoper'});
+    location.hash='#inbox';
+  });
+  actions.append(emailClient);
   const remove=el('button','text-button danger','Aanvraag verwijderen');remove.type='button';remove.addEventListener('click',()=>{remove.disabled=true;const confirm=el('div','confirm-delete');confirm.append(el('p','','Deze aanvraag en contactgegevens worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.'));const yes=el('button','outline-button','Definitief verwijderen');yes.addEventListener('click',async()=>{yes.disabled=true;try{await api('admin_delete',{id:lead.id});$('#lead-dialog').close();message('Aanvraag verwijderd.',true);await refresh();}catch(error){message(error.message);yes.disabled=false;}});const no=el('button','text-button','Annuleren');no.addEventListener('click',()=>{confirm.remove();remove.disabled=false;});confirm.append(yes,document.createTextNode(' '),no);root.append(confirm);});actions.append(label,select,save,remove);root.append(actions);
   $('#lead-dialog').showModal();
 }
-$('#login-form').addEventListener('submit',async event=>{event.preventDefault();const button=$('button',event.currentTarget);button.disabled=true;message('');try{if(!state.csrf)await session();const data=await api('admin_login',{username:$('#username').value,password:$('#password').value});state.csrf=data.csrf;$('#password').value='';showDashboard();await refresh();}catch(error){message(error.message);}finally{button.disabled=false;}});
+
+function mailStatus(text,isError=false){
+  const root=$('#mail-status');root.textContent=text;root.classList.toggle('mail-error',isError);
+}
+function emailAddress(value){
+  const wrapped=String(value||'').match(/<([^<>]+)>/);
+  return wrapped?wrapped[1]:String(value||'').trim();
+}
+function openComposer(prefill={}){
+  $('#mail-reader').hidden=true;$('#mail-form').hidden=false;
+  $('#mail-to').value=prefill.to||'';
+  $('#mail-subject').value=prefill.subject||'';
+  $('#mail-body').value=prefill.body||'';
+  $('#mail-to').focus();
+}
+function closeComposer(){
+  $('#mail-form').hidden=true;$('#mail-reader').hidden=false;
+}
+function renderMailList(messages){
+  const root=$('#mail-list');root.replaceChildren();
+  if(!messages.length){root.append(el('div','mail-placeholder','Geen berichten in Postvak IN.'));return;}
+  for(const m of messages){
+    const button=el('button','mail-message'+(m.unread?' unread':''));button.type='button';
+    const from=el('strong','',m.from||'Onbekende afzender');
+    const title=el('span','',m.subject||'(geen onderwerp)');
+    const meta=el('small','',m.date||'');
+    button.append(from,title,meta);button.addEventListener('click',()=>readMail(m.uid));
+    root.append(button);
+  }
+}
+async function readMail(uid){
+  const reader=$('#mail-reader');closeComposer();reader.replaceChildren(el('p','small','Bericht laden…'));
+  try{
+    const {message:m}=await api('admin_mail_read&uid='+encodeURIComponent(uid));
+    reader.replaceChildren(el('span','eyebrow','BERICHT UIT POSTVAK IN'),el('h3','',m.subject||'(geen onderwerp)'),
+      el('p','mail-meta','Van: '+m.from+' · '+(m.date||'')),el('pre','mail-body-text',m.body||''));
+    const reply=el('button','outline-button','Beantwoorden ↗');reply.type='button';
+    reply.addEventListener('click',()=>openComposer({to:emailAddress(m.from),subject:/^re:/i.test(m.subject)?m.subject:'Re: '+(m.subject||'Jouw bericht')}));
+    reader.append(reply);
+  }catch(error){reader.replaceChildren(el('p','mail-error',error.message));}
+}
+async function loadMailbox(){
+  mailStatus('Mailboxstatus controleren…');
+  try{
+    const status=await api('admin_mail_status');
+    mailState.connected=Boolean(status.configured&&status.sendAvailable);
+    $('#mail-compose').disabled=!mailState.connected;
+    if(!status.configured){
+      mailStatus('Nog niet gekoppeld. Een beheerder richt info@wattgoedkoper.nl veilig in via de server-CLI. Er zijn geen wachtwoorden in de website opgeslagen.');
+      $('#mail-list').replaceChildren(el('div','mail-placeholder','Mailbox niet ingesteld. Je energieplan en adviesaanvragen blijven gewoon beschikbaar.'));
+      return;
+    }
+    if(!status.imapAvailable){
+      mailStatus('Uitgaande mail is ingesteld, maar de PHP IMAP-extensie ontbreekt. Schakel deze in bij Hostinger → PHP Configuration.',true);return;
+    }
+    mailStatus('Beveiligd verbonden met info@wattgoedkoper.nl · handmatige verzending');
+    const data=await api('admin_mail_list');
+    renderMailList(data.messages||[]);
+  }catch(error){mailStatus(error.message,true);$('#mail-list').replaceChildren(el('div','mail-placeholder','Postvak IN is tijdelijk niet beschikbaar.'));}
+}
+$('#mail-refresh').addEventListener('click',loadMailbox);
+$('#mail-compose').addEventListener('click',()=>openComposer());
+$('#mail-cancel').addEventListener('click',closeComposer);
+$('#mail-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const to=$('#mail-to').value.trim(),subject=$('#mail-subject').value.trim(),body=$('#mail-body').value;
+  if(!window.confirm('Dit bericht echt versturen vanaf info@wattgoedkoper.nl naar '+to+'?'))return;
+  const button=$('#mail-send');button.disabled=true;
+  try{
+    await api('admin_mail_send',{to,subject,body});
+    message('De mailserver heeft je bericht geaccepteerd.',true);
+    closeComposer();$('#mail-form').reset();
+  }catch(error){message(error.message);}finally{button.disabled=false;}
+});
+
+$('#login-form').addEventListener('submit',async event=>{event.preventDefault();const button=$('button',event.currentTarget);button.disabled=true;message('');try{if(!state.csrf)await session();const data=await api('admin_login',{username:$('#username').value,password:$('#password').value});state.csrf=data.csrf;$('#password').value='';showDashboard();await refresh();await loadMailbox();}catch(error){message(error.message);}finally{button.disabled=false;}});
 $('#logout').addEventListener('click',async()=>{try{await api('admin_logout',{});showLogin();await session();message('Je bent uitgelogd.',true);}catch(error){message(error.message);}});
 $('#refresh').addEventListener('click',()=>refresh().catch(error=>message(error.message)));
 $('#status-filter').addEventListener('change',event=>{state.status=event.target.value;state.offset=0;refresh().catch(error=>message(error.message));});
@@ -65,4 +183,4 @@ $('#previous').addEventListener('click',()=>{state.offset=Math.max(0,state.offse
 $('#next').addEventListener('click',()=>{state.offset+=50;refresh().catch(error=>message(error.message));});
 $('#export').addEventListener('click',async()=>{const button=$('#export');button.disabled=true;try{const response=await fetch(apiBase+'admin_export',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':state.csrf},body:'{}'});if(!response.ok){const data=await response.json();throw new Error(data.error?.message||'Exporteren is niet gelukt.');}const blob=await response.blob();const url=URL.createObjectURL(blob);const a=el('a');a.href=url;a.download='wattgoedkoper-aanvragen-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);message('Export gedownload. De CSV bevat persoonsgegevens; bewaar hem veilig.',true);}catch(error){message(error.message);}finally{button.disabled=false;}});
 for(const a of document.querySelectorAll('nav a[href^="#"]'))a.addEventListener('click',()=>{document.querySelectorAll('nav a').forEach(item=>item.classList.remove('active'));a.classList.add('active');});
-try{const initial=await session();if(!initial.configured){message('De beveiligde serverinstallatie is nog niet voltooid. Het dashboard blijft gesloten totdat de beheerder de private configuratie heeft ingesteld.');$('#login-form button').disabled=true;}else if(initial.authenticated){showDashboard();await refresh();}}catch(error){message(error.message);}
+try{const initial=await session();if(!initial.configured){message('De beveiligde serverinstallatie is nog niet voltooid. Het dashboard blijft gesloten totdat de beheerder de private configuratie heeft ingesteld.');$('#login-form button').disabled=true;}else if(initial.authenticated){showDashboard();await refresh();await loadMailbox();}}catch(error){message(error.message);}

@@ -5,13 +5,13 @@ Doel: `https://wattgoedkoper.nl/`, bron `Michaelwmdegroot/wattgoedkoper`, branch
 ## Huidige toestand
 
 - Repository bevat een complete rechtstreeks serveerbare HTML/CSS/JS/PHP-release.
-- De gebruiker wil opnieuw beginnen en vanuit `main` deployen.
-- Bestaande productie is volgens de gebruiker WordPress. Deze is niet gewijzigd.
-- Er zijn alleen Hostinger Mail-tools verbonden; Hostinger hostingbeheer is niet beschikbaar.
-- Browsercontrole eindigde op de Hostinger-login. Hostinger staat aanmelden vanuit deze cloudbrowser niet toe. Geen loginpoging of hostingmutatie uitgevoerd.
-- Geen productiecredentials, databases, mailinstellingen of DNS-wijzigingen aangemaakt.
+- Op 14 november 2026 heeft de gebruiker een Hostinger-screenshot gedeeld met **Implementatie voltooid** voor wattgoedkoper.nl en de repository wattgoedkoper. GitHub is dus al gekoppeld en de web-deployment is door Hostinger bevestigd.
+- De daadwerkelijke PHP-runtime, documentroot, private configuratie en lead-API-gezondheid zijn in deze sessie **nog niet op de livehost bevestigd**.
+- De gebruiker heeft een database met de naam wattgoedkoper getoond, maar het bijbehorende Hostinger-scherm vermeldt **zonlio.nl**. Gebruik deze database niet zonder inspectie van de sitekoppeling.
+- De gebruiker heeft een info@-mailbox aangemaakt; er is nog geen veilige serverconfiguratie voor info@wattgoedkoper.nl aangetoond.
+- De codebase ondersteunt in branch 0.4 nu een optionele server-side inbox na afzonderlijke setup (zie OPERATIONS-V04.md). Geen DNS-wijzigingen of productiecredentials uitgevoerd in GitHub.
 
-De hervattende agent moet een ondersteunde, geauthenticeerde Hostinger-beheerverbinding gebruiken. Blijf niet opnieuw via de geblokkeerde browser proberen. Wacht met de omschakeling tot de onderstaande stappen daadwerkelijk uitvoerbaar zijn.
+De bestaande GitHub-koppeling hoeft niet opnieuw gemaakt te worden. Bevestig eerst de hosting- en PHP-configuratie; vervolg daarna de operationele stappen en de geïsoleerde mailsetup.
 
 ## Waarom PHP/static
 

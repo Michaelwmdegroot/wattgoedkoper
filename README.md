@@ -2,11 +2,13 @@
 
 Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Persoonlijk advies via **NIVO Groep Holland** en **Thuisbatterij Team** is een optionele vervolgstap.
 
-## Status — premium ontwikkelversie 0.3
+## Status — premium energiehuis 0.3, operationele uitbreiding 0.4
 
-De interactieve woning heeft een premium visuele uitwerking: vijf fotografische woningtypes, afzonderlijke installatielagen, vijftien eigen beelden, lokale lettertypen en vernieuwde kennis- en uitlegpagina’s. **Wattgoedkoper.nl is niet omgeschakeld; de bestaande WordPress-site is niet gewijzigd.** Deze versie is bedoeld om de nieuwe productervaring te beoordelen.
+De interactieve woning heeft een premium visuele uitwerking: vijf fotografische woningtypes, afzonderlijke installatielagen, vijftien eigen beelden, lokale lettertypen en vernieuwde kennis- en uitlegpagina’s. Hostinger heeft volgens de gebruiker op 14 november 2026 de GitHub-deployment naar wattgoedkoper.nl voltooid. De daadwerkelijke PHP-backendconfiguratie en mailkoppeling moeten afzonderlijk op de juiste hosting worden bevestigd.
 
 **[Download de speelbare preview](preview/wattgoedkoper-preview.html)** en open het bestand in een browser. Huis, berekeningen, scenario’s en uitleg werken in één bestand. Adviesverzending en netwerkverkeer zijn in deze preview uitgeschakeld.
+
+Zie [de nieuwe backoffice, mailbox en leadmagnet-roadmap](docs/OPERATIONS-V04.md). Zonder private serverconfiguratie blijft de advies-API veilig gesloten. De mailbox werkt uitsluitend na het toevoegen van het juiste info@wattgoedkoper.nl-account op de server.
 
 ## De ervaring
 
@@ -26,7 +28,7 @@ De deterministische jaarberekening onderscheidt totaalverbruik, netafname, opwek
 
 Het dag-/nachtbeeld is een illustratie, geen uurprognose. De hoofdgetallen zijn **variabele energiekosten**, zonder netbeheer, vaste leveringskosten en belastingvermindering. Vooraf ingevulde prijzen zijn **bewerkbare voorbeelden**, geen actuele aanbiedingen. De paneelregel schaalt de voorbeeldprijs evenredig mee met het aantal panelen; batterijcapaciteit en prijs zijn afzonderlijke aannames.
 
-Geen live meter-, adres-, PVGIS-, leveranciers-, e-mail- of CRM-koppelingen. Geen gegarandeerde besparing, handelsopbrengst, subsidietoekenning of technisch installatieadvies. De advies-API weigert aanvragen zolang veilige productieconfiguratie ontbreekt.
+Geen live meter-, adres-, PVGIS-, leveranciers- of CRM-koppelingen. De optionele beheerinbox kan na afzonderlijke private serverconfiguratie worden verbonden met Hostinger IMAP/SMTP; de consumenten-tool heeft geen automatische e-mailkoppeling. Geen gegarandeerde besparing, handelsopbrengst, subsidietoekenning of technisch installatieadvies. De advies-API weigert aanvragen zolang veilige productieconfiguratie ontbreekt.
 
 ## Techniek
 

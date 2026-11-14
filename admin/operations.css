@@ -1,0 +1,25 @@
+/* Lead operations / mailbox extension. Inherits the WattGoedkoper brand system. */
+.operations-section,.mail-section{margin-top:40px}
+.operations-grid{display:grid;grid-template-columns:1fr 1fr .8fr;gap:15px;margin:19px 0}
+.operations-card{background:#fffef9;border:1px solid #e2e5db;border-radius:17px;padding:22px;box-shadow:0 7px 20px #092d3e03}
+.operations-card h3,.mail-reader h3,.mail-form h3{font-size:15px;letter-spacing:-.3px;color:#092d3e;margin:0 0 17px}
+.operations-card .small{margin-bottom:0}
+.pipeline-row{margin:11px 0}.pipeline-heading{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}.pipeline-heading strong{font-size:12px}.pipeline-track{width:100%;height:7px;border-radius:20px;background:#e9eee2;overflow:hidden}.pipeline-fill{display:block;height:100%;background:linear-gradient(90deg,#9ebf8c,#376b54);border-radius:inherit}
+.partner-row{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #e8ebdf;font-size:12px}.partner-row strong{font-size:13px}.partner-row:last-child{border:0}
+.overdue-value{font-family:"DM Serif Display",Georgia,serif;font-size:59px;line-height:1.1;color:#092d3e}
+.trend-card{display:flex;gap:30px;align-items:center}.trend-card>div:first-child{width:255px;flex-shrink:0}
+.activity-chart{flex:1;min-width:0;display:flex;align-items:end;height:125px;gap:7px;border-bottom:1px solid #dce6d7;padding-top:20px}
+.activity-column{height:100%;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:end;align-items:stretch;text-align:center}
+.activity-column-bar{background:linear-gradient(0deg,#527f66,#c4d7a6);border-radius:5px 5px 1px 1px;min-height:2px}
+.activity-column small{font-size:9px;color:#68766d;margin-top:8px}.activity-count{font-size:9px;color:#375845;min-height:13px}
+.mail-section .section-heading{align-items:center;margin-bottom:15px}.mail-section .section-heading p{max-width:620px;margin:8px 0 0}
+.mail-status{border:1px solid #e0e5d8;background:#edf2e6;padding:13px 17px;border-radius:12px;margin:12px 0 15px;color:#375b48;font-size:12px}
+.mail-error{color:#9c4b3c!important;background:#fff3eb!important;border-color:#f0d5c9!important}
+.mail-workspace{display:grid;grid-template-columns:minmax(270px,.8fr) minmax(0,1.35fr);background:#fffef9;border:1px solid #e1e5da;border-radius:18px;overflow:hidden;min-height:410px}
+.mail-list-column{border-right:1px solid #e6e9df;min-width:0}.mail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 17px;background:#f5f6ef;font-size:12px}.mail-toolbar .outline-button{padding:8px 11px}
+.mail-list{max-height:520px;overflow-y:auto}.mail-placeholder{font-size:12px;color:#77857a;padding:26px 18px;line-height:1.8}
+.mail-message{width:100%;background:transparent;border:0;border-bottom:1px solid #e8ebe3;text-align:left;padding:15px 17px;display:flex;flex-direction:column;gap:5px;white-space:normal;color:#1f4045}.mail-message:hover,.mail-message:focus-visible{background:#f3f6ee}.mail-message.unread{box-shadow:inset 3px 0 #f5cf36;background:#fdfbf3}.mail-message strong{font-size:12px;overflow-wrap:anywhere}.mail-message span{font-size:12px}.mail-message small{font-size:10px;color:#809084}
+.mail-detail-column{padding:25px;min-width:0}.mail-reader h3{font-family:"DM Serif Display",Georgia,serif;font-weight:400;font-size:25px}.mail-reader .mail-meta{font-size:12px;overflow-wrap:anywhere}.mail-body-text{font:12px/1.7 "Manrope",Arial,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere;color:#2a4243;border-top:1px solid #e6e9df;padding:20px 0;max-height:450px;overflow:auto}
+.mail-form{display:grid;gap:10px}.mail-form h3{font-family:"DM Serif Display",Georgia,serif;font-size:25px;margin-bottom:10px;font-weight:400}.mail-form label{font-size:12px;font-weight:700}.mail-form input,.mail-form textarea{width:100%;border:1px solid #d5dfd0;background:#fff;border-radius:9px;padding:12px;color:#092d3e;resize:vertical;font:13px/1.6 "Manrope",Arial,sans-serif}.mail-form textarea{min-height:175px}.mail-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:5px}.mail-actions .button{margin:0}
+@media(max-width:1100px){.operations-grid{grid-template-columns:1fr 1fr}.operations-grid>.operations-card:last-child{grid-column:1/-1}.mail-workspace{grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr)}}
+@media(max-width:720px){.operations-section,.mail-section{margin-top:30px}.operations-grid{grid-template-columns:1fr}.operations-grid>.operations-card:last-child{grid-column:auto}.trend-card{display:block}.trend-card>div:first-child{width:auto}.activity-chart{margin-top:24px;gap:4px}.mail-workspace{display:block}.mail-list-column{border-right:0;border-bottom:1px solid #e6e9df}.mail-list{max-height:230px}.mail-detail-column{padding:19px}.mail-section .section-heading{display:flex;align-items:end;flex-wrap:wrap}.mail-message{padding:12px 16px}.mail-actions{flex-wrap:wrap}.mail-actions .button{flex:1}}
