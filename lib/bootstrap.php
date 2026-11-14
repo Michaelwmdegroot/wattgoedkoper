@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 /** WattGoedkoper backend. Personal data stays encrypted outside the document root. */
-const WG_CONSENT_VERSION = '2026-11-v1';
-const WG_CONSENT_TEXT = 'Ik vraag de hierboven gekozen adviespartner(s) om contact met mij op te nemen over mijn energieplan. Zij mogen daarvoor mijn contactgegevens, scanantwoorden en berekende indicatie ontvangen en gebruiken. Ik heb de privacyverklaring gelezen. Ik kan mijn toestemming intrekken.';
+const WG_CONSENT_VERSION = '2026-11-v2';
+const WG_CONSENT_TEXT = 'Ik wil dat NIVO Groep Holland contact met mij opneemt over mijn energieplan. NIVO mag hiervoor mijn contactgegevens, meegestuurde energie-informatie en berekende indicatie gebruiken. Ik heb de privacyverklaring gelezen. Ik kan mijn verzoek intrekken.';
 
 final class WgHttpError extends RuntimeException {
     public function __construct(public int $status, public string $errorCode, string $message) { parent::__construct($message); }
@@ -227,8 +227,11 @@ function wg_validate_lead(array $data): array {
     if ($email === '' && $phone === '') { wg_fail(422, 'VALIDATION', 'Vul je e-mailadres of telefoonnummer in.'); }
     $postcode = strtoupper(str_replace(' ', '', wg_text($data['postcode'] ?? '', 'postcode', 7)));
     if ($postcode !== '' && !preg_match('/^[1-9][0-9]{3}[A-Z]{2}$/D', $postcode)) { wg_fail(422, 'VALIDATION', 'Vul een Nederlandse postcode in, bijvoorbeeld 2311AB.'); }
-    $partner = $data['partner'] ?? '';
-    if (!in_array($partner, ['nivo','tbt','either'], true)) { wg_fail(422, 'VALIDATION', 'Kies een adviespartner.'); }
+    // New advice leads have exactly one recipient. Historical partner values are never altered.
+    if (isset($data['partner']) && $data['partner'] !== 'nivo') {
+        wg_fail(422, 'VALIDATION', 'Nieuwe adviesaanvragen worden alleen door NIVO Groep Holland opgevolgd.');
+    }
+    $partner = 'nivo';
     $interests = $data['interests'] ?? [];
     if (!is_array($interests) || !array_is_list($interests) || count($interests) > 6) { wg_fail(422, 'VALIDATION', 'Controleer je adviesonderwerpen.'); }
     foreach ($interests as $interest) { if (!in_array($interest, ['solar','battery','heatpump','insulation','contract','planning'], true)) { wg_fail(422, 'VALIDATION', 'Kies een geldig adviesonderwerp.'); } }
@@ -248,11 +251,25 @@ function wg_validate_lead(array $data): array {
     $summaryInput = $data['summary'] ?? [];
     if (!is_array($summaryInput)) { wg_fail(422, 'VALIDATION', 'De samenvatting is ongeldig.'); }
     $summary = ['modelVersion'=>wg_text($summaryInput['modelVersion'] ?? '', 'modelversie', 60)];
-    foreach (['year','annualSavingsLow','annualSavingsHigh'] as $field) {
+    foreach (['year','annualSavingsLow','annualSavingsHigh','investmentLow','investmentHigh','baselineAnnualCost','plannedAnnualCost'] as $field) {
         $value = $summaryInput[$field] ?? null;
         if ($value !== null && (!is_numeric($value) || !is_finite((float)$value) || abs((float)$value) > 1000000)) { wg_fail(422, 'VALIDATION', 'De samenvatting is ongeldig.'); }
         $summary[$field] = $value === null ? null : (float)$value;
     }
+    if ($summary['investmentLow'] !== null && $summary['investmentLow'] < 0 ||
+        $summary['investmentHigh'] !== null && $summary['investmentHigh'] < 0) {
+        wg_fail(422, 'VALIDATION', 'De investering is ongeldig.');
+    }
+    $selected=$summaryInput['selectedIds']??[];
+    if (!is_array($selected) || !array_is_list($selected) || count($selected)>5) {
+        wg_fail(422, 'VALIDATION', 'De maatregelen zijn ongeldig.');
+    }
+    foreach ($selected as $id) {
+        if (!is_string($id) || !in_array($id,['smart-use','solar','battery','insulation','heatpump'],true)) {
+            wg_fail(422, 'VALIDATION', 'De maatregelen zijn ongeldig.');
+        }
+    }
+    $summary['selectedIds']=array_values(array_unique($selected));
     return ['idempotencyKey'=>$key, 'name'=>$name, 'email'=>$email, 'phone'=>$phone, 'postcode'=>$postcode, 'partner'=>$partner, 'interests'=>array_values(array_unique($interests)), 'inputs'=>$clean, 'summary'=>$summary, 'note'=>wg_text($data['note'] ?? '', 'toelichting', 1500), 'consent'=>true, 'consentVersion'=>WG_CONSENT_VERSION, 'consentText'=>WG_CONSENT_TEXT, 'analyticsConsent'=>($data['analyticsConsent'] ?? false) === true];
 }
 function wg_lead_public(array $row, array $config): array {
