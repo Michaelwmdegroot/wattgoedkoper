@@ -22,7 +22,9 @@ function wg_setup_prompt(string $label,bool $secret=false): string {
 if (!extension_loaded('pdo_mysql') || !extension_loaded('openssl')) {
     wg_setup_exit('De PHP-extensies pdo_mysql en openssl zijn vereist. Controleer de Hostinger PHP-configuratie.');
 }
-$options=getopt('',['origin:','username:','private-dir:','piped-input']);
+$options=getopt('',['origin:','username:','private-dir:','database-host:','piped-input']);
+$dbHost=(string)($options['database-host']??'localhost');
+if (!in_array($dbHost,['localhost','127.0.0.1'],true)) { wg_setup_exit('Databasehost moet localhost of 127.0.0.1 zijn.'); }
 $pipedInput=array_key_exists('piped-input',$options);
 $hasTty=function_exists('stream_isatty') && stream_isatty(STDIN);
 if ($pipedInput && $hasTty) {
@@ -75,12 +77,12 @@ $config=[
     'admin_password_hash'=>password_hash($adminpassword,PASSWORD_DEFAULT),
     'encryption_key'=>base64_encode(random_bytes(32)),
     'hmac_key'=>bin2hex(random_bytes(32)), 'retention_days'=>90,
-    'database'=>['driver'=>'mysql','host'=>'localhost','name'=>$dbname,'user'=>$dbuser,'password'=>$dbpassword]
+    'database'=>['driver'=>'mysql','host'=>$dbHost,'name'=>$dbname,'user'=>$dbuser,'password'=>$dbpassword]
 ];
 $dbpassword='';$adminpassword='';
 $config['private_dir']=$private;
 try {
-    $pdo=new PDO('mysql:host=localhost;dbname='.$dbname.';charset=utf8mb4',
+    $pdo=new PDO('mysql:host='.$dbHost.';dbname='.$dbname.';charset=utf8mb4',
         $dbuser,$config['database']['password'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_TIMEOUT=>8]);
     $existing=$pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
     if (count($existing)!==0) {
