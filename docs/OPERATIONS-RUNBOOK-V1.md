@@ -30,7 +30,7 @@ WG_PRIVATE_DIR=/ABSOLUTE/PRIVATE/MAP /ABSOLUTE/PHP-CLI /ABSOLUTE/WEBSITE/scripts
 - De bronindicator leest alleen het bestaande `docs/seo-cluster-v08.json:checkedOn` indien dát bestand daadwerkelijk is mee uitgerold. Bij afwezigheid is status `unknown`, niet 'actueel'. Vanaf >45 dagen geldt `SOURCE_REVIEW_DUE`. Financiële, juridische, subsidie- en productclaims alleen na inhoudelijke menselijke review en PR publiceren.
 - `sitemapOnDisk` en `robotsOnDisk` testen uitsluitend **bestandsaanwezigheid**; apart live HTTP, canonical, indexatie en Search Console controleren.
 - Back-upstatus is bewust `not_verified` totdat daadwerkelijk Hostinger-backup én restore getest zijn. De software kan Hostinger-backupjobs niet uit de applicatie afleiden.
-- Beperk meldingen tot relevante codes: `CRON_MISSING_OR_STALE`, `NIVO_DELIVERY_FAILED`, `SOURCE_REVIEW_DUE`, `SEO_PUBLICATION_FILES_MISSING`. Er is **geen goedgekeurde externe alertontvanger**, dus de eerste levering is alleen een duidelijke dashboardstatus. Geen fictieve alertbevestiging.
+- Beperk meldingen tot relevante codes: `CRON_MISSING_OR_STALE`, `CRON_LAST_RUN_FAILED`, `NIVO_DELIVERY_FAILED`, `SOURCE_REVIEW_DUE`, `SEO_PUBLICATION_FILES_MISSING`. Er is **geen goedgekeurde externe alertontvanger**, dus de eerste levering is alleen een duidelijke dashboardstatus. Geen fictieve alertbevestiging.
 
 ## Storingen en herstel
 
