@@ -31,6 +31,8 @@ jobs:
           python3 scripts/build-preview.py
       - name: Review real browser behavior and capture evidence
         run: node scripts/visual-review.cjs
+      - name: Verify v0.5 plan, advice and admin viewports
+        run: node scripts/visual-review-v05.cjs
       - name: Upload visual review evidence
         if: always()
         uses: actions/upload-artifact@v4
