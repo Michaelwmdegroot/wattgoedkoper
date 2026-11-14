@@ -20,14 +20,14 @@ De code heeft geen Composer- of JavaScript-pakketten nodig voor de backend. De n
 Voor de nieuwe, aan wattgoedkoper.nl gekoppelde Hostinger MySQL-database is het juiste commando:
 
 ```bash
-php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=gekozen-beheernaam
+bash scripts/setup-mysql.sh
 ```
 
 Zie [de volledige MySQL-instructies](HOSTINGER-MYSQL.md). Het oude `scripts/setup.php` is uitsluitend voor SQLite-installaties; draai deze twee scripts niet allebei.
 
 Het script vraagt het wachtwoord via standaardinvoer. Gebruik een uniek wachtwoord van minstens 14 tekens. Zet het wachtwoord nooit in de commandoregel, GitHub, een issue of chat. In een terminal wordt de invoer verborgen. Er zijn geen standaardinloggegevens.
 
-De MySQL-installer vraagt de database- en gebruikersnaam en de twee wachtwoorden via een interactieve SSH-terminal. Standaard maakt het script `../wattgoedkoper-private/` buiten de documentroot. De configuratie bevat alleen de wachtwoordhash, twee willekeurige serversleutels, de canonieke origin en de bewaartermijn. PHP-sessies en de geheime configuratie staan in diezelfde private map; bij MySQL worden de applicatietabellen in de aparte Hostinger-database aangemaakt. De setup weigert bestaande configuratie te overschrijven of private bestanden onder de documentroot op te slaan.
+De veilige Bash-wrapper vraagt de database- en gebruikersnaam en de twee wachtwoorden via een interactieve SSH-terminal. Hij gebruikt `read -s`, want Hostinger schakelt PHP `system()` standaard uit; de wachtwoorden gaan uitsluitend via een pipe naar PHP. Je hoeft `system()` niet aan te zetten. Standaard maakt het script `../wattgoedkoper-private/` buiten de documentroot. De configuratie bevat alleen de wachtwoordhash, twee willekeurige serversleutels, de canonieke origin en de bewaartermijn. PHP-sessies en de geheime configuratie staan in diezelfde private map; bij MySQL worden de applicatietabellen in de aparte Hostinger-database aangemaakt. De setup weigert bestaande configuratie te overschrijven of private bestanden onder de documentroot op te slaan.
 
 Een afwijkend pad kan via `--private-dir=/absoluut/privepad`. Stel dan dezelfde `WG_PRIVATE_DIR`-omgevingsvariabele in voor PHP-webverzoeken, de CLI en het onderhoud. Gebruik bij Hostinger bij voorkeur het standaardpad; dan is geen omgevingsvariabele nodig.
 

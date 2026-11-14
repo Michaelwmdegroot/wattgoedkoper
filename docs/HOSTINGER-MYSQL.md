@@ -15,14 +15,14 @@ Deze wijziging **maakt geen database aan in Hostinger hPanel** en logt niet in o
 3. Ga via **Bestanden → Bestandsbeheer → Terminal** (indien SSH beschikbaar) naar de map waar `index.html`, `api/`, `lib/` en `scripts/` van **wattgoedkoper.nl** naast elkaar staan. Controleer met `pwd` en `ls` dat het de juiste site is.
 4. **Gebruik NIET het oude `php scripts/setup.php`**; dat maakt SQLite aan. Gebruik na deployment van de MySQL-versie:
 
-   `php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=beheerder`
+   `bash scripts/setup-mysql.sh`
 
-   Je mag `beheerder` door een eigen beheerdersnaam vervangen. Het script vraagt vervolgens afzonderlijk om de **MySQL-databasenaam**, de **MySQL-gebruikersnaam**, het **MySQL-wachtwoord** en een **nieuw beheerwachtwoord**. Kopieer de exacte twee namen uit de database-instellingen van wattgoedkoper.nl. Geef **nooit** één van de wachtwoorden door in chat, GitHub, screenshots of commandoregelargumenten.
+   Je mag `beheerder` door een eigen beheerdersnaam vervangen. De Bash-wrapper vraagt vervolgens afzonderlijk om de **MySQL-databasenaam**, de **MySQL-gebruikersnaam**, het **MySQL-wachtwoord** en een **nieuw beheerwachtwoord**. Hostinger schakelt PHP `system()` standaard uit; de Bash-wrapper gebruikt `read -s` en geeft de geheime waarden rechtstreeks aan PHP via stdin, zonder ze in de commandoregel of omgevingsvariabelen te zetten. Kopieer de exacte twee namen uit de database-instellingen van wattgoedkoper.nl. Geef **nooit** één van de wachtwoorden door in chat, GitHub, screenshots of commandoregelargumenten.
 5. Het script controleert de verbinding en dat de database **leeg** is; het weigert bestaande tabellen en bestaande private appconfiguratie. Na succesvol aanmaken zijn er vier tabellen: `leads`, `daily_events`, `rate_limits` en `metadata`.
 6. Controleer `https://wattgoedkoper.nl/api/index.php?action=health`. Verwacht `{"ok":true, ... "configured":true, "databaseReady":true}`. Dat controleert de werkelijke PDO-verbinding. Wanneer de database niet bereikbaar is, meldt de healthcheck dit zonder credentials prijs te geven.
 7. Ga naar `https://wattgoedkoper.nl/admin/`, log in met de gekozen beheernaam en het nieuwe beheerwachtwoord. Verstuur **een zelfgekozen testaanvraag** via het energiehuis; controleer of hij in het dashboard staat en verwijder hem na controle.
 8. Bevestig HTTPS, cookies, toegangsbeveiliging van `lib/`, `scripts/`, `tests/`, `docs/`, `preview/`, de dagelijkse onderhoudstaak en een offsite-backupstrategie. De MySQL-data **én** private `config.php` (inclusief encryptiesleutel) zijn nodig voor herstel.
-9. Voor de e-mailclient, **pas na bevestiging dat de correcte mailbox bestaat**, voer je optioneel `php scripts/setup-mail.php` uit. Het script vraagt uitsluitend het mailwachtwoord via de terminal. Test met één eigen bericht.
+9. Voor de e-mailclient, **pas na bevestiging dat de correcte mailbox bestaat**, voer je optioneel `bash scripts/setup-mail.sh` uit. Het script vraagt uitsluitend het mailwachtwoord via de terminal. Test met één eigen bericht.
 
 ## Belangrijke beveiligingsgrenzen
 

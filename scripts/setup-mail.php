@@ -3,11 +3,17 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require dirname(__DIR__).'/lib/bootstrap.php';
 $config=wg_config();
-if (!$config) { fwrite(STDERR,"Richt eerst het beveiligde dashboard in met scripts/setup.php.\n");exit(1); }
+if (!$config) { fwrite(STDERR,"Richt eerst het beveiligde dashboard in met scripts/setup-mysql.sh.\n");exit(1); }
 $path=$config['private_dir'].'/mail-config.php';
 if (is_file($path)) { fwrite(STDERR,"Er bestaat al een mailconfiguratie. Er is niets gewijzigd.\n");exit(1); }
 fwrite(STDERR,"Wachtwoord voor info@wattgoedkoper.nl (alleen hier, niet in Git/chat): ");
+$pipedInput=in_array('--piped-input',$_SERVER['argv']??[],true);
 $tty=function_exists('stream_isatty')&&stream_isatty(STDIN);
+if($pipedInput && $tty){fwrite(STDERR,"--piped-input is alleen voor de beveiligde Bash-wrapper.\n");exit(1);}
+if(!$pipedInput && (!$tty || !function_exists('system'))){
+    fwrite(STDERR,"Hostinger blokkeert PHP system(). Gebruik: bash scripts/setup-mail.sh\n");
+    exit(1);
+}
 if($tty) { system('stty -echo'); }
 try { $password=rtrim((string)fgets(STDIN),"\r\n"); }
 finally { if($tty) { system('stty echo');fwrite(STDERR,"\n"); } }

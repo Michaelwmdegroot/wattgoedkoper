@@ -30,6 +30,10 @@ Het dag-/nachtbeeld is een illustratie, geen uurprognose. De hoofdgetallen zijn 
 
 Geen live meter-, adres-, PVGIS-, leveranciers- of CRM-koppelingen. De optionele beheerinbox kan na afzonderlijke private serverconfiguratie worden verbonden met Hostinger IMAP/SMTP; de consumenten-tool heeft geen automatische e-mailkoppeling. Geen gegarandeerde besparing, handelsopbrengst, subsidietoekenning of technisch installatieadvies. De advies-API weigert aanvragen zolang veilige productieconfiguratie ontbreekt.
 
+## Hostinger-installatie
+
+Voor de nieuwe WattGoedkoper MySQL-omgeving gebruik je **`bash scripts/setup-mysql.sh`** in de SSH-terminal. Hostinger blokkeert de PHP-functie `system()` standaard; de veilige Bash-wrapper gebruikt `read -s` zonder wachtwoordecho en stuurt de geheimen via stdin naar PHP. **Niet** het oude `php scripts/setup-mysql.php` direct uitvoeren. Zie [Hostinger MySQL-installatie](docs/HOSTINGER-MYSQL.md).
+
 ## Techniek
 
 HTML, CSS en native ES-modules worden direct geserveerd; geen frontendframework of productiebouwstap. De interactieve woning gebruikt lokaal geserveerde WebP-beelden en CSS-maskers. Alle lettertypen en beelden staan in de repository; externe afbeeldingsdiensten of fonts zijn tijdens gebruik niet nodig. PHP 8.2+ met OpenSSL en PDO MySQL (Hostinger) of SQLite (bestaande installaties/tests) verzorgt de advies-API en backoffice. Persoonsgegevens worden versleuteld buiten de openbare webroot opgeslagen, nooit in Git.
