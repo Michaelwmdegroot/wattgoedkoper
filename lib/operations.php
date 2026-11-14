@@ -36,6 +36,7 @@ function wg_ops_status(PDO $db,array $config,?int $now=null): array {
     $now??=time();
     $last=wg_ops_read($db,'ops_last_success_at');
     $started=wg_ops_read($db,'ops_last_start_at');
+    $lastError=wg_ops_read($db,'ops_last_error_code');
     $lastTime=$last?strtotime($last):false;
     $age=$lastTime!==false?max(0,$now-$lastTime):null;
     $maxAge=max(300,min(86400,(int)($config['operations_max_age_seconds']??1800)));
@@ -45,6 +46,7 @@ function wg_ops_status(PDO $db,array $config,?int $now=null): array {
     $source=wg_ops_source_review(dirname(__DIR__).'/docs/seo-cluster-v08.json',$now);
     $warnings=[];
     if($required&&$cronStatus!=='fresh'){$warnings[]='CRON_MISSING_OR_STALE';}
+    if($lastError==='RUN_FAILED'){$warnings[]='CRON_LAST_RUN_FAILED';}
     if(($delivery['failed']??0)>0){$warnings[]='NIVO_DELIVERY_FAILED';}
     if($source['status']==='review_due'){$warnings[]='SOURCE_REVIEW_DUE';}
     $seo=[
@@ -56,7 +58,7 @@ function wg_ops_status(PDO $db,array $config,?int $now=null): array {
       'ok'=>true,
       'cron'=>[
          'monitorEnabled'=>$required,'status'=>$cronStatus,
-         'lastSuccessAt'=>$last,'lastStartAt'=>$started,'ageSeconds'=>$age,
+         'lastSuccessAt'=>$last,'lastStartAt'=>$started,'lastErrorCode'=>$lastError,'ageSeconds'=>$age,
          'maxAgeSeconds'=>$maxAge
       ],
       'delivery'=>$delivery,
