@@ -56,7 +56,7 @@ try {
     $checks++;
     blocked(fn()=>wg_report_validate(array_replace($base,['report'=>array_replace($report,['selectedIds'=>['solar','<img>']])])),422);
     $checks++;
-    blocked(fn()=>wg_report_validate(array_replace($base,['report'=>array_replace($report,['savingsLow'=>-9999.0])])),422);
+    blocked(fn()=>wg_report_validate(array_replace($base,['report'=>array_replace($report,['savingsLow'=>200.0])])),422);
     $checks++;
     blocked(fn()=>wg_report_validate(array_replace($base,['report'=>array_replace($report,['investmentHigh'=>-1])])),422);
     $checks++;
