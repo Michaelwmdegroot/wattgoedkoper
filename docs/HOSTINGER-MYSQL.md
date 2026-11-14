@@ -1,5 +1,8 @@
 # WattGoedkoper — MySQL-installatie op Hostinger
 
+> **Statusupdate 14 november 2026:** de eigenaar heeft de MySQL-installatie via `bash scripts/setup-mysql.sh` **succesvol uitgevoerd**, kon inloggen op `/admin/` en heeft een succesvolle testadviesaanvraag teruggevonden. **NIET opnieuw uitvoeren op deze live-installatie.** Dit bestand bevat het historische eerste-installatie-runbook; zie [actuele overdracht](HANDOFF-2026-11-14-GPT6PRO.md) voor de huidige situatie. Mail is nog niet bewezen aangesloten.
+
+
 Status: voorbereid voor de nieuwe, aan wattgoedkoper.nl gekoppelde MySQL-database; op productie nog niet uitgevoerd.
 
 ## Waarom deze route
