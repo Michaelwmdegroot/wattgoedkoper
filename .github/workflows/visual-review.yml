@@ -37,6 +37,8 @@ jobs:
         run: node scripts/plan-studio-review.cjs
       - name: Verify first-viewport energy home and five visible measures
         run: node scripts/home-cockpit-review.cjs
+      - name: Verify brand assets, homepage guidance and responsive layout
+        run: node scripts/brand-home-review.cjs
       - name: Upload visual review evidence
         if: always()
         uses: actions/upload-artifact@v4
