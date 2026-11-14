@@ -6,5 +6,8 @@ if(preg_match('~(?:^|/)\.|^/(?:lib|scripts|tests|docs)(?:/|$)|^/(?:AGENTS\.md|RE
 if($path==='/api'||$path==='/api/') {require $root.'/api/index.php';return true;}
 if($path==='/admin'||$path==='/admin/'){readfile($root.'/admin/index.html');return true;}
 if($path==='/'){readfile($root.'/index.html');return true;}
-$file=realpath($root.$path);if($file&&str_starts_with($file,$root.DIRECTORY_SEPARATOR)&&is_file($file)){return false;}
+$file=realpath($root.$path);if($file&&str_starts_with($file,$root.DIRECTORY_SEPARATOR)){
+  if(is_dir($file)&&is_file($file.'/index.html')){header('Content-Type: text/html; charset=utf-8');readfile($file.'/index.html');return true;}
+  if(is_file($file)){return false;}
+}
 http_response_code(404);echo 'Niet gevonden';return true;
