@@ -45,7 +45,7 @@ Koppel de bestaande geautoriseerde GitHub-installatie van Hostinger aan de juist
 
 ### 4. Private configuratie
 
-Voer voor de nieuwe Hostinger-database **`php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=gekozen-beheernaam`** uit zoals beschreven in `docs/HOSTINGER-MYSQL.md`. Draai niet eerst het oude SQLite-setupscript. Standaardopslag is `../wattgoedkoper-private/`, buiten de documentroot. Gebruik een uniek beheerderswachtwoord via veilige invoer; toon of commit dit nooit.
+Voer voor de nieuwe Hostinger-database **`bash scripts/setup-mysql.sh`** uit zoals beschreven in `docs/HOSTINGER-MYSQL.md`. Draai niet eerst het oude SQLite-setupscript. Standaardopslag is `../wattgoedkoper-private/`, buiten de documentroot. Gebruik een uniek beheerderswachtwoord via veilige invoer; toon of commit dit nooit.
 
 Back-ups moeten de MySQL-database én de encryptiesleutel/config samen bevatten en buiten Git blijven. Richt dagelijks onderhoud in via `scripts/maintenance.php`. Controleer retentie, back-uprotatie en herstel.
 
