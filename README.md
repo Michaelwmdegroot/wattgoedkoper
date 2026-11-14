@@ -32,13 +32,13 @@ Geen live meter-, adres-, PVGIS-, leveranciers- of CRM-koppelingen. De optionele
 
 ## Techniek
 
-HTML, CSS en native ES-modules worden direct geserveerd; geen frontendframework of productiebouwstap. De interactieve woning gebruikt lokaal geserveerde WebP-beelden en CSS-maskers. Alle lettertypen en beelden staan in de repository; externe afbeeldingsdiensten of fonts zijn tijdens gebruik niet nodig. PHP 8.2+ met PDO SQLite en OpenSSL verzorgt de bestaande advies-API en backoffice. Persoonsgegevens worden versleuteld buiten de openbare webroot opgeslagen, nooit in Git.
+HTML, CSS en native ES-modules worden direct geserveerd; geen frontendframework of productiebouwstap. De interactieve woning gebruikt lokaal geserveerde WebP-beelden en CSS-maskers. Alle lettertypen en beelden staan in de repository; externe afbeeldingsdiensten of fonts zijn tijdens gebruik niet nodig. PHP 8.2+ met OpenSSL en PDO MySQL (Hostinger) of SQLite (bestaande installaties/tests) verzorgt de advies-API en backoffice. Persoonsgegevens worden versleuteld buiten de openbare webroot opgeslagen, nooit in Git.
 
 ```bash
 php -S 127.0.0.1:8080 scripts/router.php
 ```
 
-Het energiehuis werkt direct. `/admin/` en echte adviesopslag blijven gesloten tot de configuratie uit [docs/backend.md](docs/backend.md) is voltooid.
+Het energiehuis werkt direct. `/admin/` en echte adviesopslag blijven gesloten tot de beveiligde serverinstallatie is voltooid. **Gebruik voor de nieuwe Hostinger-database de [MySQL-installatie](docs/HOSTINGER-MYSQL.md), niet het oude SQLite-setupcommando.**
 
 ## Controles
 
@@ -77,6 +77,6 @@ node scripts/visual-review.cjs
 
 ## Documentatie
 
-[Productkeuzes en controlegrenzen](docs/RELEASE.md) · [Rekenmodel en bronnen](docs/research.md) · [Frontendcontract](docs/frontend-contract.md) · [Backend](docs/backend.md) · [Hostinger-route voor later](docs/DEPLOYMENT.md)
+[Hostinger MySQL-installatie](docs/HOSTINGER-MYSQL.md) · [Productkeuzes en controlegrenzen](docs/RELEASE.md) · [Rekenmodel en bronnen](docs/research.md) · [Frontendcontract](docs/frontend-contract.md) · [Backend](docs/backend.md) · [Hostinger-route voor later](docs/DEPLOYMENT.md)
 
 De commerciële relatie met NIVO Groep Holland en Thuisbatterij Team blijft zichtbaar. Het resultaat is bruikbaar zonder contactgegevens en verandert niet door de gekozen adviespartner.
