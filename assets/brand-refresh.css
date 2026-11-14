@@ -27,7 +27,8 @@
 /* The large empty strip above the house becomes a compact action map. */
 @media (min-width: 1101px) {
   .playground-page {
-    --cockpit-intro: 105px;
+    --cockpit-intro: 96px;
+    --cockpit-tile: clamp(108px, 14.5dvh, 122px);
   }
   .playground-page .app-intro {
     height: var(--cockpit-intro);
@@ -188,6 +189,7 @@
 @media (min-width: 1101px) and (max-height: 740px) {
   .playground-page {
     --cockpit-intro: 96px;
+    --cockpit-tile: 101px;
   }
   .playground-page .app-intro h1 { font-size: 34px; }
   .playground-page .intro-path-steps .intro-path-step { min-height: 44px; }
