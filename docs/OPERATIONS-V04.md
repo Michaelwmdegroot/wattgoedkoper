@@ -1,5 +1,7 @@
 # WattGoedkoper 0.4 — dashboard, inbox en leadmagnet
 
+> **Historische documentatie (v0.4).** Voor de nu gebouwde v0.5-branch met NIVO-only advies, rapportmail en verbeterde modals: zie [RELEASE-V05.md](RELEASE-V05.md). De v0.4-roadmap voor partnerkeuze en PDF hieronder is ingehaald door de nieuwe productbesluiten.
+
 > **Statusupdate 14 november:** MySQL, adminlogin en live testadviesaanvraag zijn door eigenaar bevestigd. `info@wattgoedkoper.nl` is in het laatste dashboardbeeld **nog niet gekoppeld**. Dit document beschrijft de eerdere operationele fase; de volgende bouwopdracht staat in [UX/leadfunnel v0.5](UX-LEAD-FUNNEL-V05.md) en [overdracht](HANDOFF-2026-11-14-GPT6PRO.md). Herhaal setup niet.
 
 

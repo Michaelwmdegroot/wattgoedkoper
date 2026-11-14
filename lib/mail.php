@@ -109,7 +109,7 @@ function wg_smtp_cmd($stream,string $line,array $expected): void {
     if (fwrite($stream,$line."\r\n")===false) { throw new RuntimeException('SMTP transport failed'); }
     wg_smtp_expect($stream,$expected);
 }
-function wg_mail_send(array $config,string $recipient,string $subject,string $body): void {
+function wg_mail_send(array $config,string $recipient,string $subject,string $body,?string $html=null): void {
     $mail=wg_mail_settings($config);
     if (!$mail) { wg_fail(503,'MAIL_SETUP_REQUIRED','De mailbox is nog niet ingesteld.'); }
     if (!filter_var($recipient,FILTER_VALIDATE_EMAIL) || strlen($recipient)>254 || preg_match('/[<>\\x00-\\x20\\x7F]/',$recipient)) {
@@ -119,6 +119,7 @@ function wg_mail_send(array $config,string $recipient,string $subject,string $bo
         wg_fail(422,'VALIDATION','Controleer het onderwerp.');
     }
     if (trim($body)==='' || strlen($body)>15000) { wg_fail(422,'VALIDATION','Controleer de berichttekst.'); }
+    if ($html!==null && (trim($html)==='' || strlen($html)>30000)) { wg_fail(422,'VALIDATION','Controleer het e-mailrapport.'); }
     $context=stream_context_create(['ssl'=>[
         'verify_peer'=>true,'verify_peer_name'=>true,'peer_name'=>'smtp.hostinger.com',
         'allow_self_signed'=>false,'SNI_enabled'=>true
@@ -135,17 +136,28 @@ function wg_mail_send(array $config,string $recipient,string $subject,string $bo
         wg_smtp_cmd($socket,'MAIL FROM:<'.$mail['username'].'>',[250]);
         wg_smtp_cmd($socket,'RCPT TO:<'.$recipient.'>',[250,251]);
         wg_smtp_cmd($socket,'DATA',[354]);
+        $boundary='wg-report-'.bin2hex(random_bytes(12));
         $headers=[
             'Date: '.gmdate('D, d M Y H:i:s').' +0000',
             'From: WattGoedkoper <info@wattgoedkoper.nl>',
             'To: <'.$recipient.'>',
             'Subject: =?UTF-8?B?'.base64_encode($subject).'?=',
             'Message-ID: <'.bin2hex(random_bytes(12)).'@wattgoedkoper.nl>',
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: base64'
+            'MIME-Version: 1.0'
         ];
-        $data=implode("\r\n",$headers)."\r\n\r\n".chunk_split(base64_encode($body),76,"\r\n")."\r\n.\r\n";
+        if ($html===null) {
+            $headers[]='Content-Type: text/plain; charset=UTF-8';
+            $headers[]='Content-Transfer-Encoding: base64';
+            $mime=chunk_split(base64_encode($body),76,"\r\n");
+        } else {
+            $headers[]='Content-Type: multipart/alternative; boundary="'.$boundary.'"';
+            $mime='--'.$boundary."\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+                .chunk_split(base64_encode($body),76,"\r\n")
+                ."\r\n--".$boundary."\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+                .chunk_split(base64_encode($html),76,"\r\n")
+                ."\r\n--".$boundary."--\r\n";
+        }
+        $data=implode("\r\n",$headers)."\r\n\r\n".$mime."\r\n.\r\n";
         for($offset=0,$len=strlen($data);$offset<$len;){
             $written=fwrite($socket,substr($data,$offset));
             if($written===false||$written===0){throw new RuntimeException('SMTP transport interrupted');}

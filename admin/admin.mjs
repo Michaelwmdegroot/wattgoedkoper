@@ -80,26 +80,111 @@ async function refresh() {
 }
 function detailField(label,value) { const item=el('div');item.append(el('dt','',label),el('dd','',value||'Niet ingevuld'));return item; }
 function showDetail(lead) {
-  state.current=lead;const root=$('#lead-detail');root.replaceChildren();const d=lead.data;
-  const header=el('div','detail-header');header.append(el('span','eyebrow',lead.id));const title=el('h2','',d.name);title.id='detail-title';header.append(title,el('p','',`Ontvangen op ${date(lead.createdAt)} · ${partners[lead.partner]}`));root.append(header);
-  const fields=el('dl','detail-grid');fields.append(detailField('E-mailadres',d.email),detailField('Telefoonnummer',d.phone),detailField('Postcode',d.postcode),detailField('Interesse',d.interests.map(x=>interests[x]||x).join(', ')));root.append(fields);
-  if(d.note){const note=el('section','detail-section');note.append(el('h3','','Toelichting'),el('p','',d.note));root.append(note);}
-  const scan=el('section','detail-section');scan.append(el('h3','','Meegestuurde energiescan'),el('p','small','Deze invoer en berekening komen uit de browser. Controleer de gegevens met de klant; dit is een indicatie en geen offerte of geverifieerde meting.'));
-  const inputList=el('div','input-list');for(const [key,value] of Object.entries(d.inputs||{})){const item=el('div');item.append(el('span','',inputNames[key]||key),document.createTextNode(value===true?'Ja':value===false?'Nee':value===null?'Onbekend':String(value)));inputList.append(item);}scan.append(inputList);
-  if(d.summary?.modelVersion)scan.append(el('p','small',`Model ${d.summary.modelVersion} · rekenjaar ${d.summary.year||'onbekend'} · door bezoeker meegestuurde besparingsindicatie € ${d.summary.annualSavingsLow??'—'} tot € ${d.summary.annualSavingsHigh??'—'} per jaar.`));root.append(scan);
-  const consent=el('section','detail-section');consent.append(el('h3','','Toestemming'),el('p','',d.consentText),el('p','small',`Versie ${d.consentVersion} · geregistreerd ${date(d.acceptedAt)} · geselecteerde partner: ${partners[lead.partner]}. Statistieken: ${d.analyticsConsent?'toegestaan':'niet toegestaan'}.`));root.append(consent);
-  const actions=el('div','detail-actions');const label=el('label','','Status');label.htmlFor='detail-status';const select=el('select');select.id='detail-status';for(const [key,value] of Object.entries(statusNames)){const option=el('option','',value);option.value=key;option.selected=key===lead.status;select.append(option);}
-  const save=el('button','outline-button','Opslaan');save.type='button';save.addEventListener('click',async()=>{save.disabled=true;try{await api('admin_status',{id:lead.id,status:select.value});$('#lead-dialog').close();message('Status bijgewerkt.',true);await refresh();}catch(error){message(error.message);}finally{save.disabled=false;}});
+  state.current=lead;state.detailReturn=document.activeElement;
+  const root=$('#lead-detail');root.replaceChildren();root.className='detail-v05';
+  const d=lead.data,summary=d.summary||{},selected=Array.isArray(summary.selectedIds)?summary.selectedIds:[];
+  const money=value=>Number.isFinite(Number(value))&&value!==null?
+    new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(value)):'Niet beschikbaar';
+  const savings=summary.annualSavingsLow!=null&&summary.annualSavingsHigh!=null?
+    money(summary.annualSavingsLow)+' – '+money(summary.annualSavingsHigh):'Niet meegestuurd';
+  const investment=summary.investmentLow!=null&&summary.investmentHigh!=null?
+    money(summary.investmentLow)+' – '+money(summary.investmentHigh):'Niet meegestuurd';
+  const header=el('header','detail-v05-header');
+  const identity=el('div');identity.append(el('span','eyebrow','ADVIESAANVRAAG · '+lead.id));
+  const title=el('h2','',d.name);title.id='detail-title';
+  identity.append(title,el('p','',date(lead.createdAt)+' · '+(partners[lead.partner]||lead.partner)));
+  const badge=el('span','tag '+lead.status,statusNames[lead.status]||lead.status);
+  header.append(identity,badge);root.append(header);
+  const columns=el('div','detail-v05-columns');
+  const contact=el('section','detail-v05-card');
+  contact.append(el('span','eyebrow','01 / CONTACT'),el('h3','','Klant en vraag'));
+  const fields=el('dl','detail-v05-fields');
+  fields.append(detailField('E-mailadres',d.email),detailField('Telefoonnummer',d.phone),
+    detailField('Postcode',d.postcode),detailField('Interesse',(d.interests||[]).map(x=>interests[x]||x).join(', ')));
+  contact.append(fields);
+  contact.append(el('span','detail-v05-subtitle','Toelichting'));
+  contact.append(el('p','detail-v05-note',d.note||'Geen toelichting ontvangen.'));
+  const overview=el('section','detail-v05-card detail-v05-plan');
+  overview.append(el('span','eyebrow','02 / ENERGIEPLAN'),el('h3','','De belangrijkste cijfers'));
+  const metrics=el('div','detail-v05-metrics');
+  const savingsCard=el('div','detail-v05-metric');
+  savingsCard.append(el('span','','Besparingsindicatie per jaar'),el('strong','',savings));
+  const investmentCard=el('div','detail-v05-metric');
+  investmentCard.append(el('span','','Indicatieve investering'),el('strong','',investment));
+  metrics.append(savingsCard,investmentCard);overview.append(metrics);
+  const year=summary.year==null?'Niet meegestuurd':String(summary.year);
+  overview.append(el('p','detail-v05-year','Rekenjaar '+year+' · door bezoeker ingestuurde indicaties, geen offerte'));
+  const chips=el('div','detail-v05-chips');
+  for(const id of selected){chips.append(el('span','tag',interests[id]||({'smart-use':'Slimmer gebruik','solar':'Zonnepanelen','battery':'Thuisbatterij','insulation':'Isolatie','heatpump':'Warmtepomp'}[id])||id));}
+  if(!selected.length)chips.append(el('span','small','Maatregelen ontbreken in de oude scan of er zijn geen nieuwe gekozen.'));
+  overview.append(el('span','detail-v05-subtitle','Geselecteerde maatregelen'),chips);
+  columns.append(contact,overview);root.append(columns);
+  const extras=el('div','detail-v05-extras');
+  const scan=el('details','detail-v05-extra');
+  scan.append(el('summary','','Volledige meegestuurde energiescan'));
+  const scanBody=el('div','detail-v05-extra-body');
+  scanBody.append(el('p','small','Door bezoeker ingevoerd en berekend. Controleer met de klant; dit is geen geverifieerde meting.'));
+  const inputList=el('div','input-list');
+  for(const [key,value] of Object.entries(d.inputs||{})){
+    const item=el('div');item.append(el('span','',inputNames[key]||key),
+      document.createTextNode(value===true?'Ja':value===false?'Nee':value===null?'Onbekend':String(value)));
+    inputList.append(item);
+  }
+  scanBody.append(inputList);
+  scanBody.append(el('p','small','Rekenmodel '+(summary.modelVersion||'onbekend')+' · rekenjaar '+year));
+  scan.append(scanBody);
+  const consent=el('details','detail-v05-extra');
+  consent.append(el('summary','','Toestemming en auditbewijs'));
+  const consentBody=el('div','detail-v05-extra-body');
+  consentBody.append(el('p','',d.consentText||'Historische consenttekst ontbreekt.'));
+  consentBody.append(el('p','small','Versie '+(d.consentVersion||'onbekend')+' · '+
+    (d.acceptedAt?date(d.acceptedAt):'tijdstip onbekend')+' · gekozen partner: '+
+    (partners[lead.partner]||lead.partner)+' · statistieken: '+(d.analyticsConsent?'toegestaan':'niet toegestaan')));
+  if(d.note)consentBody.append(el('p','small','Volledige toelichting: '+d.note));
+  consent.append(consentBody);
+  extras.append(scan,consent);root.append(extras);
+  const actions=el('footer','detail-v05-actions');
   const emailClient=el('button','outline-button','Mail klant ↗');
   emailClient.type='button';emailClient.disabled=!d.email;
   emailClient.addEventListener('click',()=>{
     $('#lead-dialog').close();openComposer({to:d.email,subject:'Jouw energieplan bij WattGoedkoper'});
     location.hash='#inbox';
   });
-  actions.append(emailClient);
-  const remove=el('button','text-button danger','Aanvraag verwijderen');remove.type='button';remove.addEventListener('click',()=>{remove.disabled=true;const confirm=el('div','confirm-delete');confirm.append(el('p','','Deze aanvraag en contactgegevens worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.'));const yes=el('button','outline-button','Definitief verwijderen');yes.addEventListener('click',async()=>{yes.disabled=true;try{await api('admin_delete',{id:lead.id});$('#lead-dialog').close();message('Aanvraag verwijderd.',true);await refresh();}catch(error){message(error.message);yes.disabled=false;}});const no=el('button','text-button','Annuleren');no.addEventListener('click',()=>{confirm.remove();remove.disabled=false;});confirm.append(yes,document.createTextNode(' '),no);root.append(confirm);});actions.append(label,select,save,remove);root.append(actions);
+  const statusLabel=el('label','','Status');statusLabel.htmlFor='detail-status';
+  const select=el('select');select.id='detail-status';
+  for(const [key,value] of Object.entries(statusNames)){
+    const option=el('option','',value);option.value=key;option.selected=key===lead.status;select.append(option);
+  }
+  const save=el('button','outline-button','Status opslaan');save.type='button';
+  save.addEventListener('click',async()=>{
+    save.disabled=true;
+    try{await api('admin_status',{id:lead.id,status:select.value});$('#lead-dialog').close();
+      message('Status bijgewerkt.',true);await refresh();}
+    catch(error){message(error.message);}finally{save.disabled=false;}
+  });
+  const remove=el('button','text-button danger','Verwijderen');
+  remove.type='button';
+  remove.addEventListener('click',()=>{
+    remove.disabled=true;const confirm=el('div','confirm-delete');
+    confirm.append(el('p','','Deze aanvraag en contactgegevens definitief verwijderen? Dit kan niet ongedaan worden gemaakt.'));
+    const yes=el('button','outline-button','Definitief verwijderen');yes.type='button';
+    yes.addEventListener('click',async()=>{
+      yes.disabled=true;
+      try{await api('admin_delete',{id:lead.id});$('#lead-dialog').close();
+        message('Aanvraag verwijderd.',true);await refresh();}
+      catch(error){message(error.message);yes.disabled=false;}
+    });
+    const no=el('button','text-button','Annuleren');no.type='button';
+    no.addEventListener('click',()=>{confirm.remove();remove.disabled=false;remove.focus();});
+    confirm.append(yes,no);root.append(confirm);yes.focus();
+  });
+  actions.append(emailClient,statusLabel,select,save,remove);root.append(actions);
+  $('#lead-dialog').classList.add('lead-dialog-v05');
   $('#lead-dialog').showModal();
 }
+$('#lead-dialog').addEventListener('close',()=>{
+  if(state.detailReturn?.isConnected)state.detailReturn.focus({preventScroll:true});
+});
 
 function mailStatus(text,isError=false){
   const root=$('#mail-status');root.textContent=text;root.classList.toggle('mail-error',isError);

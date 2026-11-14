@@ -1,6 +1,7 @@
 import { DEFAULT_INPUT, formatEuro, MODEL_VERSION, SOURCES } from './model.mjs';
 import { simulateHome, UPGRADES } from './playground-model.mjs';
 import { renderHouseScene } from './house-scene.mjs';
+import { renderPlanDashboard, renderPlanWorkspace } from './plan-ui.mjs';
 
 // A house to experiment with. Detailed inputs are optional; results never need contact details.
 const $ = (selector, parent = document) => parent.querySelector(selector);
@@ -18,7 +19,7 @@ const STORE_ANALYTICS = 'wattgoedkoper-analytics-v1';
 const HOME_TYPES = [['terraced','Rijwoning'],['corner','Hoekhuis'],['semi','2-onder-1-kap'],['detached','Vrijstaand'],['apartment','Appartement']];
 const UPGRADE_ART = {solar:'/assets/images/solar-card.webp',battery:'/assets/images/battery-card.webp',heatpump:'/assets/images/heatpump-card.webp',insulation:'/assets/images/insulation-card.webp','smart-use':'/assets/images/smart-use-card.webp'};
 const PERIODS = [['before1945','Vóór 1945'],['1945-1974','1945 – 1974'],['1975-1991','1975 – 1991'],['1992-2005','1992 – 2005'],['after2005','Na 2005']];
-const state = { input:{...DEFAULT_INPUT}, selectedIds:[], tab:'home', view:'current', daylight:65, personalized:false, tariffsEdited:false, report:null, scene:null, history:[], dialog:null, dialogReturn:null, analytics:false, session:null, sessionPromise:null, leadFingerprint:null, leadKey:null, started:false };
+const state = { input:{...DEFAULT_INPUT}, selectedIds:[], tab:'home', view:'current', daylight:65, personalized:false, tariffsEdited:false, report:null, scene:null, history:[], dialog:null, dialogReturn:null, analytics:false, session:null, sessionPromise:null, leadFingerprint:null, leadKey:null, reportFingerprint:null, reportKey:null, started:false };
 try { state.analytics = localStorage.getItem(STORE_ANALYTICS) === 'yes'; } catch {}
 const ICONS = {
   solar:'<path d="M6 8h12l3 11H3L6 8Z"/><path d="M5 13h14M9 8 8 19m7-11 1 11M9 22h6M12 19v3M12 1v3M4 3l2 2m14-2-2 2"/>',
@@ -160,10 +161,11 @@ function undo() {const previous=state.history.pop();if(!previous)return;Object.a
 // Only the optional detail panels use conventional inputs.
 function openDialog(kind,title,body,kicker='MAAK HET PERSOONLIJK') {
   const dialog=$('#tool-dialog');if(!dialog.open)state.dialogReturn=document.activeElement;
+  dialog.classList.toggle('plan-dialog',kind==='plan');dialog.classList.toggle('advice-dialog',kind==='advice');
   state.dialog=kind;$('#dialog-title').textContent=title;$('#dialog-kicker').textContent=kicker;$('#dialog-content').innerHTML=body;
   if(!dialog.open)dialog.showModal();dialog.scrollTop=0;$('#dialog-title').tabIndex=-1;$('#dialog-title').focus({preventScroll:true});
 }
-function closeDialog() {$('#tool-dialog').close();state.dialog=null;if(state.dialogReturn?.isConnected)state.dialogReturn.focus({preventScroll:true});}
+function closeDialog() {if(planReturnFromSettings){planReturnFromSettings=false;openPlan();return;}$('#tool-dialog').close();state.dialog=null;(state.dialogReturn?.isConnected?state.dialogReturn:$('#open-plan'))?.focus({preventScroll:true});}
 function numeric(name,label,{unit='',min=0,max=100000,step='any',help='',value=state.input[name]}={}) {
   return `<div class="field"><label for="input-${name}">${escape(label)}</label><div class="input-unit"><input id="input-${name}" name="${name}" type="number" inputmode="decimal" min="${min}" max="${max}" step="${step}" value="${escape(value)}" required${help?` aria-describedby="help-${name}"`:''}>${unit?`<span>${escape(unit)}</span>`:''}</div>${help?`<small class="field-help" id="help-${name}">${escape(help)}</small>`:''}</div>`;
 }
@@ -226,52 +228,173 @@ function openUpgrade(id) {
 function openBattery() {
   openDialog('battery','Hoeveel stroom wil je bewaren?',`<p class="dialog-intro">Groter is niet vanzelf beter. Probeer een andere capaciteit en kijk hoeveel extra stroom je nog zelf kunt gebruiken.</p>${formShell(`${numeric('batteryCapacity','Bruikbare batterijcapaciteit',{unit:'kWh',min:1,max:100,step:.5})}${numeric('batteryInvestment','Totale aanschaf en installatie',{unit:'€',min:100,max:200000})}<p class="dialog-note">Deze jaarsimulatie hanteert 90% opslagrendement en maximaal circa 180 equivalente cycli in het centrale scenario. Met uurdata kan de afstemming nauwkeuriger.</p>`)}`);bindSettings();
 }
-function planBody() {
-  const r=state.report,flow=r.scenario.flow;
-  const rows=[['Totaal stroomverbruik','electricityUse','kWh'],['Afname van het net','gridImport','kWh'],['Opwek zonnepanelen','pvProduction','kWh'],['Teruglevering','gridExport','kWh'],['Gasverbruik','gasUse','m³']];
-  return `<p class="dialog-intro">${state.personalized?'Jouw instellingen, jouw keuzes.':'Dit is het voorbeeldhuis; pas het aan voor jouw situatie.'} Je kunt dit plan bewaren en blijven aanpassen.</p><div class="detail-stat-grid"><div class="detail-stat"><span>Besparing per jaar</span><strong>${range(r.savingsLow,r.savingsHigh)}</strong><small>rekenjaar ${r.year} · variabele kosten</small></div><div class="detail-stat"><span>Eenmalig investeren</span><strong>${range(r.investmentLow,r.investmentHigh)}</strong><small>inclusief indicatieve installatie, vóór subsidie</small></div></div>
-    <div class="plan-measures">${r.selectedIds.length?r.selectedIds.map(id=>`<div class="plan-measure-row"><span class="equipment-icon">${icon(id)}</span><div><strong>${escape(labelFor(id))}</strong><span>${range(r.available.find(a=>a.id===id).investmentLow,r.available.find(a=>a.id===id).investmentHigh)} investering</span></div><button class="text-button no-print" data-upgrade-info="${id}">Details ↗</button></div>`).join(''):'<p>Je hebt nog geen upgrades gekozen. Dit is je huidige situatie.</p>'}</div>
-    <div class="result-warnings">${r.budget.exceeded?`<p class="result-warning">De bovengrens ligt ${money(r.budget.overBy)} boven je budget van ${money(r.budget.amount)}.</p>`:''}
-    <h3>Waar gaat je energie heen?</h3><table class="plan-table"><thead><tr><th scope="col">Per jaar</th><th scope="col">Nu</th><th scope="col">Met je plan</th></tr></thead><tbody>${rows.map(([label,key,unit])=>`<tr><th scope="row">${label}</th><td>${number(r.baseline.flow[key])} ${unit}</td><td>${number(flow[key])} ${unit}</td></tr>`).join('')}<tr><th scope="row">Variabele energiekosten</th><td>${money(r.baseline.bill.total)}</td><td>${money(r.scenario.bill.total)}</td></tr></tbody></table>
-    <div class="dialog-actions no-print"><button class="button button-yellow" data-save>Bewaar op mijn apparaat</button><button class="button button-ghost" data-print>Bewaar als PDF ↗</button></div>
-    <details class="plan-assumptions"><summary>Zo komen we aan deze indicatie</summary><p>Rekenmodel ${escape(MODEL_VERSION)}. De besparing is een bandbreedte op basis van dezelfde woning en tarieven. De dag-nachtanimatie is illustratief en is geen uurprognose.</p><ul>${r.warnings.map(item=>`<li>${escape(item)}</li>`).join('')}</ul><table class="plan-table"><tbody>${r.assumptions.map(a=>`<tr><th scope="row">${escape(a.label)}</th><td>${escape(a.value)}</td></tr>`).join('')}</tbody></table><a href="/rekenmodel.html">Volledige rekenmethode en bronverwijzingen ↗</a></details>
-    <section class="advice-callout no-print"><span class="mini-label">VAN IDEE NAAR EEN PASSEND PLAN</span><h3>Wil je hier samen naar kijken?</h3><p>Je kunt zelf verder spelen of vrijblijvend advies vragen aan NIVO Groep Holland of Thuisbatterij Team. Je kiest zelf met wie je je gegevens deelt.</p><button class="button button-ink" data-dialog="advice">Bespreek mijn energieplan ${icon('arrow')}</button></section><p class="dialog-note">Een oriëntatie op jouw mogelijkheden. Geen offerte, technisch woningadvies of besparingsgarantie.</p>`;
+const planUI={tab:'overview',period:'year',chart:'cost',reference:null,inspected:null};
+function planOptions(){return {r:state.report,personalized:state.personalized,tariffsEdited:state.tariffsEdited,ui:{...planUI,canUndo:state.history.length>0}};}
+function planBody(){return renderPlanDashboard(planOptions());}
+function updatePlanWorkspace(focusAction=null,focusValue=''){
+  if(state.dialog!=='plan')return;
+  const panel=$('#ps-panel'),scroll=panel?.scrollTop||0;
+  $('#plan-studio-live').innerHTML=renderPlanWorkspace(planOptions());
+  const next=$('#ps-panel');if(next)next.scrollTop=['tab','inspect'].includes(focusAction)?0:scroll;
+  if(focusAction){
+    const button=$$('[data-plan-action]').find(el=>el.dataset.planAction===focusAction&&el.dataset.planValue===String(focusValue));
+    button?.focus({preventScroll:true});
+  }
+  $('#plan-live-announcement').textContent=`Plan bijgewerkt. Besparing ${money(state.report.savings)} per jaar. Investering ${range(state.report.investmentLow,state.report.investmentHigh)}.`;
 }
-function openPlan() {openDialog('plan','Dit is jouw energieplan.',planBody(),'JOUW HUIS. JOUW KEUZES.');track('scan_complete');}
-function saveHome() {try{localStorage.setItem(STORE_HOME,JSON.stringify({...snapshot(),savedAt:new Date().toISOString()}));toast('Je huis en plan zijn op dit apparaat bewaard. Contactgegevens worden niet bewaard.');renderControls();}catch{toast('Bewaren is niet mogelijk in deze browser. Je kunt je plan ook als PDF opslaan.');}}
+let planReturnFromSettings=false;
+$('#tool-dialog').addEventListener('click',event=>{
+  const target=event.target.closest('[data-plan-action]');if(!target)return;
+  const action=target.dataset.planAction,value=target.dataset.planValue;
+  if(action==='tab'){planUI.tab=value;planUI.inspected=null;}
+  else if(action==='period')planUI.period=value;
+  else if(action==='chart')planUI.chart=value;
+  else if(action==='year')changeInput('year',Number(value));
+  else if(action==='toggle')toggleUpgrade(value);
+  else if(action==='recommend')recommend();
+  else if(action==='undo')undo();
+  else if(action==='inspect'){planUI.tab='measures';planUI.inspected=planUI.inspected===value?null:value;}
+  else if(action==='reference'){const r=state.report;planUI.reference={year:r.year,savings:r.savings,investmentLow:r.investmentLow,investmentHigh:r.investmentHigh};}
+  else if(action==='clear-reference')planUI.reference=null;
+  else if(action==='dialog'){planReturnFromSettings=true;DIALOGS[value]?.();return;}
+  updatePlanWorkspace(action==='inspect'?'inspect':action,value);
+});
+$('#tool-dialog').addEventListener('keydown',event=>{
+  if(event.key==='Tab'){
+    const dialog=event.currentTarget;
+    const items=[...dialog.querySelectorAll('button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),a[href],summary,[tabindex]:not([tabindex="-1"])')]
+      .filter(el=>el.tabIndex>=0&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+    const first=items[0],last=items.at(-1),active=document.activeElement;
+    if(items.length&&(!items.includes(active)||(event.shiftKey&&active===first)||(!event.shiftKey&&active===last))){
+      event.preventDefault();(event.shiftKey?last:first).focus();
+    }
+    return;
+  }
+  const tab=event.target.closest('[role="tab"][data-plan-action="tab"]');
+  if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();const ids=['overview','measures','evidence'];let i=ids.indexOf(tab.dataset.planValue);
+  i=event.key==='Home'?0:event.key==='End'?2:(i+(event.key==='ArrowRight'?1:2))%3;
+  planUI.tab=ids[i];updatePlanWorkspace('tab',planUI.tab);
+});
+
+function openPlan() {
+  openDialog('plan','Jouw huis. Een slimmer plan.',planBody(),'JOUW PERSOONLIJKE ENERGIEPLAN');
+  track('scan_complete');
+  if(document.querySelector('.preview-ribbon')){$('#report-status').textContent='Offline preview · geen e-mailverzending. Je plan blijft volledig bruikbaar.';return;} // offline demo never uses backend
+  ensureSession().then(session=>{
+    if(state.dialog!=='plan'||session.reportMailEnabled)return;
+    const button=$('#report-send'),status=$('#report-status');
+    if(button)button.disabled=true;
+    const email=$('#report-email');if(email){email.disabled=true;email.placeholder='Rapportmail wordt ingericht';}
+    if(status)status.textContent='Rapportmail wordt ingericht. Je kunt je plan wel gratis bekijken en je huis bewaren.';
+  }).catch(()=>{
+    if(state.dialog!=='plan')return;
+    const button=$('#report-send'),status=$('#report-status');
+    if(button)button.disabled=true;
+    const email=$('#report-email');if(email){email.disabled=true;email.placeholder='Rapportmail wordt ingericht';}
+    if(status)status.textContent='Rapportmail is op dit moment niet beschikbaar. De berekening blijft gratis.';
+  });
+}
+function saveHome() {try{localStorage.setItem(STORE_HOME,JSON.stringify({...snapshot(),savedAt:new Date().toISOString()}));toast('Je huis en plan zijn op dit apparaat bewaard. Contactgegevens worden niet bewaard.');renderControls();}catch{toast('Bewaren is niet mogelijk in deze browser. Je kunt de berekening wel blijven bekijken.');}}
 function restoreHome() {
   try{const saved=JSON.parse(localStorage.getItem(STORE_HOME));if(!saved?.input||!Array.isArray(saved.selectedIds))throw new Error();const r=simulateHome(saved.input,saved.selectedIds);remember();state.input=r.input;state.selectedIds=r.selectedIds;state.personalized=Boolean(saved.personalized);state.tariffsEdited=Boolean(saved.tariffsEdited);state.view='plan';refresh();toast('Je bewaarde huis is terug.');}catch{toast('Het bewaarde huis kon niet worden geopend. Je huidige huis blijft staan.');}
 }
 function openPrivacy() {
-  openDialog('privacy','Jouw gegevens blijven van jou.',`<p class="dialog-intro">Spelen en rekenen gebeurt in je browser. Je woninggegevens gaan alleen mee als je zelf een adviesaanvraag verstuurt.</p><label class="checkbox-line"><input id="analytics-consent" type="checkbox" ${state.analytics?'checked':''}><span>Ik help WattGoedkoper verbeteren met anonieme tellingen van gebruik. Dit is optioneel; mijn woning- en contactgegevens worden niet in deze tellingen opgenomen.</span></label><div class="dialog-actions"><button class="button button-yellow" data-save-privacy>Bewaar mijn voorkeur</button><button class="button button-ghost" data-delete-home>Verwijder bewaard huis</button></div><p class="dialog-note">Een huis bewaren gebeurt alleen als je daar zelf voor kiest. <a href="/privacy.html">Lees de privacyverklaring.</a></p>`,'JIJ HOUDT DE REGIE');
+  openDialog('privacy','Jouw gegevens blijven van jou.',`<p class="dialog-intro">Spelen en rekenen gebeurt in je browser. Je woninggegevens gaan alleen mee als je zelf een adviesaanvraag doet. Bij een rapportmail worden enkel de beperkte plansamenvatting en je e-mailadres verzonden voor bezorging.</p><label class="checkbox-line"><input id="analytics-consent" type="checkbox" ${state.analytics?'checked':''}><span>Ik help WattGoedkoper verbeteren met anonieme tellingen van gebruik. Dit is optioneel; mijn woning- en contactgegevens worden niet in deze tellingen opgenomen.</span></label><div class="dialog-actions"><button class="button button-yellow" data-save-privacy>Bewaar mijn voorkeur</button><button class="button button-ghost" data-delete-home>Verwijder bewaard huis</button></div><p class="dialog-note">Een huis bewaren gebeurt alleen als je daar zelf voor kiest. <a href="/privacy.html">Lees de privacyverklaring.</a></p>`,'JIJ HOUDT DE REGIE');
 }
 
 function openAdvice() {
-  openDialog('advice','Neem je energiehuis mee in het gesprek.',`<p class="dialog-intro">Je gekozen upgrades en instellingen gaan mee, zodat een adviseur gericht kan meedenken. Je kiest wie contact met je mag opnemen.</p><form id="advice-form"><fieldset class="advice-partners"><legend>Met wie wil je je plan bespreken?</legend><div class="choice-grid">${[['nivo','NIVO Groep Holland','Zonnepanelen, warmte en verduurzaming'],['tbt','Thuisbatterij Team','Batterij en eigen energiegebruik'],['either','Beide adviespartners','Een breder plan']].map(([value,label,description])=>`<label class="choice-card"><input type="radio" name="partner" value="${value}" required><span><strong>${label}</strong><small>${description}</small></span></label>`).join('')}</div></fieldset><div class="dialog-grid"><div class="field"><label for="lead-name">Je naam</label><input id="lead-name" name="name" autocomplete="name" maxlength="100" required></div><div class="field"><label for="lead-postcode">Postcode <small>(optioneel)</small></label><input id="lead-postcode" name="postcode" autocomplete="postal-code" maxlength="7" pattern="[1-9][0-9]{3} ?[A-Za-z]{2}" placeholder="1234 AB"></div><div class="field"><label for="lead-email">E-mailadres</label><input id="lead-email" name="email" type="email" autocomplete="email" maxlength="254"><small class="field-help">E-mail óf telefoon is voldoende.</small></div><div class="field"><label for="lead-phone">Telefoonnummer</label><input id="lead-phone" name="phone" type="tel" autocomplete="tel" maxlength="30"></div></div><div class="field"><label for="lead-note">Waar ben je benieuwd naar? <small>(optioneel)</small></label><textarea id="lead-note" name="note" rows="3" maxlength="800"></textarea></div><div class="honeypot" aria-hidden="true"><label>Laat leeg<input name="website" tabindex="-1" autocomplete="off"></label></div><label class="checkbox-line"><input type="checkbox" name="consent" required><span>Ik vraag de hierboven gekozen adviespartner(s) om contact met mij op te nemen over mijn energieplan. Zij mogen daarvoor mijn contactgegevens, scanantwoorden en berekende indicatie ontvangen en gebruiken. Ik heb de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a> gelezen. Ik kan mijn toestemming intrekken.</span></label><div id="advice-error" class="form-error" role="alert" hidden></div><div class="dialog-actions"><button type="submit" class="button button-yellow" id="lead-submit">Bespreek mijn plan ${icon('arrow')}</button><button type="button" class="text-button" data-dialog="plan">Terug naar mijn plan</button></div><p class="dialog-note">Je krijgt alleen een bevestiging nadat je aanvraag is opgeslagen. Je plan wordt niet automatisch per e-mail verstuurd.</p></form>`,'ADVIES, ALS JIJ DAT WILT');
-  $('#advice-form').addEventListener('submit',submitLead);track('advice_open');ensureSession().catch(error=>{if(state.dialog==='advice')showError($('#advice-error'),error.message);});
+  const html=[
+    '<p class="dialog-intro">Wil je dat er iemand met je meedenkt? Laat een contactmogelijkheid achter. Je energieplan gaat mee.</p>',
+    '<form id="advice-form" class="advice-compact">',
+      '<div class="dialog-grid">',
+        '<div class="field"><label for="lead-name">Je naam</label><input id="lead-name" name="name" autocomplete="name" maxlength="100" required></div>',
+        '<div class="field"><label for="lead-postcode">Postcode <small>(optioneel)</small></label><input id="lead-postcode" name="postcode" autocomplete="postal-code" maxlength="7" pattern="[1-9][0-9]{3} ?[A-Za-z]{2}" placeholder="1234 AB"></div>',
+        '<div class="field"><label for="lead-email">E-mailadres</label><input id="lead-email" name="email" type="email" autocomplete="email" maxlength="254"></div>',
+        '<div class="field"><label for="lead-phone">Telefoonnummer</label><input id="lead-phone" name="phone" type="tel" autocomplete="tel" maxlength="30"><small class="field-help">E-mail of telefoon is voldoende.</small></div>',
+      '</div>',
+      '<div class="field"><label for="lead-note">Wat wil je bespreken? <small>(optioneel)</small></label>',
+        '<textarea id="lead-note" name="note" rows="2" maxlength="800" placeholder="Bijvoorbeeld zonnepanelen of het stroomverbruik"></textarea></div>',
+      '<div class="honeypot" aria-hidden="true"><label>Laat leeg<input name="website" tabindex="-1" autocomplete="off"></label></div>',
+      '<label class="checkbox-line"><input type="checkbox" name="consent" required><span>',
+        'Ik wil dat <strong>NIVO Groep Holland</strong> contact met mij opneemt over mijn energieplan. ',
+        'NIVO mag hiervoor mijn contactgegevens, meegestuurde energie-informatie en berekende indicatie gebruiken. ',
+        'Ik heb de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a> gelezen. ',
+        'Ik kan mijn verzoek intrekken.</span></label>',
+      '<div id="advice-error" class="form-error" role="alert" hidden></div>',
+      '<div class="dialog-actions"><button type="submit" class="button button-yellow" id="lead-submit">Bespreek mijn energieplan ' + icon('arrow') + '</button>',
+        '<button type="button" class="text-button" data-dialog="plan">Terug naar mijn plan</button></div>',
+      '<p class="dialog-note">Dit is een aparte, vrijwillige adviesaanvraag. Een rapportmail alleen geeft geen toestemming voor contact.</p>',
+    '</form>'
+  ].join('');
+  openDialog('advice','Een vraag over je energieplan?',html,'PERSOONLIJK ADVIES, ALLEEN ALS JIJ DAT WILT');
+  $('#advice-form').addEventListener('submit',submitLead);
+  track('advice_open');
+  ensureSession().catch(error=>{if(state.dialog==='advice')showError($('#advice-error'),error.message);});
 }
 async function ensureSession() {
   if(state.session)return state.session;if(state.sessionPromise)return state.sessionPromise;
   state.sessionPromise=(async()=>{
-    let response;try{response=await fetch('/api/index.php?action=session',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});}catch{throw new Error('Aanvragen zijn nu niet beschikbaar. Je kunt je volledige plan wel gebruiken en als PDF bewaren.');}
+    let response;try{response=await fetch('/api/index.php?action=session',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});}catch{throw new Error('Aanvragen zijn nu niet beschikbaar. Je kunt je energiehuis wel gewoon gebruiken.');}
     let data;try{data=await response.json();}catch{throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je energiehuis blijft volledig werken.');}
-    if(!response.ok||!data.ok||!data.configured||!data.csrf)throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je kunt je plan wel bewaren.');state.session={csrf:data.csrf,createdAt:data.createdAt};return state.session;
+    if(!response.ok||!data.ok||!data.configured||!data.csrf)throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je kunt je plan wel bewaren.');state.session={csrf:data.csrf,createdAt:data.createdAt,reportMailEnabled:data.reportMailEnabled===true};return state.session;
   })().finally(()=>{state.sessionPromise=null;});return state.sessionPromise;
 }
 async function apiPost(action,body) {
   const session=await ensureSession();let response;
-  try{response=await fetch(`/api/index.php?action=${encodeURIComponent(action)}`,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-CSRF-Token':session.csrf,Accept:'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});}catch{throw new Error('De verbinding is onderbroken. Je aanvraag is nog niet bevestigd. Probeer opnieuw; dezelfde aanvraag wordt niet dubbel opgeslagen.');}
-  let data;try{data=await response.json();}catch{throw new Error('Je aanvraag is niet bevestigd. Probeer het later opnieuw.');}
+  try{response=await fetch(`/api/index.php?action=${encodeURIComponent(action)}`,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-CSRF-Token':session.csrf,Accept:'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});}catch{throw new Error(action==='report_email'?'De verbinding is onderbroken. De rapportmail kan een onzekere verzendstatus hebben; controleer eerst je inbox.':'De verbinding is onderbroken. Je aanvraag is nog niet bevestigd. Probeer opnieuw; dezelfde aanvraag wordt niet dubbel opgeslagen.');}
+  let data;try{data=await response.json();}catch{throw new Error(action==='report_email'?'De mailserver heeft de verzending niet bevestigd. Controleer je inbox voordat je opnieuw probeert.':'Je aanvraag is niet bevestigd. Probeer het later opnieuw.');}
   if(!response.ok||!data.ok){if(response.status===403)state.session=null;throw new Error(data.error?.code==='SETUP_REQUIRED'?'Aanvragen zijn nog niet beschikbaar. Bewaar je plan op je apparaat.':data.error?.message||'Je aanvraag is niet bevestigd. Controleer je gegevens en probeer opnieuw.');}return data;
 }
+async function submitReport(event) {
+  event.preventDefault();
+  // Listener is delegated from the dialog: use the actual submitting form.
+  const form=event.target;
+  if(!form.reportValidity())return;
+  const email=String(new FormData(form).get('email')||'').trim().toLowerCase();
+  const status=$('#report-status'),button=$('#report-send');
+  if(!email||!form.reportValidity())return;
+  if(document.querySelector('.preview-ribbon')){
+    showError(status,'Dit is een offline preview. Er worden geen e-mails verstuurd.');
+    status.classList.add('is-error');return;
+  }
+  const r=state.report;
+  const report={
+    modelVersion:MODEL_VERSION,year:r.year,homeType:state.input.homeType,
+    selectedIds:[...r.selectedIds],savingsLow:r.savingsLow,savingsHigh:r.savingsHigh,
+    investmentLow:r.investmentLow,investmentHigh:r.investmentHigh,
+    baselineCost:r.baseline.bill.total,plannedCost:r.scenario.bill.total,
+    electricityUse:r.baseline.flow.electricityUse,gasUse:r.baseline.flow.gasUse,
+    budgetOverBy:r.budget.exceeded?Math.max(0,r.budget.overBy):0
+  };
+  const fingerprint=JSON.stringify({email,report});
+  if(state.reportFingerprint!==fingerprint){
+    state.reportFingerprint=fingerprint;state.reportKey=crypto.randomUUID();
+  }
+  const payload={email,report,idempotencyKey:state.reportKey,website:''};
+  button.disabled=true;button.textContent='Rapport verzenden…';
+  status.textContent='We controleren je verzoek…';status.classList.remove('is-error','is-success');
+  try{
+    const result=await apiPost('report_email',payload);
+    if(!result.accepted)throw new Error('De verzendstatus kon niet worden bevestigd.');
+    status.textContent=result.replayed?'Dit verzoek is eerder door de mailserver geaccepteerd. Controleer je inbox.':
+      'De mailserver heeft je rapport geaccepteerd. Kijk ook in je spammap; bezorging kan even duren.';
+    status.classList.add('is-success');
+  }catch(error){
+    status.textContent=error.message;status.classList.add('is-error');
+  }finally{
+    button.disabled=false;button.innerHTML='Mail mijn energieplan '+icon('arrow');
+  }
+}
+
 async function submitLead(event) {
   event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;const data=new FormData(form),email=String(data.get('email')||'').trim(),phone=String(data.get('phone')||'').trim(),errorElement=$('#advice-error');
   if(!email&&!phone){showError(errorElement,'Vul een e-mailadres of telefoonnummer in, zodat de adviseur je kan bereiken.');$('#lead-email').focus();return;}
   if(phone&&(!/^[+\d\s().-]+$/.test(phone)||phone.replace(/\D/g,'').length<8||phone.replace(/\D/g,'').length>15)){showError(errorElement,'Controleer je telefoonnummer. Gebruik 8 tot 15 cijfers.');$('#lead-phone').focus();return;}
   const r=state.report;
-  const payload={name:String(data.get('name')||'').trim(),email,phone,postcode:String(data.get('postcode')||'').trim().toUpperCase(),partner:data.get('partner'),interests:[...new Set(r.selectedIds.filter(id=>['solar','battery','heatpump','insulation'].includes(id)).concat('planning'))],consent:data.get('consent')==='on',consentVersion:'2026-11-v1',analyticsConsent:state.analytics,website:String(data.get('website')||''),inputs:{...state.input},summary:{modelVersion:MODEL_VERSION,year:r.year,annualSavingsLow:r.savingsLow,annualSavingsHigh:r.savingsHigh},note:`Gekozen in het energiehuis: ${r.selectedIds.map(labelFor).join(', ')||'nog geen upgrades'}.\n${String(data.get('note')||'').trim()}`.slice(0,1000)};
+  const payload={name:String(data.get('name')||'').trim(),email,phone,postcode:String(data.get('postcode')||'').trim().toUpperCase(),partner:'nivo',interests:[...new Set(r.selectedIds.filter(id=>['solar','battery','heatpump','insulation'].includes(id)).concat('planning'))],consent:data.get('consent')==='on',consentVersion:'2026-11-v2',analyticsConsent:state.analytics,website:String(data.get('website')||''),inputs:{...state.input},summary:{modelVersion:MODEL_VERSION,year:r.year,annualSavingsLow:r.savingsLow,annualSavingsHigh:r.savingsHigh,investmentLow:r.investmentLow,investmentHigh:r.investmentHigh,baselineAnnualCost:r.baseline.bill.total,plannedAnnualCost:r.scenario.bill.total,selectedIds:[...r.selectedIds]},note:`Gekozen in het energiehuis: ${r.selectedIds.map(labelFor).join(', ')||'nog geen upgrades'}.\n${String(data.get('note')||'').trim()}`.slice(0,1000)};
   const fingerprint=JSON.stringify(payload);if(fingerprint!==state.leadFingerprint){state.leadFingerprint=fingerprint;state.leadKey=crypto.randomUUID();}payload.idempotencyKey=state.leadKey;const button=$('#lead-submit');button.disabled=true;button.textContent='Je aanvraag wordt opgeslagen…';errorElement.hidden=true;
-  try{const receipt=await apiPost('leads',payload);if(!receipt.id)throw new Error('Je aanvraag is niet bevestigd. Probeer opnieuw.');if(state.dialog==='advice')openDialog('receipt','Je plan is goed ontvangen.',`<p class="dialog-intro">Je aanvraag is opgeslagen voor ${payload.partner==='nivo'?'NIVO Groep Holland':payload.partner==='tbt'?'Thuisbatterij Team':'NIVO Groep Holland en Thuisbatterij Team'} en staat klaar voor opvolging.</p><p>Ontvangstnummer: <code>${escape(receipt.id)}</code></p><button class="button button-yellow" data-dialog="plan">Terug naar mijn energieplan ↗</button>`,'AANVRAAG OPGESLAGEN');}catch(error){if(state.dialog==='advice'){showError(errorElement,error.message);button.disabled=false;button.innerHTML=`Bespreek mijn plan ${icon('arrow')}`;}}
+  try{const receipt=await apiPost('leads',payload);if(!receipt.id)throw new Error('Je aanvraag is niet bevestigd. Probeer opnieuw.');if(state.dialog==='advice')openDialog('receipt','Je plan is goed ontvangen.',`<p class="dialog-intro">Je aanvraag is opgeslagen voor NIVO Groep Holland en staat klaar voor opvolging.</p><p>Ontvangstnummer: <code>${escape(receipt.id)}</code></p><button class="button button-yellow" data-dialog="plan">Terug naar mijn energieplan ↗</button>`,'AANVRAAG OPGESLAGEN');}catch(error){if(state.dialog==='advice'){showError(errorElement,error.message);button.disabled=false;button.innerHTML=`Bespreek mijn plan ${icon('arrow')}`;}}
 }
 async function track(event) {if(!state.analytics)return;try{await apiPost('events',{event,consent:true});}catch{/* Measurement never blocks the energy house. */}}
 
@@ -300,9 +423,10 @@ document.addEventListener('click',event=>{
   else if(button.hasAttribute('data-print')){openPlan();$$('.plan-assumptions').forEach(item=>item.open=true);window.print();}
 });
 $('#open-plan').addEventListener('click',openPlan);
+$('#tool-dialog').addEventListener('submit',event=>{if(event.target.id==='report-email-form')submitReport(event);});
 $('#privacy-settings').addEventListener('click',openPrivacy);
 $('#dialog-close').addEventListener('click',closeDialog);
-$('#tool-dialog').addEventListener('cancel',()=>{state.dialog=null;});
+$('#tool-dialog').addEventListener('cancel',event=>{event.preventDefault();closeDialog();});
 $('#tool-dialog').addEventListener('click',event=>{if(event.target===$('#tool-dialog')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeDialog();}});
 $('#reset-home').addEventListener('click',()=>{remember();state.input={...DEFAULT_INPUT};state.selectedIds=[];state.personalized=false;state.tariffsEdited=false;state.view='current';state.daylight=65;$('#day-control').value='65';refresh();toast('Terug naar het voorbeeldhuis. Je kunt deze stap nog ongedaan maken.');});
 $('#day-control').addEventListener('input',event=>{state.daylight=Number(event.target.value);updateScene();});
@@ -316,3 +440,4 @@ $('#scene-stage').addEventListener('dragleave',event=>{if(!$('#scene-stage').con
 $('#scene-stage').addEventListener('drop',event=>{event.preventDefault();$('#scene-stage').classList.remove('is-drop-ready','is-drag-over');const id=event.dataTransfer.getData('text/plain');if(UPGRADES.some(u=>u.id===id)){if(state.selectedIds.includes(id)){toast('Deze upgrade staat al in je plan. Klik erop om hem weg te halen.');return;}toggleUpgrade(id);}});
 refresh();
 if(state.analytics)track('page_view');
+if(location.hash==='#advies')openAdvice();

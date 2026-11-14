@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/lib/bootstrap.php';
 require dirname(__DIR__) . '/lib/mail.php';
+require dirname(__DIR__) . '/lib/report.php';
 wg_headers();
 ini_set('display_errors', '0');
 try {
@@ -15,15 +16,15 @@ try {
             catch (Throwable $ignored) { $databaseReady=false; }
             unset($db);
         }
-        wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null && $databaseReady, 'databaseReady'=>$databaseReady, 'version'=>'1.1.0']);
+        wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null && $databaseReady, 'databaseReady'=>$databaseReady, 'version'=>'1.2.0']);
     }
-    if ($action === 'session' && !$config) { wg_method('GET'); wg_json(['ok'=>true,'configured'=>false,'csrf'=>null,'createdAt'=>null,'authenticated'=>false]); }
+    if ($action === 'session' && !$config) { wg_method('GET'); wg_json(['ok'=>true,'configured'=>false,'csrf'=>null,'createdAt'=>null,'authenticated'=>false,'reportMailEnabled'=>false]); }
     $config = wg_require_config($config);
     $db = wg_db($config);
     wg_housekeeping($db, $config);
     if ($action === 'session') {
         wg_method('GET'); wg_rate($db,$config,'session',120,600); wg_session($config);
-        wg_json(['ok'=>true,'configured'=>true,'csrf'=>$_SESSION['csrf'],'createdAt'=>$_SESSION['created_at'],'authenticated'=>!empty($_SESSION['admin'])]);
+        wg_json(['ok'=>true,'configured'=>true,'csrf'=>$_SESSION['csrf'],'createdAt'=>$_SESSION['created_at'],'authenticated'=>!empty($_SESSION['admin']),'reportMailEnabled'=>wg_report_enabled($config)]);
     }
     if ($action === 'leads') {
         $data = wg_input($config); wg_rate($db,$config,'lead',8,3600);
@@ -46,6 +47,31 @@ try {
         if ($lead['analyticsConsent']) { wg_event($db,'lead_accepted'); }
         $db->commit();
         wg_json(['ok'=>true,'id'=>$id,'status'=>'new','replayed'=>false],201);
+    }
+    if ($action === 'report_email') {
+        $data=wg_input($config);
+        // Never create a lead or an analytics event for mail-only requests.
+        if (!wg_report_enabled($config)) {
+            wg_fail(503,'REPORT_MAIL_DISABLED','Rapportmail is nog niet ingeschakeld. Je energieplan blijft gratis beschikbaar.');
+        }
+        if (time() - (int)$_SESSION['created_at'] < 2) {
+            wg_fail(429,'TOO_FAST','Wacht even en verstuur je rapport opnieuw.');
+        }
+        $prepared=wg_report_validate($data);
+        $attempt=wg_report_reserve($db,$config,$prepared);
+        if ($attempt['state']==='replayed') {
+            wg_json(['ok'=>true,'accepted'=>true,'replayed'=>true]);
+        }
+        $letter=wg_report_content($prepared);
+        try {
+            wg_mail_send($config,$prepared['email'],$letter['subject'],$letter['text'],$letter['html']);
+            wg_report_finish($db,$attempt['id'],true);
+        } catch (Throwable $error) {
+            // A timeout after SMTP DATA can be ambiguous. Never blindly retry.
+            wg_report_finish($db,$attempt['id'],false);
+            wg_fail(503,'REPORT_SEND_UNCERTAIN','Verzending is niet bevestigd. Controleer je inbox voordat je een nieuw verzoek doet.');
+        }
+        wg_json(['ok'=>true,'accepted'=>true,'replayed'=>false]);
     }
     if ($action === 'events') {
         $data=wg_input($config); wg_rate($db,$config,'events',120,600);

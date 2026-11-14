@@ -92,7 +92,22 @@ Measures IDs: smart-use, solar, battery, insulation, heatpump. `status` one of r
 Base `/api/index.php?action=`.
 - GET health -> `{ok:true,configured:boolean}`
 - GET session -> `{ok:true,csrf,createdAt,configured}`
-- POST leads + X-CSRF-Token JSON `{idempotencyKey,name,email?,phone?,postcode?,partner:'nivo'|'tbt'|'either',interests:['solar'|'battery'|'heatpump'|'insulation'|'contract'|'planning'],consent:true,consentVersion:'2026-11-v1',website:'',inputs:{scalars},summary:{modelVersion,year,annualSavingsLow,annualSavingsHigh},note?}`. At least email OR phone. Session >=2 sec. Success only after 201/200 `{ok:true,id,status:'new'}`. 503 configuration failure must be visible, never pretend sent.
+- POST leads + X-CSRF-Token JSON `{idempotencyKey,name,email?,phone?,postcode?,partner:'nivo' (optional, any other value rejected),interests:['solar'|'battery'|'heatpump'|'insulation'|'contract'|'planning'],consent:true,consentVersion:'2026-11-v2',website:'',inputs:{scalars},summary:{modelVersion,year,annualSavingsLow,annualSavingsHigh},note?}`. At least email OR phone. Session >=2 sec. Success only after 201/200 `{ok:true,id,status:'new'}`. 503 configuration failure must be visible, never pretend sent.
 - POST events + CSRF `{event:'scan_start'|'scan_complete'|'advice_open'|'page_view',consent:true}`. Only after optional analytics toggle. No other identifiers/payloads.
 - Browser scan doesn't require backend.
-- No emails promised. Lead request shows chosen recipient NIVO/TBT and consent text.
+- v0.5: a fixed NIVO-only lead consent appears only in the separate advice dialog. The compact plan supports a distinct email-only delivery form; delivery does not create an advice lead or marketing consent. Email sending is feature-gated and off without confirmed Hostinger setup.
+
+
+## v0.5 — UI and public report contract
+
+- `assets/plan-ui.mjs` renders the fixed content, cost comparison, warnings and selected measures from the existing `simulateHome` result. Core financial data + `#report-email` and `#report-send` must remain within the visible dialog on 1366×768 and 1440×900; mobile keeps the report CTA reachable. Extra rows and assumptions are only in a collapsible `details` section.
+- `assets/app.mjs` does **not** expose a partner selector. Advice lead API is `partner:'nivo'`, `consentVersion:'2026-11-v2'`, explicit opt-in only. Historical admin data is still rendered with original partner mapping.
+- `report_email` POST uses `X-CSRF-Token`/Origin and a simple one-address `email` plus a typed report snapshot with server-allowed keys; no free HTML, redirect, recipient list, tracking, marketing, or consent payload.
+- `session` exposes `reportMailEnabled`; offline preview prevents all backend calls and report delivery. Never promise delivery until SMTP is tested.
+- `admin/admin.mjs` renders untrusted lead fields exclusively through text nodes, with optional original scan/consent panels. Preserve keyboard/ESC and focus return.
+- Visual and security acceptance are enforced by `scripts/visual-review-v05.cjs`, `tests/report_mail_test.php`, and existing regression suites.
+
+
+## Plan Studio revision
+
+`plan-ui.mjs` exposes pure rendering plus `comparisonScale(values)` and `planInsights(report)`. `app.mjs` supplies transient tab/period/chart/reference state and calls the unchanged `simulateHome` after a real scenario change. UI-only period switching never changes annual report payloads. New plan controls are `data-plan-action`; original advice and report form IDs remain stable. The footer form is not replaced during live comparison, so unsent input remains only in memory. Details/settings return to the same modal. See `PLAN-STUDIO.md` for the full acceptance matrix.

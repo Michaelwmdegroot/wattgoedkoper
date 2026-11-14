@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Persoonlijk energieplan voor Nederlandse huishoudens",
   "scripts": {
-    "test": "node --test tests/model.test.mjs tests/playground.test.mjs",
-    "check": "node --check assets/model.mjs && node --check assets/playground-model.mjs && node --check assets/house-scene.mjs && node --check assets/app.mjs && node --check admin/admin.mjs",
+    "test": "node --test tests/model.test.mjs tests/playground.test.mjs tests/plan-studio.test.mjs",
+    "check": "node --check assets/model.mjs && node --check assets/playground-model.mjs && node --check assets/house-scene.mjs && node --check assets/plan-ui.mjs && node --check assets/app.mjs && node --check admin/admin.mjs",
     "dev": "php -S 127.0.0.1:8080 scripts/router.php"
   },
   "engines": {
