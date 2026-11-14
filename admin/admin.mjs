@@ -79,6 +79,7 @@ async function loadToolStatus(){
       'Broncontrole niet te verifiëren';
     const warningNames={
       CRON_MISSING_OR_STALE:'Onderhoud niet recent',
+      CRON_LAST_RUN_FAILED:'Laatste onderhoud mislukt',
       NIVO_DELIVERY_FAILED:'Afleverfouten NIVO',
       SOURCE_REVIEW_DUE:'Bronnen opnieuw controleren',
       SEO_PUBLICATION_FILES_MISSING:'Publicatiebestanden ontbreken'
