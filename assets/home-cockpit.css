@@ -1,0 +1,343 @@
+/*
+ * WattGoedkoper / Home Cockpit v0.6
+ * Desktop-only first-viewport composition: house, starting point, live plan
+ * and all five independent upgrade controls visible at once.
+ *
+ * The editorial page below remains normally scrollable. At tablet/mobile
+ * widths the established responsive layout remains untouched.
+ */
+@media (min-width: 1101px) {
+  .playground-page {
+    --cockpit-header: 68px;
+    --cockpit-intro: clamp(112px, 15.6dvh, 144px);
+    --cockpit-main: clamp(340px, calc(100dvh - var(--cockpit-header) - var(--cockpit-intro) - 184px), 470px);
+    --cockpit-tile: clamp(108px, 15dvh, 128px);
+  }
+
+  /* The large introductory graphic may overlap the house, not the controls. */
+  .playground-page .app-header { height: var(--cockpit-header); }
+  .playground-page .app-intro {
+    height: var(--cockpit-intro);
+    padding: 10px 0 0;
+    margin: 0;
+  }
+  .playground-page .intro-kicker {
+    font-size: 8px;
+    letter-spacing: .17em;
+    margin-bottom: 5px;
+  }
+  .playground-page .app-intro h1 {
+    font-size: clamp(38px, 3.5vw, 49px);
+    line-height: .96;
+    letter-spacing: -1.35px;
+  }
+  .playground-page .app-intro p {
+    font-size: 11px;
+    line-height: 1.45;
+    margin-top: 8px;
+    max-width: 360px;
+  }
+  .playground-page .intro-note { display: none; }
+  .playground-page .intro-actions { top: 11px; right: 0; }
+
+  .playground-page .app-workspace {
+    display: grid;
+    grid-template-columns: minmax(224px, .98fr) minmax(0, 2.48fr) minmax(240px, 1.05fr);
+    grid-template-rows: var(--cockpit-main) auto;
+    column-gap: clamp(11px, 1.3vw, 21px);
+    row-gap: 0;
+    align-items: stretch;
+  }
+
+  /* Controls preserve scrolling inside their own accessible tab panel. */
+  .playground-page .control-panel {
+    grid-column: 1;
+    grid-row: 1;
+    height: var(--cockpit-main);
+    max-height: var(--cockpit-main);
+    min-height: 0;
+    padding: 13px 15px 10px;
+    align-self: stretch;
+  }
+  .playground-page .control-panel .panel-heading { margin-bottom: 8px; }
+  .playground-page .control-panel .panel-heading h2 { font-size: 21px; }
+  .playground-page .control-panel .tool-tabs { margin-bottom: 7px; }
+  .playground-page .control-panel .tool-tabs button { min-height: 31px; }
+  .playground-page .control-panel .home-controls {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  /* The house is a measured 3:2 visual inside a fixed-height workspace.
+     Decorative benefits and the large empty scene bottom are not first-fold content. */
+  .playground-page .scene-stage {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    display: block;
+    height: var(--cockpit-main);
+    min-height: 0;
+    max-height: var(--cockpit-main);
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .playground-page .scene-stage .house-scene {
+    position: absolute;
+    inset: auto;
+    top: -20px;
+    left: 50%;
+    right: auto;
+    width: min(100%, calc((var(--cockpit-main) - 62px) * 1.5), 680px);
+    max-width: none;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+  .playground-page .scene-toolbar {
+    top: 0;
+    right: 0;
+    left: 0;
+    justify-content: flex-end;
+  }
+  .playground-page .scene-toolbar .scene-label { display: none; }
+  .playground-page .scene-message {
+    position: absolute;
+    inset: auto 0 53px;
+    margin: 0;
+    text-align: center;
+    pointer-events: none;
+  }
+  .playground-page .scene-message p { font-size: 21px; line-height: 1.11; }
+  .playground-page .scene-message > span {
+    font-size: 10px;
+    line-height: 1.3;
+    margin-top: 3px;
+  }
+  .playground-page .day-controller {
+    position: absolute;
+    inset: auto 8px 0;
+    width: calc(100% - 16px);
+    max-width: 335px;
+    margin: 0 auto;
+  }
+  .playground-page .day-heading { font-size: 9px; }
+  .playground-page .day-controller > p {
+    font-size: 9px;
+    line-height: 1.2;
+    margin-top: 1px;
+  }
+  .playground-page .scene-benefits { display: none; }
+
+  /* The live-result card is aligned with the left card and shares its height.
+     Keep the advice action visible; supplementary detail is in the plan modal. */
+  .playground-page .results-panel {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    height: var(--cockpit-main);
+    max-height: var(--cockpit-main);
+    margin: 0;
+    padding: 14px 16px 12px;
+    border-radius: 18px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    background: linear-gradient(156deg, #fffefa 0%, #fffefa 76%, #edf2de 100%);
+    box-shadow: 0 13px 30px #0e323509, inset 0 1px 0 #fff;
+  }
+  .playground-page .results-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 17px;
+    right: 17px;
+    height: 2px;
+    background: linear-gradient(90deg, #e7d15d, #80ac92);
+    opacity: .8;
+    border-radius: 8px;
+  }
+  .playground-page .results-heading {
+    font-size: 9px;
+    margin-bottom: 7px;
+    line-height: 1.25;
+  }
+  .playground-page .live-results { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+  .playground-page .result-eyebrow { font-size: 10px; line-height: 1.3; }
+  .playground-page .saving-value,
+  .playground-page .saving-value.saving-word {
+    font-size: clamp(32px, 3.25vw, 42px);
+    line-height: 1.07;
+    margin: 3px 0 0;
+    letter-spacing: -.85px;
+  }
+  .playground-page .saving-period { font-size: 9px !important; line-height: 1.3; margin-top: 1px; }
+  .playground-page .saving-range,
+  .playground-page .result-context {
+    font-size: 9px !important;
+    line-height: 1.3;
+    margin-top: 4px;
+  }
+  .playground-page .cost-comparison { margin: 9px 0 8px; gap: 6px; }
+  .playground-page .cost-row { margin: 0; }
+  .playground-page .cost-row > div:first-child { margin-bottom: 4px; }
+  .playground-page .cost-row > div:first-child span { font-size: 9px; }
+  .playground-page .cost-row strong { font-size: 12px; }
+  .playground-page .cost-meter { height: 5px; }
+  .playground-page .self-use-values { font-size: 9px; margin: 0 0 3px; }
+  .playground-page .self-use-values strong { font-size: 12px; }
+  .playground-page .self-use-meter { height: 5px; margin: 0; }
+  .playground-page .result-investment { margin-top: 8px; }
+  .playground-page .result-investment .result-eyebrow { font-size: 9px; }
+  .playground-page .result-investment .investment-value {
+    font-size: clamp(17px, 1.8vw, 21px);
+    line-height: 1.1;
+    margin-top: 3px;
+  }
+  .playground-page .result-warnings { margin-top: 5px; }
+  .playground-page .result-warnings .result-warning {
+    font-size: 9px;
+    line-height: 1.25;
+    padding: 5px 7px;
+    margin: 0 0 4px;
+  }
+  .playground-page .result-button {
+    width: 100%;
+    min-height: 37px;
+    font-size: 10px;
+    margin-top: auto;
+    padding: 7px 11px;
+    flex: none;
+  }
+  .playground-page .year-switch { margin-top: 6px; padding: 2px; flex: none; }
+  .playground-page .year-switch > span { font-size: 9px; }
+  .playground-page .year-switch button {
+    font-size: 9px;
+    min-height: 24px;
+    min-width: 38px;
+    flex-basis: 38px;
+    padding: 3px 5px;
+  }
+  .playground-page .result-footnote {
+    font-size: 8px !important;
+    line-height: 1.28;
+    margin: 5px 0 0;
+    flex: none;
+  }
+
+  /* Five real, independent, keyboard-operable actions in one visible row.
+     Do not make the cards a horizontal carousel on desktop. */
+  .playground-page .upgrade-section {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 9px;
+    padding: 0 0 5px;
+    scroll-margin-top: 12px;
+  }
+  .playground-page .upgrade-heading {
+    min-height: 26px;
+    margin: 0 0 7px;
+    padding: 0 2px;
+    gap: 15px;
+  }
+  .playground-page .upgrade-heading h2 {
+    font-size: 26px;
+    line-height: 1.05;
+  }
+  .playground-page .upgrade-heading > p { font-size: 10px; }
+  .playground-page .dock-hint { font-size: 9px; }
+  .playground-page .upgrade-dock {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(7px, 1vw, 12px);
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+  }
+  .playground-page .upgrade-card {
+    width: auto;
+    min-width: 0;
+    min-height: var(--cockpit-tile);
+    height: var(--cockpit-tile);
+    border-radius: 13px;
+    flex: auto;
+    scroll-snap-align: none;
+  }
+  .playground-page .upgrade-card > .upgrade-toggle {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 9px 11px 9px;
+    grid-template-columns: minmax(0,1fr) 20px;
+    grid-template-rows: 19px auto auto 1fr;
+    row-gap: 3px;
+  }
+  .playground-page .upgrade-card > .upgrade-toggle .upgrade-icon,
+  .playground-page .upgrade-card > .upgrade-toggle .upgrade-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+  .playground-page .upgrade-state { width: 18px; height: 18px; font-size: 12px; }
+  .playground-page .upgrade-card .upgrade-name {
+    font-size: 13px !important;
+    line-height: 1.17 !important;
+    letter-spacing: -.25px;
+    margin-top: 3px;
+  }
+  .playground-page .upgrade-description {
+    font-size: 9px !important;
+    line-height: 1.3;
+    max-width: 81%;
+  }
+  .playground-page .upgrade-value {
+    font-size: 9px !important;
+    line-height: 1.25;
+    margin: 0;
+    max-width: 95%;
+    padding-right: 25px;
+  }
+  .playground-page .upgrade-info {
+    width: 29px;
+    height: 29px;
+    min-width: 29px;
+    min-height: 29px;
+    bottom: 7px;
+    right: 7px;
+    font-size: 17px;
+  }
+}
+
+/* Small laptop heights: preserve main actions, not extra decorative text. */
+@media (min-width: 1101px) and (max-height: 740px) {
+  .playground-page {
+    --cockpit-intro: 100px;
+    --cockpit-main: clamp(290px, calc(100dvh - 365px), 365px);
+    --cockpit-tile: 101px;
+  }
+  .playground-page .app-header { height: 62px; }
+  .playground-page .app-intro { padding-top: 7px; }
+  .playground-page .app-intro h1 { font-size: 37px; }
+  .playground-page .app-intro p { display: none; }
+  .playground-page .scene-message p { font-size: 18px; }
+  .playground-page .scene-message > span { font-size: 9px; }
+  .playground-page .upgrade-heading { min-height: 23px; margin-bottom: 5px; }
+  .playground-page .upgrade-heading h2 { font-size: 23px; }
+  .playground-page .upgrade-section { margin-top: 7px; }
+  .playground-page .upgrade-card > .upgrade-toggle { padding: 7px 10px; }
+  .playground-page .results-panel { padding: 10px 13px 8px; }
+  .playground-page .results-heading { margin-bottom: 5px; }
+  .playground-page .cost-comparison { margin: 7px 0 6px; gap: 5px; }
+  .playground-page .result-footnote { display: none; }
+  .playground-page .result-button { min-height: 34px; }
+}
+
+/* Protect the existing tablet, phone and reduced-motion experiences. */
+@media (prefers-reduced-motion: reduce) {
+  .playground-page .upgrade-card,
+  .playground-page .upgrade-card:hover { transition: none; transform: none; }
+}
