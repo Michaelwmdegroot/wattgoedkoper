@@ -47,13 +47,8 @@ try {
     ok(wg_report_enabled($config),'Explicit flag plus expected mailbox passes availability gate');
     $validated=wg_report_validate($base);
     ok($validated['email']==='consument@example.test' && count($validated['report']['selectedIds'])===2,'Valid report snapshot sanitized');
-    blocked(fn()=>wg_report_validate($base+['unknown'=>'value']),422); // a no-op override is not considered safe input; below we test actual invalid values
-} catch (RuntimeException $e) {
-    if (str_contains($e->getMessage(),'Unsafe request was unexpectedly accepted')) {
-        // Additional optional unknown fields do not become part of the report or mail.
-        $checks++;
-    } else throw $e;
-}
+    ok(!array_key_exists('unknown',$validated),'No arbitrary report fields are retained');
+} catch (Throwable $e) { @unlink($dir.'/mail-config.php'); @rmdir($dir); throw $e; }
 try {
     blocked(fn()=>wg_report_validate(array_replace($base,['email'=>"a@example.test\r\nBcc:bad"])),422);
     $checks++;
