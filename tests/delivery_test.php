@@ -9,7 +9,9 @@ function deliveryCheck(bool $condition,string $message): void {
 }
 function deliveryRow(PDO $db,string $id): array {
     $q=$db->prepare('SELECT * FROM delivery_outbox WHERE lead_id=?');
-    $q->execute([$id]);return (array)$q->fetch(PDO::FETCH_ASSOC);
+    $q->execute([$id]);
+    $row=$q->fetch(PDO::FETCH_ASSOC);
+    return $row===false?[]:$row;
 }
 $private=sys_get_temp_dir().'/wg-delivery-test-'.bin2hex(random_bytes(8));
 deliveryCheck(mkdir($private,0700),'create isolated private fixture');
