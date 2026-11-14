@@ -13,12 +13,12 @@ De activiteitengrafiek gebruikt alleen de bestaande geaggregeerde events van bez
 3. Controleer voor wattgoedkoper.nl PHP 8.2+, pdo_mysql, openssl, session en **imap**. De IMAP-extensie moet zo nodig via Websites → Manage site → PHP Configuration ingeschakeld worden.
 4. Richt de bestaande beveiligde beheerdersconfiguratie in via SSH in de juiste WattGoedkoper-documentroot:
 
-   php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=KIES_BEHEERNAAM
+   bash scripts/setup-mysql.sh
 
    Het wachtwoord wordt via stdin gevraagd. Sla geen wachtwoorden op in command-lineargumenten, Git, screenshots of chat. Private opslag staat standaard in ../wattgoedkoper-private/ buiten de documentroot.
 5. Controleer dat de onafhankelijke mailbox **info@wattgoedkoper.nl** werkelijk bestaat en gebruik dan, in dezelfde serverdirectory:
 
-   php scripts/setup-mail.php
+   bash scripts/setup-mail.sh
 
    Het script vraagt het wachtwoord interactief, schrijft de mail-config in de private map met rechten 0600 en weigert overschrijven.
 6. Open als beheerder /admin/, controleer de mailboxstatus en doe één zelfgeadresseerde testmail. Test ook lezen en antwoorden. Controleer daadwerkelijke ontvangst.
