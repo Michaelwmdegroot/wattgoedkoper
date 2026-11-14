@@ -1,15 +1,12 @@
 # WattGoedkoper
 
-> **Plan Studio-revision:** het energieplan is nu een interactieve beslisomgeving met live maatregelen, variantvergelijking en transparante onderbouwing. Zie [ontwerp en acceptatie](docs/PLAN-STUDIO.md). Dit staat op PR #11, niet op productie.
-
-> **Implementatie v0.5:** Zie [releaseplan, mailbeveiliging en acceptatiechecklist](docs/RELEASE-V05.md) en [concept-PR #11](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11). `main` staat nog op de bewezen productieversie; er is geen merge of live mailactivatie uitgevoerd.
-
-> **Overdracht 14 november 2026:** De eigenaar heeft de live Hostinger-MySQL-installatie, adminlogin en een testadviesaanvraag bevestigd. Het volgende traject is het **premium eenscherms-energieplan, rapport per e-mail, NIVO-only advies en compacte admindetail**. Deze wensen zijn verwerkt in de v0.5-concept-PR, nog niet in productie. Zie [GPT-6 Pro overdracht](docs/HANDOFF-2026-11-14-GPT6PRO.md), [productspecificatie](docs/UX-LEAD-FUNNEL-V05.md) en [startprompt](docs/START-PROMPT-GPT6PRO.md). De inbox was op het laatste scherm **niet verbonden**. **Herhaal de database-installatie niet.**
-
+> **Release v0.5 · 14 november 2026:** De interactieve Plan Studio en NIVO-only adviesflow zijn via [PR #11](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11) gemerged naar `main`. Hostinger is gekoppeld aan `main`; de daadwerkelijke live-uitrol moet afzonderlijk worden gecontroleerd. De publieke rapportmail blijft standaard UIT tot veilige mailboxconfiguratie en een gecontroleerde bezorgtest. De bestaande MySQL-database, privéconfiguratie en sleutels zijn niet gewijzigd.
+>
+> Bekijk [Plan Studio en browsertests](docs/PLAN-STUDIO.md) en [het release- en activeringsrunbook](docs/RELEASE-V05.md).
 
 Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Nieuwe persoonlijke adviesaanvragen gaan uitsluitend naar **NIVO Groep Holland**, na expliciet akkoord. Historische partnergegevens blijven bewaard onder hun oorspronkelijke toestemming.
 
-## Status — werkende productie v0.4; premium v0.5 als concept-PR
+## Status — v0.5 opgenomen in `main`; live-Hostingercontrole afzonderlijk
 
 De interactieve woning heeft een premium visuele uitwerking: vijf fotografische woningtypes, afzonderlijke installatielagen, vijftien eigen beelden, lokale lettertypen en vernieuwde kennis- en uitlegpagina’s. Hostinger heeft volgens de gebruiker op 14 november 2026 de GitHub-deployment naar wattgoedkoper.nl voltooid. De daadwerkelijke PHP-backendconfiguratie en mailkoppeling moeten afzonderlijk op de juiste hosting worden bevestigd.
 

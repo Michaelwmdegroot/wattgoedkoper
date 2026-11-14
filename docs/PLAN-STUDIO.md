@@ -1,7 +1,7 @@
 # Energieplan — Plan Studio, reviewrevision 14 november 2026
 
 ## Aanleiding
-De eigenaar beoordeelde de eerdere v0.5-modal met 60/100: te statisch, te weinig informatieve diepgang. Deze revision vervangt het samenvattingsformulier door een interactieve beslisomgeving. Dit document is geen bewijs van livegang; PR #11 blijft de reviewgrens, main/Hostinger zijn niet gewijzigd.
+De eigenaar beoordeelde de eerdere v0.5-modal met 60/100: te statisch, te weinig informatieve diepgang. Deze revision vervangt het samenvattingsformulier door een interactieve beslisomgeving. Op 14 november 2026 is de door de eigenaar goedgekeurde Plan Studio via PR #11 naar `main` gemerged. GitHub-merge is bevestigd; feitelijke Hostinger-live-uitrol en publieke mailactivatie blijven afzonderlijke operationele controles.
 
 ## Wat er verandert
 - **Overzicht:** een vaste woning-/financiële kaart, kostenvergelijking op een echte gedeelde nulschaal, aandeel van huishoudelijk stroomverbruik uit eigen opwek, gasverschil, fotografische maatregelkaarten en zichtbare waarschuwingen.
@@ -31,4 +31,4 @@ Bedieningspatronen volgen de W3C APG: [modal dialog](https://www.w3.org/WAI/ARIA
 Open de zelfstandige preview. Kies eerst een woning/maatregelen of klik in het lege plan op **Probeer een startplan**. Open **Mijn energieplan**, zet een variant vast en probeer bij **Maatregelen** een batterij aan/uit. Wissel rekenjaar en maand/jaar. Open **Onderbouwing**, pas een tarief aan en controleer dat de modal terugkeert met nieuwe cijfers. Bekijk daarna dezelfde ervaring op mobiel.
 
 ## Releasegrens
-Geen wijzigingen in database, private configuratie, encryptiesleutels, SMTP-host of leadroutering. NIVO-consent en rapport-only blijven gescheiden. Geen merge zonder eigenaaracceptatie. Hostinger-mailconfiguratie en een echte zelfgeadresseerde bezorgtest blijven een afzonderlijke stap. Geen kosten of nieuwe diensten toegevoegd.
+Geen wijzigingen in database, private configuratie, encryptiesleutels, SMTP-host of leadroutering. NIVO-consent en rapport-only blijven gescheiden. Eigenaaracceptatie is gegeven en de merge naar `main` is uitgevoerd. Hostinger-mailconfiguratie en een echte zelfgeadresseerde bezorgtest blijven een afzonderlijke stap. Geen kosten of nieuwe diensten toegevoegd.

@@ -1,11 +1,11 @@
-# WattGoedkoper v0.5 — gecontroleerde oplevering (concept-PR)
+# WattGoedkoper v0.5 — release naar main en activeringsrunbook
 
 **Datum:** 14 november 2026  
 **Branch:** `feat/v05-premium-plan-mail-nivo-admin`  
 **PR:** https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11  
 **Issues:** #7 (plan), #8 (advies), #9 (rapportmail), #10 (admin)
 
-Dit document beschrijft de nieuwe functionaliteit op de featurebranch. De live omgeving is **niet** aangepast. `main` wordt direct uitgerold door Hostinger en moet pas na de eigenaarreview en geslaagde CI worden gemerged.
+**Release uitgevoerd op 14 november 2026:** PR #11 is na eigenaaracceptatie gemerged naar `main` (mergecommit `99738ebd4d04624479c969b8d372f96cae084c68`). De technische en visuele PR-controles waren groen. Hostinger is gekoppeld aan `main`, maar werkelijke live-uitrol en mailboxstatus kunnen niet uit GitHub alleen bewezen worden. Controleer daarom de publieke website en beveiligde beheeromgeving afzonderlijk. De rapportmail blijft standaard uit; er zijn geen productie-MySQL-initialisatie, datareset, keyrotatie of SMTP-configuratie uitgevoerd.
 
 ## 1. Product- en consentarchitectuur
 
@@ -74,7 +74,7 @@ GitHub Actions buildt de zelfstandige offline preview en levert screenshots + JS
 
 De actuele testresultaten horen bij de PR-checks; dit document claimt niet dat een lokale Hostinger-/SMTP-acceptatietest reeds geslaagd is.
 
-## 5. Acceptatie door eigenaar (vóór merge)
+## 5. Website-acceptatie na merge (bevestig ook de Hostinger-uitrol)
 
 1. **Desktop 1366×768:** open 'Mijn energieplan' — beide financiële cijfers, vergelijkingsbalken, maatregelchips, waarschuwing en de mailknop zonder scroll. Herhaal op 1440×900.
 2. Probeer nul én meerdere maatregelen, voorbeeld- vs eigen woning, rekenjaar 2026/2027, hoge investering en negatieve besparing. Rekenkern blijft eerlijk, geen fictieve ROI.
