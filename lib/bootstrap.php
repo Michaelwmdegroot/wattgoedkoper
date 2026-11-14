@@ -33,7 +33,8 @@ function wg_config(): ?array {
     $path = $dir . '/config.php';
     if (!is_file($path) || !is_readable($path) || !is_writable($dir) || (is_file($dir . '/wattgoedkoper.sqlite') && !is_writable($dir . '/wattgoedkoper.sqlite'))) { return null; }
     $config = require $path;
-    if (!is_array($config) || !extension_loaded('pdo_sqlite') || !extension_loaded('openssl')) { return null; }
+    if (!is_array($config) || !extension_loaded('openssl')) { return null; }
+    if (($config['database']['driver'] ?? 'sqlite') !== 'mysql' && !extension_loaded('pdo_sqlite')) { return null; }
     foreach (['origin','admin_username','admin_password_hash','encryption_key','hmac_key'] as $key) {
         if (!isset($config[$key]) || !is_string($config[$key]) || $config[$key] === '') { return null; }
     }
