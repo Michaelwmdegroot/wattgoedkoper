@@ -210,8 +210,8 @@ EXTRA_CSS = '''
 
 def build():
     html = (ROOT/'index.html').read_text(encoding='utf-8')
-    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','plan-studio.css','content.css'])
-    style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|premium|plan-studio|content)\.css[\'"])[^>]*>', re.IGNORECASE)
+    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','plan-studio.css','home-cockpit.css','content.css'])
+    style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|premium|plan-studio|home-cockpit|content)\.css[\'"])[^>]*>', re.IGNORECASE)
     html, count = style_pattern.subn('', html)
     if count < 1:
         raise ValueError('Could not find the playground stylesheet links.')

@@ -35,6 +35,8 @@ jobs:
         run: node scripts/visual-review-v05.cjs
       - name: Review interactive Plan Studio, clipping, variants and accessibility
         run: node scripts/plan-studio-review.cjs
+      - name: Verify first-viewport energy home and five visible measures
+        run: node scripts/home-cockpit-review.cjs
       - name: Upload visual review evidence
         if: always()
         uses: actions/upload-artifact@v4
