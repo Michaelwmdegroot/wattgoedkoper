@@ -76,7 +76,7 @@ PAGE_ART = {
     'kennis/isolatie-warmtepomp/index.html': ('heatpump-card.webp', 'Een warmtepomp bij een woning'),
 }
 
-BRAND = '<span class="content-brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m4 8 5 17 7-11 7 11 5-17"/><path d="m17 4-5 8h7l-4 8"/></svg></span><span>watt<span class="content-brand-light">goedkoper</span>.</span>'
+BRAND = '<img class="brand-lockup" src="/assets/brand-logo.svg" width="378" height="73" alt="" decoding="async">'
 ARROW = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>'
 
 def heading_id(text):
@@ -110,7 +110,7 @@ def render(path,title,description,lead,category,body):
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#faf8f2">
 <title>{escape(title)} | WattGoedkoper</title><meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{canonical}">
-<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css">
+<link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css">
 <script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script>
 </head>
 <body class="editorial-page">

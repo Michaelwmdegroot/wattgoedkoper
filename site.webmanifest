@@ -1,0 +1,24 @@
+{
+  "name": "WattGoedkoper — persoonlijk energieplan",
+  "short_name": "WattGoedkoper",
+  "description": "Gratis interactieve energietool voor je woning.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf6",
+  "theme_color": "#062e48",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

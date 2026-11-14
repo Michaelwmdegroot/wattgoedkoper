@@ -12,19 +12,25 @@
   <meta property="og:title" content="Maak je huis watt slimmer. — WattGoedkoper">
   <meta property="og:description" content="Probeer het op je huis. Zie meteen het verschil. Ontdek gratis jouw mogelijkheden voor een slimmer energiegebruik.">
   <meta property="og:url" content="https://wattgoedkoper.nl/">
-  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:image" content="https://wattgoedkoper.nl/assets/og-wattgoedkoper.png">
+  <meta property="og:image:alt" content="WattGoedkoper — maak je huis watt slimmer">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="stylesheet" href="/assets/house-scene.css">
   <link rel="stylesheet" href="/assets/premium.css">
   <link rel="stylesheet" href="/assets/plan-studio.css">
   <link rel="stylesheet" href="/assets/home-cockpit.css">
+  <link rel="stylesheet" href="/assets/brand-refresh.css">
   <script type="module" src="/assets/app.mjs"></script>
 </head>
 <body class="playground-page">
 <a class="skip-link" href="#main-content">Ga naar je energiehuis</a>
 <header class="app-header">
   <div class="header-inner app-width">
-    <a href="/" class="wordmark" aria-label="WattGoedkoper, startpagina"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m4 8 5 17 7-11 7 11 5-17"/><path d="m17 4-5 8h7l-4 8"/></svg></span><span>watt<span class="brand-light">goedkoper</span><span class="brand-dot">.</span></span></a>
+    <a href="/" class="wordmark" aria-label="WattGoedkoper, startpagina"><img class="brand-lockup" src="/assets/brand-logo.svg" width="378" height="73" alt="" decoding="async"></a>
     <nav class="header-nav" aria-label="Hoofdnavigatie"><a href="#main-content">Energiehuis <span aria-hidden="true">⌄</span></a><a href="#maatregelen">Maatregelen <span aria-hidden="true">⌄</span></a><a href="#inspiratie">Advies &amp; inspiratie <span aria-hidden="true">⌄</span></a></nav>
     <div class="header-tools"><a class="header-explainer" href="/rekenmodel.html">Hoe rekenen we? <span class="info-circle" aria-hidden="true">i</span></a><span class="free-label"><span aria-hidden="true"></span>Gratis. Geen account.</span><button class="button button-ink" id="open-plan">Mijn energieplan <span aria-hidden="true">→</span></button></div>
   </div>
@@ -32,6 +38,14 @@
 <main class="energy-app app-width" id="main-content">
   <section class="app-intro" aria-labelledby="tool-title">
     <div class="intro-copy"><div class="intro-kicker">JOUW PERSOONLIJKE ENERGIEPLAN <span aria-hidden="true"></span></div><h1 id="tool-title">Maak je huis<br><span>watt slimmer.</span></h1><p>Ontdek wat bij jouw huis past, wat het oplevert<br class="desktop-break"> en hoeveel je kunt besparen op je <strong>energiekosten.</strong></p></div>
+    <nav class="intro-path" id="intro-path" aria-label="Direct aan de slag">
+      <span class="intro-path-label">ZO WERKT HET</span>
+      <div class="intro-path-steps">
+        <button class="intro-path-step" type="button" data-quick="house"><span class="intro-path-number">1</span><span><strong>Jouw huis</strong><small>Pas aan</small></span></button>
+        <button class="intro-path-step" type="button" data-quick="measures"><span class="intro-path-number">2</span><span><strong>Probeer</strong><small>5 maatregelen</small></span></button>
+        <button class="intro-path-step" type="button" data-quick="plan"><span class="intro-path-number">3</span><span><strong>Vergelijk</strong><small>Energieplan</small></span></button>
+      </div>
+    </nav>
     <div class="intro-note" aria-hidden="true">Een beetje nieuwsgierig.<br>Een huis vol mogelijkheden.<svg viewBox="0 0 80 65"><path d="M60 5Q65 33 18 50m-1-1 15-1m-15 1 8-12"/></svg></div>
     <div class="intro-actions"><span id="home-state-label" class="example-label"><span class="example-dot" aria-hidden="true"></span>Voorbeeldhuis · pas aan naar jouw situatie</span><button class="reset-button" id="reset-home"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7a6.5 6.5 0 1 1-.4 5M4 3v4h4"/></svg>Begin opnieuw</button></div>
   </section>
