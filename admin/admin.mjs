@@ -1,6 +1,6 @@
 const $ = (s, root = document) => root.querySelector(s);
 const apiBase = '/api/index.php?action=';
-const state = {csrf:null, leads:[], total:0, offset:0, status:'', current:null};
+const state = {csrf:null, leads:[], total:0, offset:0, status:'', search:'', current:null};
 const statusNames = {new:'Nieuw',contacted:'Benaderd',qualified:'In gesprek',closed:'Afgerond'};
 const partners = {nivo:'NIVO Groep Holland',tbt:'Thuisbatterij Team',either:'NIVO + Thuisbatterij Team'};
 const interests = {solar:'Zonnepanelen',battery:'Thuisbatterij',heatpump:'Warmtepomp',insulation:'Isolatie',contract:'Energiecontract',planning:'Energieplan'};
@@ -16,8 +16,50 @@ async function api(action, body) {
   return data;
 }
 function showLogin() { $('#dashboard').hidden=true;$('#login-section').hidden=false;$('#logout').hidden=true; }
-function showDashboard() { $('#dashboard').hidden=false;$('#login-section').hidden=true;$('#logout').hidden=false; }
+function showDashboard() { $('#dashboard').hidden=false;$('#login-section').hidden=true;$('#logout').hidden=false;selectView(location.hash.slice(1)); }
 async function session() { const data=await api('session');state.csrf=data.csrf;return data; }
+
+const adminViews=['overzicht','aanvragen','seo','tools'];
+function selectView(requested){
+  const view=requested==='inbox'?'tools':adminViews.includes(requested)?requested:'overzicht';
+  document.querySelectorAll('[data-admin-view]').forEach(node=>{node.hidden=node.dataset.adminView!==view;});
+  document.querySelectorAll('[data-admin-tab]').forEach(link=>{
+    const active=link.dataset.adminTab===view;
+    link.classList.toggle('active',active);
+    if(active)link.setAttribute('aria-current','page');
+    else link.removeAttribute('aria-current');
+  });
+  if(view==='seo')void loadSeoChecks();
+  if(view==='tools'||view==='overzicht')void loadToolStatus();
+}
+async function loadSeoChecks(){
+  for(const [path,id] of [['/sitemap.xml','seo-sitemap'],['/robots.txt','seo-robots']]){
+    const node=$('#'+id);node.textContent='Controleren…';
+    try{
+      const response=await fetch(path,{credentials:'omit',cache:'no-store'});
+      node.textContent=response.ok?'Bereikbaar · HTTP '+response.status:'Niet bereikbaar · HTTP '+response.status;
+    }catch{node.textContent='Niet bereikbaar of niet controleerbaar';}
+  }
+}
+async function loadToolStatus(){
+  try{
+    const health=await api('health');
+    const healthy=health.configured===true&&health.databaseReady===true;
+    $('#tools-api').textContent=healthy?'Database bereikbaar · API gereed':'API bereikbaar · database niet bevestigd';
+    $('#overview-api-state').textContent=healthy?'API & database bereikbaar':'Database niet bevestigd';
+  }catch{
+    $('#tools-api').textContent='Niet bereikbaar of niet controleerbaar';
+    $('#overview-api-state').textContent='Controle mislukt';
+  }
+  try{
+    const sess=await api('session');
+    $('#tools-report').textContent=sess.reportMailEnabled===true?'Ingeschakeld · inboxbezorging niet bewezen':'Uitgeschakeld';
+  }catch{$('#tools-report').textContent='Niet te controleren';}
+  try{
+    const mail=await api('admin_mail_status');
+    $('#tools-mail').textContent=mail.configured===true?'Geconfigureerd · bezorging niet geverifieerd':'Niet geconfigureerd';
+  }catch{$('#tools-mail').textContent='Niet te controleren';}
+}
 function statCard(label, value, note) { const card=el('div','stat-card');card.append(el('div','stat-label',label),el('div','stat-value',value),el('div','stat-note',note));return card; }
 
 const mailState={connected:false};
@@ -56,7 +98,12 @@ function renderOperationalStats(data) {
 
 function renderStats(data) {
   const t=data.totals;
-  $('#stats-grid').replaceChildren(statCard('Gestarte scans',count(t.scan_start),'Met meettoestemming'),statCard('Voltooide scans',count(t.scan_complete),'Met meettoestemming'),statCard('Adviesaanvragen',count(data.leadCount),'Alle ontvangen aanvragen'),statCard('Scan → aanvraag',data.conversion===null?'—':data.conversion.toLocaleString('nl-NL')+'%','Alleen met meettoestemming'));
+  const newLeads=(data.statuses||[]).find(item=>item.status==='new')?.count||0;
+  $('#stats-grid').replaceChildren(
+    statCard('Adviesaanvragen · 30 dagen',count(data.leadCount),'Servergeaccepteerd, ongeacht meettoestemming'),
+    statCard('Nieuwe aanvragen',count(newLeads),'Nog nieuw · volledige bewaartermijn'),
+    statCard('Voltooide scans · 30 dagen',count(t.scan_complete),'Opt-in gebeurtenissen, geen personen'),
+    statCard('Technisch afgeleverd','Onbekend','NIVO-transport nog niet aangesloten'));
   $('#funnel').replaceChildren(...[['scan_start','Scans gestart'],['scan_complete','Plannen bekeken'],['advice_open','Adviesformulier geopend'],['lead_accepted','Aanvragen opgeslagen']].map(([key,label])=>{const step=el('div','funnel-step');step.append(el('strong','',count(t[key])),el('span','',label));return step;}));
   $('#retention').textContent=`Aanvragen worden na ${data.retentionDays} dagen verwijderd. Exporteer alleen wat je nodig hebt en bewaar exports veilig. De grafiek telt gebeurtenissen, geen unieke bezoekers.`;
   renderOperationalStats(data);
@@ -64,8 +111,11 @@ function renderStats(data) {
 function renderLeads(data) {
   state.leads=data.leads;state.total=data.total;$('#lead-count').textContent=count(data.total);
   const body=$('#lead-table');body.replaceChildren();
-  if(!data.leads.length) { const row=el('tr');const cell=el('td','empty',state.status?'Er zijn geen aanvragen met deze status.':'Nog geen aanvragen. Nieuwe adviesaanvragen verschijnen hier zodra iemand het formulier verstuurt.');cell.colSpan=6;row.append(cell);body.append(row); }
-  for(const lead of data.leads) {
+  const search=state.search.trim().toLocaleLowerCase('nl-NL');
+  const visible=search?data.leads.filter(lead=>[lead.id,lead.data.name,lead.data.email,lead.data.phone,lead.data.postcode].some(value=>String(value||'').toLocaleLowerCase('nl-NL').includes(search))):data.leads;
+  $('#lead-search-note').textContent=search?`${visible.length} van ${data.leads.length} geladen aanvragen op deze pagina gevonden. Andere pagina's zijn niet doorzocht.`:'Zoeken filtert alleen de maximaal 50 geladen aanvragen op deze pagina.';
+  if(!visible.length) { const row=el('tr');const cell=el('td','empty',search?'Geen matches op deze pagina.':state.status?'Er zijn geen aanvragen met deze status.':'Nog geen aanvragen. Nieuwe adviesaanvragen verschijnen hier zodra iemand het formulier verstuurt.');cell.colSpan=6;row.append(cell);body.append(row); }
+  for(const lead of visible) {
     const row=el('tr');const person=el('td');person.append(el('strong','',lead.data.name),el('small','',lead.data.email||lead.data.phone));
     const interest=el('td');interest.append(el('span','tag',lead.data.interests.map(x=>interests[x]||x).join(', ')||'Energieplan'));
     const partner=el('td','',partners[lead.partner]||lead.partner);const received=el('td','',date(lead.createdAt));const status=el('td');status.append(el('span','tag '+lead.status,statusNames[lead.status]));
@@ -147,8 +197,8 @@ function showDetail(lead) {
   const emailClient=el('button','outline-button','Mail klant ↗');
   emailClient.type='button';emailClient.disabled=!d.email;
   emailClient.addEventListener('click',()=>{
-    $('#lead-dialog').close();openComposer({to:d.email,subject:'Jouw energieplan bij WattGoedkoper'});
-    location.hash='#inbox';
+    $('#lead-dialog').close();selectView('tools');location.hash='#tools';openComposer({to:d.email,subject:'Jouw energieplan bij WattGoedkoper'});
+    // The mail workbench is part of Tools & status.
   });
   const statusLabel=el('label','','Status');statusLabel.htmlFor='detail-status';
   const select=el('select');select.id='detail-status';
@@ -264,8 +314,12 @@ $('#login-form').addEventListener('submit',async event=>{event.preventDefault();
 $('#logout').addEventListener('click',async()=>{try{await api('admin_logout',{});showLogin();await session();message('Je bent uitgelogd.',true);}catch(error){message(error.message);}});
 $('#refresh').addEventListener('click',()=>refresh().catch(error=>message(error.message)));
 $('#status-filter').addEventListener('change',event=>{state.status=event.target.value;state.offset=0;refresh().catch(error=>message(error.message));});
+$('#lead-search').addEventListener('input',event=>{state.search=event.target.value;renderLeads({leads:state.leads,total:state.total});});
+$('#seo-check').addEventListener('click',()=>loadSeoChecks());
+$('#tools-check').addEventListener('click',()=>loadToolStatus());
 $('#previous').addEventListener('click',()=>{state.offset=Math.max(0,state.offset-50);refresh().catch(error=>message(error.message));});
 $('#next').addEventListener('click',()=>{state.offset+=50;refresh().catch(error=>message(error.message));});
 $('#export').addEventListener('click',async()=>{const button=$('#export');button.disabled=true;try{const response=await fetch(apiBase+'admin_export',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':state.csrf},body:'{}'});if(!response.ok){const data=await response.json();throw new Error(data.error?.message||'Exporteren is niet gelukt.');}const blob=await response.blob();const url=URL.createObjectURL(blob);const a=el('a');a.href=url;a.download='wattgoedkoper-aanvragen-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);message('Export gedownload. De CSV bevat persoonsgegevens; bewaar hem veilig.',true);}catch(error){message(error.message);}finally{button.disabled=false;}});
-for(const a of document.querySelectorAll('nav a[href^="#"]'))a.addEventListener('click',()=>{document.querySelectorAll('nav a').forEach(item=>item.classList.remove('active'));a.classList.add('active');});
+for(const a of document.querySelectorAll('[data-admin-tab]'))a.addEventListener('click',()=>selectView(a.dataset.adminTab));
+window.addEventListener('hashchange',()=>selectView(location.hash.slice(1)));
 try{const initial=await session();if(!initial.configured){message('De beveiligde serverinstallatie is nog niet voltooid. Het dashboard blijft gesloten totdat de beheerder de private configuratie heeft ingesteld.');$('#login-form button').disabled=true;}else if(initial.authenticated){showDashboard();await refresh();await loadMailbox();}}catch(error){message(error.message);}
