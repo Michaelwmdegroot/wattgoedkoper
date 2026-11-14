@@ -115,7 +115,7 @@ try {
     if ($action === 'admin_leads') {
         wg_method('GET');$status=(string)($_GET['status']??'');$offset=max(0,min(100000,(int)($_GET['offset']??0)));
         if($status!==''&&!in_array($status,['new','contacted','qualified','closed'],true)){wg_fail(422,'VALIDATION','Onbekende status.');}
-        $where=$status!==''?' WHERE status=?':'';$q=$db->prepare('SELECT COUNT(*) FROM leads'.$where);$q->execute($status!==''?[$status]:[]);$total=(int)$q->fetchColumn();
+        $where=$status!==''?' WHERE leads.status=?':'';$q=$db->prepare('SELECT COUNT(*) FROM leads'.$where);$q->execute($status!==''?[$status]:[]);$total=(int)$q->fetchColumn();
         $q=$db->prepare('SELECT leads.*,d.status AS delivery_status,
           d.attempts AS delivery_attempts,d.next_attempt_at AS delivery_next_attempt,
           d.acknowledged_at AS delivery_acknowledged_at,d.ack_reference AS delivery_ack_reference,
