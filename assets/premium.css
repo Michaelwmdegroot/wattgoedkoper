@@ -352,7 +352,7 @@ body.playground-page{background:var(--paper);color:var(--ink);font-family:var(--
 /* ===== WattGoedkoper 0.5 / compact, human-scale energy plan ===== */
 .playground-page .tool-dialog.plan-dialog[open]{
   display:flex;flex-direction:column;width:960px;max-width:calc(100vw - 28px);
-  height:min(724px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);overflow:hidden;
+  height:min(666px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);overflow:hidden;
   border-radius:24px;background:#fffefa;
 }
 .playground-page .plan-dialog .dialog-heading{flex:none;padding:15px 24px 13px;position:relative;z-index:4}
@@ -475,6 +475,6 @@ body.playground-page{background:var(--paper);color:var(--ink);font-family:var(--
   .playground-page .plan-dialog .dialog-heading h2{font-size:22px!important}
   .plan-metric>strong{font-size:19px}
   .plan-caption{flex-wrap:wrap}
-  .plan-save{margin-left:0}
+  .plan-save{display:none}
 }
 @media (prefers-reduced-motion:reduce){.plan-fill{transition:none}}
