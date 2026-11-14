@@ -79,7 +79,18 @@ De opvolgende agent moet dit **bouwen**, testen, controleren en via een nette PR
 - `node scripts/visual-review.cjs` (zie GitHub workflow voor browserinstallatie)
 - `python3 scripts/build-content.py`, `python3 scripts/build-preview.py` — public help/preview na aanpassingen bijwerken.
 
-## 7. Nog open, niet verzinnen
+## 7. Nieuwe GitHub-issues voor de opvolgende agent
+
+| Prioriteit | Issue | Scope |
+| --- | --- | --- |
+| P0 | [#7 — Planmodal in één scherm](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/7) | Premium overzicht, vergelijking, mail-CTA, responsive |
+| P0 | [#8 — NIVO-only advies](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/8) | Partnerkeuze verwijderen, serverroutering en expliciete consent |
+| P0 | [#9 — Rapport per e-mail](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/9) | Transactie-email, veiligheid, privacy en veilige activatie |
+| P0 | [#10 — Compact admin-detail](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/10) | Contact + energiescan + acties in één werkvlak |
+
+De vier issues verwijzen terug naar de productspecificatie. [#2](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/2) blijft open voor mail- en hardeningcontroles; [#3](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/3) blijft een latere fase voor optionele accounts.
+
+## 8. Nog open, niet verzinnen
 
 - Mailaccount vanuit app nog niet live gekoppeld / mailboxcredentials op server onbekend, dus report-mail niet live geverifieerd.
 - Privacy-/backups-/cron-/deliverabilitycontrole niet volledig bewezen.
