@@ -111,7 +111,7 @@ const demo={
     await preview.locator('#open-plan').click();
     await preview.locator('#report-email').fill('demo@example.test');
     await preview.locator('#report-send').click();
-    assert.match(await preview.locator('#report-status').innerText(),/offline preview/i);
+    await preview.locator('#report-status').filter({hasText:/offline preview/i}).waitFor({timeout:5000});
     assert.equal(attempted,0);
     results.push({case:'offline mail-only guard',status:'passed'});
     await preview.close();
