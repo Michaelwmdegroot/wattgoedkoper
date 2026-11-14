@@ -7,22 +7,33 @@ require dirname(__DIR__).'/lib/bootstrap.php';
 function wg_setup_exit(string $message): never { fwrite(STDERR,$message."\n");exit(1); }
 function wg_setup_prompt(string $label,bool $secret=false): string {
     fwrite(STDERR,$label.': ');
-    if ($secret) { system('stty -echo'); }
+    $tty=function_exists('stream_isatty') && stream_isatty(STDIN);
+    // In pipe mode Bash has already read the secret without echoing it.
+    // Avoid invoking system() on Hostinger, where it is disabled by default.
+    if ($secret && $tty) { system('stty -echo'); }
     try {
         $value=fgets(STDIN);
     } finally {
-        if ($secret) { system('stty echo');fwrite(STDERR,"\n"); }
+        if ($secret && $tty) { system('stty echo');fwrite(STDERR,"\n"); }
     }
-    if ($value===false) { wg_setup_exit('Invoer ontbreekt. Er is niets gewijzigd.'); }
+    if ($value===false) { wg_setup_exit('Geen invoer ontvangen; er is niets gewijzigd. Gebruik de veilige Bash-wrapper: bash scripts/setup-mysql.sh'); }
     return rtrim($value,"\r\n");
-}
-if (!function_exists('stream_isatty') || !stream_isatty(STDIN)) {
-    wg_setup_exit('Start dit script in een interactieve SSH-terminal, niet vanuit een niet-interactieve deploy of cron.');
 }
 if (!extension_loaded('pdo_mysql') || !extension_loaded('openssl')) {
     wg_setup_exit('De PHP-extensies pdo_mysql en openssl zijn vereist. Controleer de Hostinger PHP-configuratie.');
 }
-$options=getopt('',['origin:','username:','private-dir:']);
+$options=getopt('',['origin:','username:','private-dir:','piped-input']);
+$pipedInput=array_key_exists('piped-input',$options);
+$hasTty=function_exists('stream_isatty') && stream_isatty(STDIN);
+if ($pipedInput && $hasTty) {
+    wg_setup_exit('De --piped-input-modus accepteert alleen invoer via een pipe. Gebruik bash scripts/setup-mysql.sh.');
+}
+if (!$pipedInput && !$hasTty) {
+    wg_setup_exit('Start de installatie vanuit een SSH-terminal met: bash scripts/setup-mysql.sh');
+}
+if (!$pipedInput && !function_exists('system')) {
+    wg_setup_exit('Hostinger blokkeert PHP system() voor wachtwoordinvoer. Gebruik: bash scripts/setup-mysql.sh. Geen PHP-instellingen wijzigen.');
+}
 $origin=rtrim((string)($options['origin']??''),'/');
 $username=(string)($options['username']??'');
 $u=parse_url($origin);
