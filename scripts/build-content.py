@@ -69,12 +69,29 @@ pages=[
 <h2>Controleer subsidie vóór je beslist</h2><p>ISDE heeft voorwaarden voor onder meer woning, uitvoering en maatregel. Trek daarom niet alvast een algemeen bedrag van je investering af. De voorgenomen wijzigingen voor 2027 moeten tegen de actuele RVO-regels worden gecontroleerd. {source('isde')} · {source('isde2027')}</p>
 ''')]
 
+# Single source of truth for the authored v0.8 energy/SEO cluster.
+# Content is edited and reviewed as JSON, then statically published by this script.
+from datetime import date
+from xml.sax.saxutils import escape as xml_escape
+CLUSTER = json.loads((ROOT/'docs/seo-cluster-v08.json').read_text(encoding='utf-8'))
+NEW_GUIDES = CLUSTER['pages']
+PAGES_BY_PATH = {entry['path']: entry for entry in NEW_GUIDES}
+pages += [(entry['path'], entry['title'], entry['description'],
+           entry['lead'], entry['category'], entry['body']) for entry in NEW_GUIDES]
+pages = [(path,title,description,lead,category,
+          (body + CLUSTER.get('enhancements',{}).get(path,''))
+          .replace('Thuisbatterij Team','NIVO Groep Holland')
+          .replace('bewaarhet energiehuis','bewaarde energiehuis')
+          .replace('buiten de openbare websitemap','buiten de openbare website'))
+         for path,title,description,lead,category,body in pages]
+
 PAGE_ART = {
     'kennis/zonnepanelen/index.html': ('solar-card.webp', 'Zonnepanelen in warm daglicht'),
     'kennis/thuisbatterij/index.html': ('battery-card.webp', 'Een thuisbatterij bij een woning'),
     'kennis/energiecontract/index.html': ('smart-use-card.webp', 'Slim inzicht in energiegebruik'),
     'kennis/isolatie-warmtepomp/index.html': ('heatpump-card.webp', 'Een warmtepomp bij een woning'),
 }
+PAGE_ART.update({p['path']:(p['art'],p['artAlt']) for p in NEW_GUIDES})
 
 BRAND = '<img class="brand-lockup" src="/assets/brand-logo.svg" width="378" height="73" alt="" decoding="async">'
 ARROW = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>'
@@ -86,7 +103,44 @@ def heading_id(text):
 
 def render(path,title,description,lead,category,body):
     canonical='https://wattgoedkoper.nl/'+path.replace('index.html','')
-    schema={'@context':'https://schema.org','@type':'WebPage','name':title,'description':description,'url':canonical,'inLanguage':'nl-NL'}
+    entry=PAGES_BY_PATH.get(path,{})
+    lastmod=entry.get('lastmod',CLUSTER['editorialDates'].get(path))
+    if not lastmod:
+        raise ValueError(f'Missing editorial modification date for {path}')
+    date.fromisoformat(lastmod) # Dates represent content changes, never an automatic build timestamp.
+    crumb_items=[('/', 'Home')]
+    if path.startswith('kennis/'):
+        if path != 'kennis/index.html':
+            crumb_items.append(('/kennis/','Kennis'))
+        if path.startswith('kennis/zonnepanelen/') and path != 'kennis/zonnepanelen/index.html':
+            crumb_items.append(('/kennis/zonnepanelen/','Zonnepanelen'))
+        if path.startswith('kennis/thuisbatterij/') and path != 'kennis/thuisbatterij/index.html':
+            crumb_items.append(('/kennis/thuisbatterij/','Thuisbatterij'))
+    crumb_items.append((canonical, category))
+    breadcrumb_schema=[{'@type':'ListItem','position':i+1,'name':label,'item':('https://wattgoedkoper.nl'+url if url.startswith('/') else url)}
+                       for i,(url,label) in enumerate(crumb_items)]
+    graph=[
+        {'@type':'WebPage','@id':canonical+'#webpage','name':title,'description':description,'url':canonical,
+         'inLanguage':'nl-NL','dateModified':lastmod},
+        {'@type':'BreadcrumbList','itemListElement':breadcrumb_schema},
+    ]
+    if path.startswith('kennis/') and path != 'kennis/index.html':
+        graph.append({'@type':'Article','headline':title,'description':description,'dateModified':lastmod,
+                      'inLanguage':'nl-NL','mainEntityOfPage':canonical,'author':{'@type':'Organization','name':'WattGoedkoper'}})
+    schema={'@context':'https://schema.org','@graph':graph}
+    breadcrumb_html=''
+    for i,(url,label) in enumerate(crumb_items):
+        if i:breadcrumb_html+='<span aria-hidden="true">/</span>'
+        breadcrumb_html+=f'<span aria-current="page">{escape(label)}</span>' if i==len(crumb_items)-1 else f'<a href="{url}">{escape(label)}</a>'
+    cta=entry.get('cta')
+    if not cta:
+        cta='#verken-zonnepanelen' if path=='kennis/zonnepanelen/index.html' else (
+            '#verken-thuisbatterij' if path=='kennis/thuisbatterij/index.html' else '#verken-energieplan')
+    cta_href='/'+cta
+    is_combo=path=='kennis/zonnepanelen-met-thuisbatterij/index.html'
+    example_script='<script type="module" src="/assets/guide-comparison.mjs"></script>' if is_combo else ''
+    image=PAGE_ART.get(path,('smart-use-card.webp',''))[0]
+    og_image='https://wattgoedkoper.nl/assets/images/'+image
     headings=[]
     def add_heading(match):
         attrs, text = match.groups()
@@ -97,7 +151,23 @@ def render(path,title,description,lead,category,body):
     body = re.sub(r'<h2([^>]*)>(.*?)</h2>', add_heading, body)
     body = body.replace('<table>', '<div class="article-table" tabindex="0" role="region" aria-label="Rekentabel, horizontaal te scrollen"><table>').replace('</table>', '</table></div>')
     contents=''.join(f'<a href="#{escape(anchor)}">{escape(text)}</a>' for anchor,text in headings)
-    related=''.join(f'<a class="guide-card" href="/{p.replace("index.html", "")}"><img src="/assets/images/{PAGE_ART[p][0]}" alt="" width="400" height="267" loading="lazy"><span><small>VERDER ONTDEKKEN</small><strong>{escape(c)}</strong></span>{ARROW}</a>' for p,t,d,l,c,b in pages if p.startswith('kennis/') and p!=path)
+    matching=entry.get('related')
+    if not matching:
+        matching={
+            'kennis/zonnepanelen/index.html':[
+                'kennis/zonnepanelen/zelfverbruik/index.html','kennis/zonnepanelen/salderen-2027/index.html',
+                'kennis/zonnepanelen-met-thuisbatterij/index.html','kennis/thuisbatterij/index.html'],
+            'kennis/thuisbatterij/index.html':[
+                'kennis/thuisbatterij/wanneer-zinvol/index.html','kennis/zonnepanelen-met-thuisbatterij/index.html',
+                'kennis/zonnepanelen/index.html','kennis/zonnepanelen/zelfverbruik/index.html'],
+        }.get(path,[
+            'kennis/index.html','kennis/zonnepanelen/index.html',
+            'kennis/thuisbatterij/index.html','kennis/energiecontract/index.html'])
+    index={p:row for row in pages for p in [row[0]]}
+    related=''.join(
+        f'<a class="guide-card" href="/{p.replace("index.html", "")}"><img src="/assets/images/{PAGE_ART[p][0]}" alt="" width="400" height="267" loading="lazy"><span><small>VERDER ONTDEKKEN</small><strong>{escape(index[p][4])}</strong></span>{ARROW}</a>'
+        for p in matching if p in index and p in PAGE_ART and p!=path
+    )
     if path in PAGE_ART:
         filename,alt=PAGE_ART[path]
         art=f'<div class="article-hero-art"><img src="/assets/images/{filename}" alt="{escape(alt)}" width="768" height="512" fetchpriority="high"><span class="art-caption">Een beetje inzicht. Meer mogelijkheden.</span></div>'
@@ -110,24 +180,36 @@ def render(path,title,description,lead,category,body):
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#faf8f2">
 <title>{escape(title)} | WattGoedkoper</title><meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{canonical}">
-<link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css">
-<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script>
+<link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css"><link rel="stylesheet" href="/assets/guide-cluster.css">
+<meta property="og:type" content="article"><meta property="og:locale" content="nl_NL"><meta property="og:title" content="{escape(title,quote=True)}"><meta property="og:description" content="{escape(description,quote=True)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{og_image}"><meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('</','<\\/')}</script>{example_script}
 </head>
 <body class="editorial-page">
 <a class="skip-link" href="#inhoud">Ga naar inhoud</a>
-<header class="content-header"><div class="content-header-inner"><a class="content-brand" href="/" aria-label="WattGoedkoper, startpagina">{BRAND}</a><nav class="content-nav" aria-label="Hoofdnavigatie"><a href="/#main-content">Je energiehuis</a><a href="#verder-lezen">Advies &amp; inspiratie</a><a href="/rekenmodel.html">Hoe rekenen we?</a></nav><a class="content-start" href="/#main-content">Mijn energieplan {ARROW}</a></div></header>
+<header class="content-header"><div class="content-header-inner"><a class="content-brand" href="/" aria-label="WattGoedkoper, startpagina">{BRAND}</a><nav class="content-nav" aria-label="Hoofdnavigatie"><a href="/#main-content">Je energiehuis</a><a href="/kennis/">Kennis &amp; inspiratie</a><a href="/rekenmodel.html">Hoe rekenen we?</a></nav><a class="content-start" href="/#verken-energieplan">Mijn energieplan {ARROW}</a></div></header>
 <main id="inhoud" class="content-layout">
-<nav class="breadcrumbs" aria-label="Kruimelpad"><a href="/">Home</a><span aria-hidden="true">/</span><span>{escape(category)}</span></nav>
-<section class="article-hero" aria-labelledby="article-title"><div class="article-hero-copy"><span class="article-eyebrow">{escape(category)}</span><h1 id="article-title">{escape(title)}</h1><p class="article-lead">{escape(lead)}</p><div class="article-meta"><span>Bijgewerkt op 14 november 2026</span><span>Indicatief inzicht, geen offerte of garantie</span></div></div>{art}</section>
-<div class="article-reading-layout"><aside class="article-sidebar"><nav class="article-contents" aria-label="In dit artikel"><span class="contents-title">In dit artikel</span>{contents}</nav><a class="sidebar-invite" href="/#main-content"><span>VAN INZICHT NAAR JE EIGEN HUIS</span><strong>Wat zou jij<br>kunnen besparen?</strong><span class="sidebar-invite-link">Probeer het zelf {ARROW}</span></a></aside><article class="article-body">{body}</article></div>
-<section class="article-cta" aria-labelledby="article-cta-title"><div><span class="article-eyebrow">JOUW HUIS. JOUW MOGELIJKHEDEN.</span><h2 id="article-cta-title">Wat betekent dit<br>voor jouw huis?</h2><p>Ontdek je mogelijkheden met het gratis energiehuis.<br>Je krijgt direct je volledige resultaat.</p></div><a href="/#main-content">Maak mijn energieplan {ARROW}</a></section>
+<nav class="breadcrumbs" aria-label="Kruimelpad">{breadcrumb_html}</nav>
+<section class="article-hero" aria-labelledby="article-title"><div class="article-hero-copy"><span class="article-eyebrow">{escape(category)}</span><h1 id="article-title">{escape(title)}</h1><p class="article-lead">{escape(lead)}</p><div class="article-meta"><span>Inhoud bijgewerkt: {lastmod}</span><span>Indicatief inzicht, geen offerte of garantie</span></div></div>{art}</section>
+<div class="article-reading-layout"><aside class="article-sidebar"><nav class="article-contents" aria-label="In dit artikel"><span class="contents-title">In dit artikel</span>{contents}</nav><a class="sidebar-invite" href="{cta_href}"><span>VAN INZICHT NAAR JE EIGEN HUIS</span><strong>Wat zou jij<br>kunnen besparen?</strong><span class="sidebar-invite-link">Probeer het zelf {ARROW}</span></a></aside><article class="article-body">{body}</article></div>
+<section class="article-cta" aria-labelledby="article-cta-title"><div><span class="article-eyebrow">JOUW HUIS. JOUW MOGELIJKHEDEN.</span><h2 id="article-cta-title">Wat betekent dit<br>voor jouw huis?</h2><p>Ontdek je mogelijkheden met het gratis energiehuis.<br>Je krijgt direct je volledige resultaat.</p></div><a href="{cta_href}">Maak mijn energieplan {ARROW}</a></section>
 <section class="related-section" id="verder-lezen" aria-labelledby="related-title"><div class="related-heading"><span class="article-eyebrow">BLIJF NIEUWSGIERIG</span><h2 id="related-title">Een beetje meer weten.</h2></div><div class="guide-links">{related}</div></section>
 </main>
 <footer class="content-footer"><div class="content-footer-top"><a class="content-brand" href="/" aria-label="WattGoedkoper, startpagina">{BRAND}</a><p>Jouw huis. Jouw keuzes.</p><nav aria-label="Informatie"><a href="/rekenmodel.html">Rekenmodel &amp; bronnen</a><a href="/privacy.html">Privacy</a><a href="/">Terug naar je energiehuis</a></nav></div><div class="content-footer-bottom"><span>© 2026 WattGoedkoper</span><p>Persoonlijk advies uitsluitend op jouw verzoek, via <strong>NIVO Groep Holland</strong>.</p></div></footer>
 </body></html>'''
 
 for row in pages:
-    target=ROOT/row[0];target.parent.mkdir(parents=True,exist_ok=True);target.write_text(render(*row))
-urls=['https://wattgoedkoper.nl/']+['https://wattgoedkoper.nl/'+p[0].replace('index.html','') for p in pages]
-(ROOT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'<url><loc>{url}</loc><lastmod>2026-11-14</lastmod></url>\n' for url in urls)+'</urlset>\n')
-print(f'Built {len(pages)} static content pages and sitemap.')
+    target=ROOT/row[0]
+    target.parent.mkdir(parents=True,exist_ok=True)
+    target.write_text(render(*row), encoding='utf-8')
+
+urls=[('https://wattgoedkoper.nl/',CLUSTER['editorialDates']['index.html'])]
+for row in pages:
+    path=row[0]
+    changed=PAGES_BY_PATH.get(path,{}).get('lastmod',CLUSTER['editorialDates'].get(path))
+    if not changed:raise ValueError(f'Missing editorial lastmod for {path}')
+    date.fromisoformat(changed)
+    urls.append(('https://wattgoedkoper.nl/'+path.replace('index.html',''),changed))
+if len(set(url for url,_ in urls))!=len(urls):
+    raise ValueError('Duplicate canonical URL in sitemap')
+(ROOT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'<url><loc>{xml_escape(url)}</loc><lastmod>{changed}</lastmod></url>\n' for url,changed in urls)+'</urlset>\n',encoding='utf-8')
+print(f'Built {len(pages)} static content pages and sitemap from authored metadata.')
