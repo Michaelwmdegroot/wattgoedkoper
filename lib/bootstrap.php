@@ -125,7 +125,12 @@ function wg_db(array $config): PDO {
     $db = new PDO('sqlite:' . $config['private_dir'] . '/wattgoedkoper.sqlite', null, null, [
         PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC
     ]);
-    $db->exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON; PRAGMA secure_delete=ON;');
+    // Set each SQLite connection option explicitly. Some PDO drivers execute
+    // only the first statement when multiple PRAGMAs share an exec() call.
+    $db->exec('PRAGMA journal_mode=WAL');
+    $db->exec('PRAGMA busy_timeout=5000');
+    $db->exec('PRAGMA foreign_keys=ON');
+    $db->exec('PRAGMA secure_delete=ON');
     $db->exec("CREATE TABLE IF NOT EXISTS leads (
         id TEXT PRIMARY KEY, idempotency_hash TEXT NOT NULL UNIQUE, request_hash TEXT NOT NULL,
         created_at TEXT NOT NULL, updated_at TEXT NOT NULL, status TEXT NOT NULL,
