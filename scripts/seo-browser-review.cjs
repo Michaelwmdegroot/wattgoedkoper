@@ -7,7 +7,7 @@ const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=
 let browser,server;
 const report={checks:[],screenshots:[],errors:[]};
 async function check(name,work){try{await work();report.checks.push({name,status:'pass'});}catch(e){report.checks.push({name,status:'fail',message:e.message});throw e;}}
-async function screenshot(page,name){await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(img=>img.decode().catch(()=>{})))});await page.screenshot({path:path.join(OUT,name+'.png'),animations:'disabled',fullPage:true});report.screenshots.push(name+'.png')}
+async function screenshot(page,name){await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(img=>{img.loading='eager';return img.decode().catch(()=>{});}))});await page.screenshot({path:path.join(OUT,name+'.png'),animations:'disabled',fullPage:true});report.screenshots.push(name+'.png')}
 async function open(page,base,url){await page.goto(base+url,{waitUntil:'load'});await page.locator('#article-title').waitFor();}
 function serverStart(){return new Promise(resolve=>{
  server=http.createServer(async(req,res)=>{
