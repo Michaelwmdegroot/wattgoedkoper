@@ -28,7 +28,7 @@
       </section>
       <section id="dashboard" hidden>
         <div class="page-heading" id="overzicht" data-admin-view="overzicht"><div><span class="eyebrow">ENERGIE IN BEWEGING</span><h1>Het begint met inzicht.</h1><p>Wat bezoekers ontdekken. Wie je verder kunt helpen.</p></div><div class="period-pill">Laatste 30 dagen</div></div>
-        <div id="stats-grid" class="stats-grid" data-admin-view="overzicht"></div>
+        <div id="stats-grid" class="stats-grid" data-admin-view="overzicht"></div><p class="wg2-delivery-summary small" id="delivery-summary" data-admin-view="overzicht">NIVO-afleverstatus wordt uitsluitend uit de eigen afleverwachtrij geladen zodra beschikbaar.</p>
         <section class="wg2-status-strip" data-admin-view="overzicht" aria-label="Operationele kernstatus">
           <div class="wg2-status-tile"><span>Website &amp; API</span><strong id="overview-api-state">Controleren…</strong><small>Live healthcheck, geen uptimegarantie</small></div>
           <div class="wg2-status-tile"><span>NIVO-overdracht</span><strong id="overview-delivery-state">Niet gekoppeld</strong><small>Opslag in dashboard; geen ontvangstbewijs</small></div>
@@ -47,8 +47,8 @@
         <section class="leads-section" id="aanvragen" data-admin-view="aanvragen" hidden>
           <div class="section-heading"><div><span class="eyebrow">MAAK HET PERSOONLIJK</span><h2>Adviesaanvragen <span id="lead-count" class="count-pill">0</span></h2></div><button id="export" class="outline-button">Exporteer CSV ↓</button></div>
           <div class="table-tools"><label for="status-filter">Status</label><select id="status-filter"><option value="">Alle aanvragen</option><option value="new">Nieuw</option><option value="contacted">Benaderd</option><option value="qualified">In gesprek</option><option value="closed">Afgerond</option></select><label class="wg2-search-label" for="lead-search">Zoek op pagina</label><input id="lead-search" class="wg2-lead-search" type="search" autocomplete="off" placeholder="Naam, e-mail, postcode of code"><button id="refresh" class="text-button">Vernieuwen ↻</button></div>
-          <p id="lead-search-note" class="small wg2-search-note">Zoeken filtert alleen de maximaal 50 geladen aanvragen op deze pagina.</p>
-          <div class="table-wrap"><table><thead><tr><th>Naam & contact</th><th>Interesse</th><th>Adviespartner</th><th>Ontvangen</th><th>Status</th><th><span class="sr-only">Details</span></th></tr></thead><tbody id="lead-table"></tbody></table></div>
+          <p id="lead-search-note" class="small wg2-search-note">Zoeken filtert alleen de maximaal 50 geladen aanvragen op deze pagina.</p><p class="small wg2-delivery-legend">Aflevering is een technisch ontvangstbewijs, niet de opvolgstatus van NIVO. Historische aanvragen zonder outbox blijven herkenbaar.</p>
+          <div class="table-wrap"><table><thead><tr><th>Naam & contact</th><th>Interesse</th><th>Adviespartner</th><th>Ontvangen</th><th>Opvolgstatus</th><th>Aflevering NIVO</th><th><span class="sr-only">Details</span></th></tr></thead><tbody id="lead-table"></tbody></table></div>
           <div class="pagination"><button id="previous" class="outline-button" disabled>← Vorige</button><span id="page-label"></span><button id="next" class="outline-button" disabled>Volgende →</button></div>
           <p id="retention" class="small"></p>
         </section>
