@@ -73,3 +73,7 @@
 - **#23 → PR #30**: consentgebonden outbox/worker en ontvangstbewijs, fail-closed zonder eigenaar-go; synthetische tests en MySQL-contract in CI. NIVO-ontvanger en echte ACK ontbreken nog.
 - **Geen klantdata buiten WattGoedkoper:** `nivo_delivery_enabled` staat standaard uit. Private Hostinger-configuratie, NIVO-overdracht en rapportmail worden niet door PR/merge automatisch geactiveerd.
 - **Vervolg:** eigenaarreview PR's, gecontroleerde merges, Hostinger-live smoke en één combinatie-PR voor dashboard-deliverystatus + #25. Afzonderlijke end-to-end NIVO-bezorgtest blijft noodzakelijk voor #26.
+
+### P0 operations-branchnotitie (15 november 2026)
+
+PR #31 is gestapeld op PR #30 en heeft daarom geen zelfstandige main-release. Voor de operationele check geldt één canonieke Hostinger-runner `scripts/operations.php` na owner-go, niet parallel met de oude maintenance- of delivery-CLI's. De status-API `admin_operations` geeft geen klantgegevens en beschouwt backup/restore expliciet als niet geverifieerd. Monitorwaarschuwingen staan los van externe mail/alerting en mogen niet als bezorgd worden geclaimd. Zie `docs/OPERATIONS-RUNBOOK-V1.md`.
