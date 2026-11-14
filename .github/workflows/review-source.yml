@@ -1,0 +1,20 @@
+name: Isolated UX source snapshot
+on:
+  push:
+    branches: [feat/v05-premium-plan-mail-nivo-admin]
+    paths: [.github/workflows/review-source.yml]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - run: git archive HEAD -o /tmp/wattgoedkoper-source.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isolated-ux-source
+          path: /tmp/wattgoedkoper-source.zip
+          retention-days: 1
