@@ -123,6 +123,8 @@ async function scenario(page,label){
  });
  await clickUpgrade(page,'smart-use');
  await page.evaluate(()=>scrollTo(0,0));
+ await page.locator('#toast').waitFor({state:'hidden',timeout:6500});
+ await capture(page,label+'-plan-top',false);
  await capture(page,label+'-plan');
  await page.locator('#open-plan').click();
  await capture(page,label+'-plan-dialog',false);

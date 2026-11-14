@@ -336,3 +336,14 @@ body.playground-page{background:var(--paper);color:var(--ink);font-family:var(--
   .playground-page .house-scene{width:calc(100% + 28px);margin-left:-14px;margin-right:-14px}
   .playground-page .scene-message p{font-size:21px}
 }
+
+/* These two photographs place the outdoor unit on the left. Keep its button
+   above the hardware, with the connector still pointing to the actual unit. */
+.playground-page .photo-scene[data-home-type=detached] .house-hotspot-heatpump,
+.playground-page .photo-scene[data-home-type=apartment] .house-hotspot-heatpump{top:61%;left:2%}
+@media(max-width:620px){
+  .playground-page .photo-scene[data-home-type=detached] .house-hotspot-heatpump,
+  .playground-page .photo-scene[data-home-type=apartment] .house-hotspot-heatpump{top:55%}
+  .playground-page .photo-scene[data-home-type=detached] .house-hotspot-insulation,
+  .playground-page .photo-scene[data-home-type=apartment] .house-hotspot-insulation{top:34%}
+}

@@ -44,6 +44,7 @@ function connector(from,to,name){
 }
 function markup(art){
   const solar=center(art.solar),pump=boxCenter(art.pump),battery=boxCenter(art.battery);
+  const pumpLabel=art.pump[0]<.25?[.18,.67]:[.18,.78];
   const equipment=['solar','heatpump','battery'].map(id=>`<img class="scene-equipment scene-equipment-${id}" data-equipment="${id}" src="${art.upgrade}" alt="" aria-hidden="true" width="1536" height="1024" decoding="async">`).join('');
   return `<div class="energy-scene photo-scene">
     <div class="photo-visual" role="img" aria-label="Sfeerbeeld van je energiehuis">
@@ -52,7 +53,7 @@ function markup(art){
       <div class="scene-night-tint" aria-hidden="true"></div>
       <svg class="scene-flows" viewBox="0 0 1536 1024" aria-hidden="true"><defs><filter id="flow-glow"><feGaussianBlur stdDeviation="3"/></filter></defs><path class="energy-flow flow-solar" d="M${xy(solar)} Q${xy([.60,.49])} ${xy(battery)}"/><path class="energy-flow flow-battery" d="M${xy(battery)} Q${xy([.60,.86])} ${xy([.51,.68])}"/><path class="energy-flow flow-heatpump" d="M${xy(pump)} Q${xy([.43,.70])} ${xy([.51,.68])}"/><path class="insulation-highlight" d="M${xy([art.wall[0]-.06,.75])}L${xy([art.wall[0]-.06,.44])}L${xy([art.wall[0]+.10,.41])}L${xy([art.wall[0]+.10,.75])}"/></svg>
     </div>
-    <svg class="scene-connectors" viewBox="0 0 1536 1024" aria-hidden="true">${connector([.55,.10],solar,'solar')}${connector([.16,.45],art.wall,'insulation')}${connector([.85,.63],battery,'battery')}${connector([.18,.78],pump,'heatpump')}</svg>
+    <svg class="scene-connectors" viewBox="0 0 1536 1024" aria-hidden="true">${connector([.55,.10],solar,'solar')}${connector([.16,.45],art.wall,'insulation')}${connector([.85,.63],battery,'battery')}${connector(pumpLabel,pump,'heatpump')}</svg>
     <div class="house-hotspots" aria-label="Ontdek de mogelijkheden van je huis">${[['solar','Zonnepanelen'],['insulation','Isolatie'],['battery','Thuisbatterij'],['heatpump','Warmtepomp']].map(([id,label])=>`<button class="house-hotspot house-hotspot-${id}" data-house-action="${id}" type="button"><span class="house-hotspot-icon">${icon(id)}</span><span class="house-hotspot-label">${label}</span><span class="house-hotspot-mark" aria-hidden="true">+</span></button>`).join('')}</div>
     <div class="scene-status" aria-live="off"></div>
   </div>`;
