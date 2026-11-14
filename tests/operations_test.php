@@ -69,6 +69,12 @@ try{
     flock($lock,LOCK_UN);fclose($lock);
     opsCheck($exit===75&&str_contains($stderr,'een eerdere uitvoering'),'parallel scheduler rejected');
     $checks+=2;
+    wg_ops_upsert($db,'ops_last_error_code','RUN_FAILED');
+    $failedTick=wg_ops_status($db,$config);
+    opsCheck(in_array('CRON_LAST_RUN_FAILED',$failedTick['warnings'],true),
+        'recent successful tick does not hide a later failed run');
+    wg_ops_upsert($db,'ops_last_error_code','NONE');
+    $checks++;
     wg_ops_upsert($db,'ops_last_success_at','2020-01-01T00:00:00Z');
     $stale=wg_ops_status($db,$config);
     opsCheck($stale['cron']['status']==='stale'&&in_array('CRON_MISSING_OR_STALE',$stale['warnings'],true),
