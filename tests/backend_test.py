@@ -59,14 +59,19 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
         check(code==200 and len(csrf)==64,'functional session issues unpredictable CSRF token')
         check('HttpOnly' in headers.get('Set-Cookie','') and 'SameSite=Strict' in headers.get('Set-Cookie',''),'session cookie is HttpOnly and SameSite Strict')
         check(request('admin_leads')[0]==401,'unauthenticated lead access rejected')
-        base={'idempotencyKey':secrets.token_hex(16),'name':'=1+1','email':'consumer@example.test','phone':'','postcode':'2311 AB','partner':'tbt','interests':['battery'],'consent':True,'consentVersion':'2026-11-v1','website':'','analyticsConsent':False,'inputs':{'people':3,'electricityUse':3500,'hasSolar':True,'unapprovedPrivateField':'must-not-store'},'summary':{'modelVersion':'test-v1','year':2027,'annualSavingsLow':100,'annualSavingsHigh':250},'note':'Integration test only'}
+        base={'idempotencyKey':secrets.token_hex(16),'name':'=1+1','email':'consumer@example.test','phone':'','postcode':'2311 AB','partner':'nivo','interests':['battery'],'consent':True,'consentVersion':'2026-11-v2','website':'','analyticsConsent':False,'inputs':{'people':3,'electricityUse':3500,'hasSolar':True,'unapprovedPrivateField':'must-not-store'},'summary':{'modelVersion':'test-v1','year':2027,'annualSavingsLow':100,'annualSavingsHigh':250},'note':'Integration test only'}
         check(request('leads',base)[0]==403,'missing CSRF rejected')
+        disabled_report={'email':'report@example.test','idempotencyKey':secrets.token_hex(16),'website':'','report':{}}
+        code,denied_report,_=request('report_email',disabled_report,csrf=None)
+        check(code==403,'report route requires CSRF even when disabled')
         check(request('leads',base,csrf,custom_origin='https://attacker.example')[0]==403,'cross-origin submission rejected')
         check(request('leads',base,csrf,content_type='text/plain')[0]==415,'non-JSON form rejected')
         check(request('leads',csrf=csrf,raw=b'x'*17000)[0]==413,'oversized submission rejected')
         check(request('leads',base,csrf)[0]==429,'instant bot submission rejected')
+        code,disabled_report_response,_=request('report_email',disabled_report,csrf)
+        check(code==503 and disabled_report_response['error']['code']=='REPORT_MAIL_DISABLED','report endpoint fails closed before Hostinger setup')
         time.sleep(2.1)
-        cases=[('missing consent',{'consent':False}),('outdated consent',{'consentVersion':'old'}),('missing partner',{'partner':''}),('invalid email',{'email':'invalid'}),('phone without digits',{'phone':'()()()()'}),('honeypot',{'website':'spam'}),('nested scan values',{'inputs':{'people':{'bad':'value'}}}),('invalid summary',{'summary':{'annualSavingsLow':'NaN'}})]
+        cases=[('missing consent',{'consent':False}),('outdated consent',{'consentVersion':'old'}),('reject historic partner choice',{'partner':'tbt'}),('invalid email',{'email':'invalid'}),('phone without digits',{'phone':'()()()()'}),('honeypot',{'website':'spam'}),('nested scan values',{'inputs':{'people':{'bad':'value'}}}),('invalid summary',{'summary':{'annualSavingsLow':'NaN'}})]
         for label,patch in cases:
             clear_limits();invalid={**base,**patch};check(request('leads',invalid,csrf)[0]==422,label+' rejected')
         clear_limits();code,accepted,_=request('leads',base,csrf);lead_id=accepted.get('id')
@@ -77,6 +82,7 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
             encrypted=db.execute('SELECT payload FROM leads').fetchone()[0]
             check('consumer@example.test' not in encrypted and '=1+1' not in encrypted,'contact data is encrypted at rest')
             check(db.execute('SELECT COUNT(*) FROM leads').fetchone()[0]==1,'idempotent retry creates no duplicate')
+            check(db.execute('SELECT COUNT(*) FROM leads WHERE partner<>\'nivo\'').fetchone()[0]==0,'mail-only test produced no lead and new leads are NIVO-only')
             check(db.execute("SELECT COUNT(*) FROM daily_events WHERE event='lead_accepted'").fetchone()[0]==0,'no analytics counter without consent')
         base2={**base,'idempotencyKey':secrets.token_hex(16),'name':'<img src=x onerror=alert(1)>','analyticsConsent':True}
         code,accepted2,_=request('leads',base2,csrf);check(code==201,'second consented lead accepted')
@@ -88,7 +94,8 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
         first=next(x for x in listing['leads'] if x['id']==lead_id)
         check(first['data']['email']=='consumer@example.test' and first['data']['postcode']=='2311AB','admin decrypts normalized contact details')
         check(first['data']['inputs']=={'electricityUse':3500,'hasSolar':True,'people':3},'only approved scan fields are persisted')
-        check(first['data']['consentVersion']=='2026-11-v1' and first['data']['consentText'] and first['data']['acceptedAt'],'consent evidence persists with server timestamp')
+        check(first['data']['consentVersion']=='2026-11-v2' and first['data']['consentText'] and first['data']['acceptedAt'],'consent evidence persists with server timestamp')
+        check(first['partner']=='nivo' and 'NIVO Groep Holland' in first['data']['consentText'],'new leads are always routed to NIVO and consent names recipient')
         source=(ROOT/'admin/admin.mjs').read_text();check('innerHTML' not in source and 'textContent' in source,'admin renders untrusted fields as text')
         check(request('events',{'event':'scan_complete','consent':False},csrf)[0]==422,'analytics denied without consent')
         check(request('events',{'event':'lead_accepted','consent':True},csrf)[0]==422,'client cannot forge accepted-lead counter')
