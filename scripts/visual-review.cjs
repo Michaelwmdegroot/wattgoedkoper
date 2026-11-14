@@ -230,7 +230,14 @@ async function standaloneArticles(page,label="standalone"){
  await fs.mkdir(OUT,{recursive:true});
  server=http.createServer(async(req,res)=>{
   try{
-   const url=new URL(req.url,'http://localhost');let filename=decodeURIComponent(url.pathname);
+   const url=new URL(req.url,'http://localhost');
+   // Visual tests simulate readiness only. Neither reports nor advice can be sent.
+   if(url.pathname==='/api/index.php'&&url.searchParams.get('action')==='session'){
+    res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+    res.end(JSON.stringify({ok:true,configured:true,authenticated:false,csrf:'synthetic-visual-only',reportMailEnabled:true,createdAt:0}));
+    return;
+   }
+   let filename=decodeURIComponent(url.pathname);
    if(filename.endsWith('/'))filename+='index.html';
    const target=path.resolve(ROOT,'.'+filename);
    if(!target.startsWith(ROOT+path.sep)||target.endsWith('.php')){res.writeHead(403);res.end();return;}
