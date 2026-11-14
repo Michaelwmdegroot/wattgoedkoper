@@ -1,5 +1,7 @@
 # WattGoedkoper
 
+> **Plan Studio-revision:** het energieplan is nu een interactieve beslisomgeving met live maatregelen, variantvergelijking en transparante onderbouwing. Zie [ontwerp en acceptatie](docs/PLAN-STUDIO.md). Dit staat op PR #11, niet op productie.
+
 > **Implementatie v0.5:** Zie [releaseplan, mailbeveiliging en acceptatiechecklist](docs/RELEASE-V05.md) en [concept-PR #11](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11). `main` staat nog op de bewezen productieversie; er is geen merge of live mailactivatie uitgevoerd.
 
 > **Overdracht 14 november 2026:** De eigenaar heeft de live Hostinger-MySQL-installatie, adminlogin en een testadviesaanvraag bevestigd. Het volgende traject is het **premium eenscherms-energieplan, rapport per e-mail, NIVO-only advies en compacte admindetail**. Deze wensen zijn verwerkt in de v0.5-concept-PR, nog niet in productie. Zie [GPT-6 Pro overdracht](docs/HANDOFF-2026-11-14-GPT6PRO.md), [productspecificatie](docs/UX-LEAD-FUNNEL-V05.md) en [startprompt](docs/START-PROMPT-GPT6PRO.md). De inbox was op het laatste scherm **niet verbonden**. **Herhaal de database-installatie niet.**

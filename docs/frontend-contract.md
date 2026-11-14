@@ -106,3 +106,8 @@ Base `/api/index.php?action=`.
 - `session` exposes `reportMailEnabled`; offline preview prevents all backend calls and report delivery. Never promise delivery until SMTP is tested.
 - `admin/admin.mjs` renders untrusted lead fields exclusively through text nodes, with optional original scan/consent panels. Preserve keyboard/ESC and focus return.
 - Visual and security acceptance are enforced by `scripts/visual-review-v05.cjs`, `tests/report_mail_test.php`, and existing regression suites.
+
+
+## Plan Studio revision
+
+`plan-ui.mjs` exposes pure rendering plus `comparisonScale(values)` and `planInsights(report)`. `app.mjs` supplies transient tab/period/chart/reference state and calls the unchanged `simulateHome` after a real scenario change. UI-only period switching never changes annual report payloads. New plan controls are `data-plan-action`; original advice and report form IDs remain stable. The footer form is not replaced during live comparison, so unsent input remains only in memory. Details/settings return to the same modal. See `PLAN-STUDIO.md` for the full acceptance matrix.

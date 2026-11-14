@@ -1,7 +1,7 @@
 import { DEFAULT_INPUT, formatEuro, MODEL_VERSION, SOURCES } from './model.mjs';
 import { simulateHome, UPGRADES } from './playground-model.mjs';
 import { renderHouseScene } from './house-scene.mjs';
-import { renderPlanDashboard } from './plan-ui.mjs';
+import { renderPlanDashboard, renderPlanWorkspace } from './plan-ui.mjs';
 
 // A house to experiment with. Detailed inputs are optional; results never need contact details.
 const $ = (selector, parent = document) => parent.querySelector(selector);
@@ -165,7 +165,7 @@ function openDialog(kind,title,body,kicker='MAAK HET PERSOONLIJK') {
   state.dialog=kind;$('#dialog-title').textContent=title;$('#dialog-kicker').textContent=kicker;$('#dialog-content').innerHTML=body;
   if(!dialog.open)dialog.showModal();dialog.scrollTop=0;$('#dialog-title').tabIndex=-1;$('#dialog-title').focus({preventScroll:true});
 }
-function closeDialog() {$('#tool-dialog').close();state.dialog=null;if(state.dialogReturn?.isConnected)state.dialogReturn.focus({preventScroll:true});}
+function closeDialog() {if(planReturnFromSettings){planReturnFromSettings=false;openPlan();return;}$('#tool-dialog').close();state.dialog=null;(state.dialogReturn?.isConnected?state.dialogReturn:$('#open-plan'))?.focus({preventScroll:true});}
 function numeric(name,label,{unit='',min=0,max=100000,step='any',help='',value=state.input[name]}={}) {
   return `<div class="field"><label for="input-${name}">${escape(label)}</label><div class="input-unit"><input id="input-${name}" name="${name}" type="number" inputmode="decimal" min="${min}" max="${max}" step="${step}" value="${escape(value)}" required${help?` aria-describedby="help-${name}"`:''}>${unit?`<span>${escape(unit)}</span>`:''}</div>${help?`<small class="field-help" id="help-${name}">${escape(help)}</small>`:''}</div>`;
 }
@@ -228,22 +228,70 @@ function openUpgrade(id) {
 function openBattery() {
   openDialog('battery','Hoeveel stroom wil je bewaren?',`<p class="dialog-intro">Groter is niet vanzelf beter. Probeer een andere capaciteit en kijk hoeveel extra stroom je nog zelf kunt gebruiken.</p>${formShell(`${numeric('batteryCapacity','Bruikbare batterijcapaciteit',{unit:'kWh',min:1,max:100,step:.5})}${numeric('batteryInvestment','Totale aanschaf en installatie',{unit:'€',min:100,max:200000})}<p class="dialog-note">Deze jaarsimulatie hanteert 90% opslagrendement en maximaal circa 180 equivalente cycli in het centrale scenario. Met uurdata kan de afstemming nauwkeuriger.</p>`)}`);bindSettings();
 }
-function planBody() {
-  return renderPlanDashboard({r:state.report,personalized:state.personalized,labelFor,icon,money,number,range,escape,modelVersion:MODEL_VERSION});
+const planUI={tab:'overview',period:'year',chart:'cost',reference:null,inspected:null};
+function planOptions(){return {r:state.report,personalized:state.personalized,tariffsEdited:state.tariffsEdited,ui:{...planUI,canUndo:state.history.length>0}};}
+function planBody(){return renderPlanDashboard(planOptions());}
+function updatePlanWorkspace(focusAction=null,focusValue=''){
+  if(state.dialog!=='plan')return;
+  const panel=$('#ps-panel'),scroll=panel?.scrollTop||0;
+  $('#plan-studio-live').innerHTML=renderPlanWorkspace(planOptions());
+  const next=$('#ps-panel');if(next)next.scrollTop=['tab','inspect'].includes(focusAction)?0:scroll;
+  if(focusAction){
+    const button=$$('[data-plan-action]').find(el=>el.dataset.planAction===focusAction&&el.dataset.planValue===String(focusValue));
+    button?.focus({preventScroll:true});
+  }
+  $('#plan-live-announcement').textContent=`Plan bijgewerkt. Besparing ${money(state.report.savings)} per jaar. Investering ${range(state.report.investmentLow,state.report.investmentHigh)}.`;
 }
+let planReturnFromSettings=false;
+$('#tool-dialog').addEventListener('click',event=>{
+  const target=event.target.closest('[data-plan-action]');if(!target)return;
+  const action=target.dataset.planAction,value=target.dataset.planValue;
+  if(action==='tab'){planUI.tab=value;planUI.inspected=null;}
+  else if(action==='period')planUI.period=value;
+  else if(action==='chart')planUI.chart=value;
+  else if(action==='year')changeInput('year',Number(value));
+  else if(action==='toggle')toggleUpgrade(value);
+  else if(action==='recommend')recommend();
+  else if(action==='undo')undo();
+  else if(action==='inspect'){planUI.tab='measures';planUI.inspected=planUI.inspected===value?null:value;}
+  else if(action==='reference'){const r=state.report;planUI.reference={year:r.year,savings:r.savings,investmentLow:r.investmentLow,investmentHigh:r.investmentHigh};}
+  else if(action==='clear-reference')planUI.reference=null;
+  else if(action==='dialog'){planReturnFromSettings=true;DIALOGS[value]?.();return;}
+  updatePlanWorkspace(action==='inspect'?'inspect':action,value);
+});
+$('#tool-dialog').addEventListener('keydown',event=>{
+  if(event.key==='Tab'){
+    const dialog=event.currentTarget;
+    const items=[...dialog.querySelectorAll('button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),a[href],summary,[tabindex]:not([tabindex="-1"])')]
+      .filter(el=>el.tabIndex>=0&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+    const first=items[0],last=items.at(-1),active=document.activeElement;
+    if(items.length&&(!items.includes(active)||(event.shiftKey&&active===first)||(!event.shiftKey&&active===last))){
+      event.preventDefault();(event.shiftKey?last:first).focus();
+    }
+    return;
+  }
+  const tab=event.target.closest('[role="tab"][data-plan-action="tab"]');
+  if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();const ids=['overview','measures','evidence'];let i=ids.indexOf(tab.dataset.planValue);
+  i=event.key==='Home'?0:event.key==='End'?2:(i+(event.key==='ArrowRight'?1:2))%3;
+  planUI.tab=ids[i];updatePlanWorkspace('tab',planUI.tab);
+});
+
 function openPlan() {
-  openDialog('plan','Dit is jouw energieplan.',planBody(),'JOUW HUIS. JOUW KEUZES.');
+  openDialog('plan','Jouw huis. Een slimmer plan.',planBody(),'JOUW PERSOONLIJKE ENERGIEPLAN');
   track('scan_complete');
-  if(document.querySelector('.preview-ribbon'))return; // offline demo never uses backend
+  if(document.querySelector('.preview-ribbon')){$('#report-status').textContent='Offline preview · geen e-mailverzending. Je plan blijft volledig bruikbaar.';return;} // offline demo never uses backend
   ensureSession().then(session=>{
     if(state.dialog!=='plan'||session.reportMailEnabled)return;
     const button=$('#report-send'),status=$('#report-status');
     if(button)button.disabled=true;
+    const email=$('#report-email');if(email){email.disabled=true;email.placeholder='Rapportmail wordt ingericht';}
     if(status)status.textContent='Rapportmail wordt ingericht. Je kunt je plan wel gratis bekijken en je huis bewaren.';
   }).catch(()=>{
     if(state.dialog!=='plan')return;
     const button=$('#report-send'),status=$('#report-status');
     if(button)button.disabled=true;
+    const email=$('#report-email');if(email){email.disabled=true;email.placeholder='Rapportmail wordt ingericht';}
     if(status)status.textContent='Rapportmail is op dit moment niet beschikbaar. De berekening blijft gratis.';
   });
 }
@@ -378,7 +426,7 @@ $('#open-plan').addEventListener('click',openPlan);
 $('#tool-dialog').addEventListener('submit',event=>{if(event.target.id==='report-email-form')submitReport(event);});
 $('#privacy-settings').addEventListener('click',openPrivacy);
 $('#dialog-close').addEventListener('click',closeDialog);
-$('#tool-dialog').addEventListener('cancel',()=>{state.dialog=null;});
+$('#tool-dialog').addEventListener('cancel',event=>{event.preventDefault();closeDialog();});
 $('#tool-dialog').addEventListener('click',event=>{if(event.target===$('#tool-dialog')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeDialog();}});
 $('#reset-home').addEventListener('click',()=>{remember();state.input={...DEFAULT_INPUT};state.selectedIds=[];state.personalized=false;state.tariffsEdited=false;state.view='current';state.daylight=65;$('#day-control').value='65';refresh();toast('Terug naar het voorbeeldhuis. Je kunt deze stap nog ongedaan maken.');});
 $('#day-control').addEventListener('input',event=>{state.daylight=Number(event.target.value);updateScene();});

@@ -35,3 +35,7 @@ Dutch consumer energy planning tool and lead generation for NIVO Groep Holland a
 - A **transactional report email** requested by a visitor does NOT grant consent for NIVO contact, CRM processing or marketing. Keep advice consent and analytics opt-in separate; report sending is not built yet. Public mail must remain disabled until the correct Hostinger mailbox has been configured and verified.
 - Premium primary plan dialog and admin lead detail must fit essential content and CTA/actions in one desktop viewport (test 1366x768 and 1440x900); responsive mobile needs accessible action without obscured elements. Preserve numerical model and accessibility.
 - Deliver implementation on a feature branch with PR, privacy/docs, real browser screenshots and CI evidence. Main auto-deploys to Hostinger; treat production mail and live customer data as high-risk.
+
+
+## Plan Studio owner revision (14 November 2026)
+The owner rejected the static v0.5 plan as 60/100. The review branch now contains an interactive three-view Plan Studio; see `docs/PLAN-STUDIO.md`. Keep the pure annual engine unchanged, preserve annual email payloads when displaying monthly averages, and test clipping ancestors as well as viewport bounds. Local reference variants are transient and must not be presented as cloud accounts. `lib/report.php` now exists on the branch, but public mail is still default-off pending safe Hostinger verification.
