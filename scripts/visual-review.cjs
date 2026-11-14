@@ -41,6 +41,32 @@ async function openHome(page,url){
  await page.waitForSelector('.photo-scene');
  await imagesReady(page);
 }
+async function interactionGeometry(page,label){
+ if(page.viewportSize().width<=620){
+  await record(label+' / mobile result is a compact bottom bar',async()=>{
+   const box=await page.locator('#mobile-result').evaluate(el=>{
+    const rect=el.getBoundingClientRect();
+    return {top:rect.top,bottom:rect.bottom,height:rect.height,viewport:innerHeight,position:getComputedStyle(el).position};
+   });
+   assert.ok(box.height>0&&box.height<100,JSON.stringify(box));
+   assert.ok(Math.abs(box.bottom-box.viewport)<=1&&box.top>=box.viewport-100,JSON.stringify(box));
+   assert.equal(box.position,'fixed',JSON.stringify(box));
+  });
+ }
+ for(const id of ['solar','insulation','battery','heatpump']){
+  await record(label+' / '+id+' hotspot is not covered',async()=>{
+   const hotspot=page.locator('[data-house-action="'+id+'"]');
+   await hotspot.scrollIntoViewIfNeeded();
+   const hit=await hotspot.evaluate(el=>{
+    const rect=el.getBoundingClientRect(),x=rect.left+rect.width/2,y=rect.top+rect.height/2;
+    const target=document.elementFromPoint(x,y);
+    return {reachable:!!target&&(el===target||el.contains(target)),x,y,width:rect.width,height:rect.height,cover:target?.outerHTML.slice(0,220)};
+   });
+   assert.ok(hit.width>0&&hit.height>0&&hit.reachable,JSON.stringify(hit));
+  });
+ }
+ await page.evaluate(()=>scrollTo(0,0));
+}
 async function clickUpgrade(page,id){await page.locator(`#upgrade-dock button[data-upgrade="${id}"]`).click();}
 async function pressed(page,id,value){assert.equal(await page.locator(`#upgrade-dock button[data-upgrade="${id}"]`).getAttribute('aria-pressed'),String(value));}
 async function equipment(page,id,present){assert.equal(await page.locator(`[data-equipment="${id}"]`).evaluate(el=>el.classList.contains('is-visible')),present);}
@@ -109,6 +135,34 @@ async function scenario(page,label){
  });
  await pageHealth(page,label+' after interactions');
 }
+async function sceneVariants(page){
+ // Existing equipment remains meaningful for all five dwelling types,
+ // including an apartment, without bypassing upgrade eligibility rules.
+ await page.locator('#tab-home').click();
+ if(!await page.locator('#home-more').evaluate(el=>el.open))await page.locator('#home-more>summary').click();
+ for(const field of ['hasSolar','hasHeatPump','hasBattery']){
+  const toggle=page.locator('[data-toggle="'+field+'"]');
+  if(await toggle.getAttribute('aria-pressed')!=='true')await toggle.click();
+ }
+ await page.locator('#home-more>summary').click();
+ for(const type of ['terraced','corner','semi','detached','apartment']){
+  await page.locator('[data-field="homeType"][data-value="'+type+'"]').click();
+  await imagesReady(page);
+  const name='house-'+type+'-equipment.png';
+  await page.locator('.house-scene').screenshot({path:path.join(OUT,name),animations:'disabled'});
+  report.screenshots.push(name);
+  await record('house '+type+' / base and all equipment layers loaded and visible',async()=>{
+   const layers=await page.locator('.photo-scene img').evaluateAll(images=>images.map(img=>({
+    name:img.dataset.equipment||'base',loaded:img.complete&&img.naturalWidth>0,
+    opacity:Number(getComputedStyle(img).opacity),mask:getComputedStyle(img).maskImage
+   })));
+   assert.equal(layers.length,4);
+   assert.ok(layers.every(layer=>layer.loaded&&layer.opacity===1),JSON.stringify(layers));
+   assert.ok(layers.filter(layer=>layer.name!=='base').every(layer=>layer.mask!=='none'),JSON.stringify(layers));
+  });
+  await interactionGeometry(page,'house '+type);
+ }
+}
 async function runCase(name,viewport,task,{standalone=false}={}){
  const context=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'reduce'});
  const page=await context.newPage();page.setDefaultTimeout(12000);
@@ -129,7 +183,8 @@ async function runCase(name,viewport,task,{standalone=false}={}){
  }finally{await context.close();await fs.writeFile(path.join(OUT,'checks.json'),JSON.stringify(report,null,2)+'\n');}
 }
 async function tabletWarnings(page){
- await openHome(page,base);await capture(page,'tablet-initial');await pageHealth(page,'tablet initial');
+ await openHome(page,base);await capture(page,'tablet-top',false);await capture(page,'tablet-initial');
+ await interactionGeometry(page,'tablet initial');await pageHealth(page,'tablet initial');
  await page.locator('#home-more>summary').click();await page.locator('[data-toggle="hasSolar"]').click();
  await page.locator('[data-field="year"][data-value="2026"]').click();
  await page.locator('#tab-energy').click();await page.locator('[data-dialog="tariffs"]').click();
@@ -184,17 +239,20 @@ async function standaloneArticles(page,label="standalone"){
  base=`http://127.0.0.1:${server.address().port}/`;
  browser=await chromium.launch({headless:true});
  await runCase('desktop-module',{width:1440,height:1000},async page=>{
-  await openHome(page,base);await capture(page,'desktop-initial');await pageHealth(page,'desktop initial');
-  await scenario(page,'desktop');
+  await openHome(page,base);await capture(page,'desktop-top',false);await capture(page,'desktop-initial');
+  await interactionGeometry(page,'desktop initial');await pageHealth(page,'desktop initial');
+  await scenario(page,'desktop');await sceneVariants(page);
  });
  await runCase('tablet-module',{width:900,height:1000},tabletWarnings);
  await runCase('mobile-module',{width:390,height:844},async page=>{
-  await openHome(page,base);await capture(page,'mobile-top',false);await capture(page,'mobile-fullpage');await pageHealth(page,'mobile initial');
+  await openHome(page,base);await capture(page,'mobile-top',false);await capture(page,'mobile-fullpage');
+  await interactionGeometry(page,'mobile initial');await pageHealth(page,'mobile initial');
   await scenario(page,'mobile');
   await page.locator('#maatregelen').scrollIntoViewIfNeeded();await capture(page,'mobile-upgrades',false);
  });
  await runCase('small-mobile-module',{width:320,height:812},async page=>{
-  await openHome(page,base);await capture(page,'small-mobile-top',false);await capture(page,'small-mobile-fullpage');await pageHealth(page,'small mobile initial');
+  await openHome(page,base);await capture(page,'small-mobile-top',false);await capture(page,'small-mobile-fullpage');
+  await interactionGeometry(page,'small mobile initial');await pageHealth(page,'small mobile initial');
   await clickUpgrade(page,'solar');await clickUpgrade(page,'battery');await pageHealth(page,'small mobile plan');
  });
  await runCase('desktop-editorial',{width:1440,height:1000},desktopArticles);
@@ -204,11 +262,13 @@ async function standaloneArticles(page,label="standalone"){
  });
  const file=pathToFileURL(path.join(ROOT,'preview/wattgoedkoper-preview.html')).href;
  await runCase('desktop-standalone',{width:1440,height:1000},async page=>{
-  await openHome(page,file);await capture(page,'standalone-initial');await pageHealth(page,'standalone initial');
+  await openHome(page,file);await capture(page,'standalone-top',false);await capture(page,'standalone-initial');
+  await interactionGeometry(page,'standalone initial');await pageHealth(page,'standalone initial');
   await scenario(page,'standalone');await standaloneArticles(page);
  },{standalone:true});
  await runCase('mobile-standalone',{width:390,height:844},async page=>{
-  await openHome(page,file);await capture(page,'mobile-standalone',false);await pageHealth(page,'mobile standalone');
+  await openHome(page,file);await capture(page,'mobile-standalone',false);
+  await interactionGeometry(page,'mobile standalone');await pageHealth(page,'mobile standalone');
   await clickUpgrade(page,'solar');await clickUpgrade(page,'battery');await equipment(page,'battery',true);
   await standaloneArticles(page,'mobile-standalone');
  },{standalone:true});

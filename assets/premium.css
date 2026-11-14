@@ -29,7 +29,7 @@ body.playground-page{background:var(--paper);color:var(--ink);font-family:var(--
 .playground-page .button-yellow:hover{background:#ffdc4c}
 .playground-page .button-paper{background:#fffef8;color:var(--ink);border-color:#deddd2;white-space:nowrap}
 .playground-page .energy-app{position:relative;isolation:isolate}
-.playground-page .energy-app:before{content:'';position:absolute;z-index:-2;pointer-events:none;inset:0 -12vw auto;height:740px;background:radial-gradient(ellipse at 77% 18%,#faf0d471,transparent 42%),radial-gradient(ellipse at 62% 43%,#e8eeec8c,transparent 51%)}
+.playground-page .energy-app:before{content:'';position:absolute;z-index:-2;pointer-events:none;inset:0 0 auto;height:740px;background:radial-gradient(ellipse at 77% 18%,#faf0d471,transparent 42%),radial-gradient(ellipse at 62% 43%,#e8eeec8c,transparent 51%)}
 .playground-page .app-intro{position:relative;display:block;height:227px;padding:29px 0 0;margin:0;z-index:5;pointer-events:none}
 .intro-copy{max-width:510px;pointer-events:auto}
 .playground-page .intro-kicker{display:flex;align-items:center;gap:12px;color:var(--ink);font-size:9px;font-weight:800;letter-spacing:.24em;margin-bottom:12px}
@@ -259,3 +259,80 @@ body.playground-page{background:var(--paper);color:var(--ink);font-family:var(--
 
 .playground-page .result-warnings:empty{display:none}
 @media(min-width:1101px) and (max-width:1200px){.playground-page .free-label{display:none}.header-nav{gap:16px;margin-left:auto}.playground-page .header-tools{gap:12px}}
+
+/* The photograph, labels and equipment share one 3:2 canvas. Supporting copy
+   follows it in normal flow so no viewport places text over the house. */
+.playground-page .scene-stage{display:flex;flex-direction:column;min-height:0;margin-top:-118px;padding:0}
+.playground-page .house-scene{position:relative;inset:auto;width:100%;max-width:690px;height:auto;aspect-ratio:3/2;flex:none;margin:0 auto}
+.playground-page .scene-toolbar{top:54px;left:0;right:0}
+.playground-page .scene-message{position:relative;inset:auto;flex:none;margin:2px -10px 0}
+.playground-page .scene-message p{font-size:25px}
+.playground-page .day-controller{position:relative;inset:auto;width:100%;max-width:405px;flex:none;margin:17px auto 0}
+.playground-page .scene-benefits{position:relative;inset:auto;flex:none;margin:23px -10px 0}
+.playground-page .scene-status{bottom:1.5%}
+.playground-page .house-hotspot-solar{left:43%;top:5%}
+.playground-page .house-hotspot-insulation{left:1%}
+.playground-page .house-hotspot-battery{right:0}
+.playground-page .house-hotspot-heatpump{left:5%}
+.playground-page .result-context{padding:0;border:0;margin-top:8px}
+.playground-page .cost-comparison{border:0;margin:17px 0 12px;gap:10px}
+.playground-page .cost-meter{margin-top:0}
+.playground-page .self-use-values{margin-top:0}
+.playground-page .result-investment{margin-top:12px}
+.playground-page .result-button{margin-top:14px}
+.playground-page .year-switch{margin-top:12px;margin-bottom:0}
+.playground-page .results-heading{margin-bottom:12px}
+.playground-page .upgrade-heading>p{text-align:left}
+@media(min-width:1600px){
+  .playground-page .house-scene{max-width:720px}
+  .playground-page .scene-stage{margin-top:-126px}
+  .playground-page .scene-benefits{margin-top:27px}
+}
+@media(max-width:1350px) and (min-width:1101px){
+  .playground-page .scene-stage{margin-top:-74px}
+  .playground-page .scene-toolbar{top:22px}
+  .playground-page .scene-message{margin-top:6px}
+  .playground-page .scene-message p{font-size:23px}
+  .playground-page .scene-benefits{margin-top:26px;margin-left:-8px;margin-right:-8px}
+}
+@media(max-width:1100px) and (min-width:801px){
+  .playground-page .scene-stage{margin-top:0;padding-top:13px}
+  .playground-page .scene-toolbar{top:-43px}
+  .playground-page .scene-message{margin-top:9px}
+  .playground-page .scene-message p{font-size:24px}
+  .playground-page .scene-benefits{margin-top:26px}
+}
+@media(max-width:800px) and (min-width:621px){
+  .playground-page .scene-stage{margin-top:0;padding-top:65px}
+  .playground-page .scene-toolbar{top:7px}
+  .playground-page .scene-message{margin-top:24px;margin-left:0;margin-right:0}
+  .playground-page .scene-message p{font-size:22px}
+  .playground-page .day-controller{margin-top:20px}
+  .playground-page .scene-benefits{margin-top:25px}
+  .playground-page .house-hotspot-solar{left:28%;top:0}
+}
+@media(max-width:620px){
+  .playground-page .scene-stage{margin-top:4px;padding-top:62px}
+  .playground-page .scene-toolbar{top:8px;left:4px;right:4px}
+  .playground-page .house-scene{width:calc(100% + 36px);max-width:none;margin-left:-18px;margin-right:-18px}
+  .playground-page .scene-message{margin:32px 0 0}
+  .playground-page .scene-message p{font-size:23px}
+  .playground-page .day-controller{width:calc(100% - 24px);margin:18px auto 10px;max-width:350px}
+  .playground-page .scene-status{bottom:-5%}
+  .playground-page .house-hotspot-solar{left:40%;top:2%}
+  .playground-page .house-hotspot-insulation{left:3%}
+  .playground-page .house-hotspot-battery{right:1%}
+  .playground-page .house-hotspot-heatpump{left:5%}
+  .playground-page .mobile-result{top:auto;bottom:0;height:auto;min-height:0;margin:0;border:0;border-top:1px solid #dce3cf;border-radius:0}
+  .playground-page .mobile-result-copy{align-items:flex-start}
+  .playground-page .result-context{margin-top:12px}
+  .playground-page .cost-comparison{margin:22px 0 17px;gap:15px}
+  .playground-page .result-investment{margin-top:19px}
+  .playground-page .result-button{margin-top:21px}
+  .playground-page .year-switch{margin-top:17px}
+  .playground-page .results-heading{margin-bottom:20px}
+}
+@media(max-width:380px){
+  .playground-page .house-scene{width:calc(100% + 28px);margin-left:-14px;margin-right:-14px}
+  .playground-page .scene-message p{font-size:21px}
+}

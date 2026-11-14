@@ -92,7 +92,7 @@ function renderResults() {
     <div class="result-eyebrow">${hasPlan?(r.savings>=0?'Je bespaart naar schatting':'Je kosten nemen toe met'):'Wat kan jouw huis besparen?'}</div>
     <div class="saving-value ${r.savings<0?'is-negative':''} ${hasPlan?'':'saving-word'}" data-saving="${r.savings}">${hasPlan?money(Math.abs(r.savings)):'Wat als…'}</div>
     <div class="saving-period">${hasPlan?'<span class="saving-unit">per jaar</span> met jouw combinatie':'jij je eerste upgrade probeert?'}</div>
-    ${hasPlan?`<p class="saving-range">Bandbreedte besparing <strong>${range(r.savingsLow,r.savingsHigh)}</strong></p>`:'<p class="result-context">Voeg hieronder iets toe aan je huis.<br>Het verschil zie je meteen.</p>'}
+    ${hasPlan?`<p class="saving-range">Bandbreedte besparing <strong>${range(r.savingsLow,r.savingsHigh)}</strong></p>`:'<p class="result-context">Probeer een upgrade op je huis.</p>'}
     <div class="cost-comparison">${costBar('Nu · per jaar',baseline,Math.abs(baseline)/maxCost*100)}${costBar('Met je plan',after,Math.abs(after)/maxCost*100,'after')}</div>
     <div class="self-use-values"><span>Stroom uit eigen opwek</span><strong>${pct(r.baseline.selfSufficiency)} <span aria-hidden="true">→</span> ${pct(r.scenario.selfSufficiency)}</strong></div>
     <div class="self-use-meter" role="img" aria-label="${pct(r.scenario.selfSufficiency)} van je stroomverbruik uit eigen opwek in dit plan"><span style="width:${Math.min(100,r.scenario.selfSufficiency)}%"></span></div>
