@@ -90,6 +90,7 @@ const demo={
         await route.fulfill({status:data.ok?200:503,contentType:'application/json',body:JSON.stringify(data)});
       });
       await page.goto(base+'admin/');
+      await page.locator('[data-admin-tab="aanvragen"]').click();
       await page.locator('#lead-table button').first().click();
       const elems=await measure(page,['.detail-v05-header','.detail-v05-columns','.detail-v05-actions',
         '#detail-status','#lead-dialog .dialog-close','#lead-detail .detail-v05-metric']);
