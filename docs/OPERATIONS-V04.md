@@ -10,10 +10,10 @@ De activiteitengrafiek gebruikt alleen de bestaande geaggregeerde events van bez
 
 1. Bevestig dat Hostinger **wattgoedkoper.nl** aan de GitHub-repository Michaelwmdegroot/wattgoedkoper en branch **main** koppelt. De screenshots van 14 november tonen dat Hostinger de GitHub-implementatie heeft afgerond, maar de serverconfiguratie is hier niet uitleesbaar.
 2. Verifieer dat de Hostinger-app PHP uitvoert, niet alleen statische HTML. Open https://wattgoedkoper.nl/api/index.php?action=health. De response moet JSON zijn, en na private setup configured:true bevatten.
-3. Controleer voor wattgoedkoper.nl PHP 8.2+, pdo_sqlite, openssl, session en **imap**. De IMAP-extensie moet zo nodig via Websites → Manage site → PHP Configuration ingeschakeld worden.
+3. Controleer voor wattgoedkoper.nl PHP 8.2+, pdo_mysql, openssl, session en **imap**. De IMAP-extensie moet zo nodig via Websites → Manage site → PHP Configuration ingeschakeld worden.
 4. Richt de bestaande beveiligde beheerdersconfiguratie in via SSH in de juiste WattGoedkoper-documentroot:
 
-   php scripts/setup.php --origin=https://wattgoedkoper.nl --username=KIES_BEHEERNAAM
+   php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=KIES_BEHEERNAAM
 
    Het wachtwoord wordt via stdin gevraagd. Sla geen wachtwoorden op in command-lineargumenten, Git, screenshots of chat. Private opslag staat standaard in ../wattgoedkoper-private/ buiten de documentroot.
 5. Controleer dat de onafhankelijke mailbox **info@wattgoedkoper.nl** werkelijk bestaat en gebruik dan, in dezelfde serverdirectory:
@@ -26,7 +26,7 @@ De activiteitengrafiek gebruikt alleen de bestaande geaggregeerde events van bez
 
 ### Database-isolatie
 
-De Hostinger-screenshot laat **u886757484_wattgoedkoper** zien, maar vermeldt ook **zonlio.nl** als gekoppelde website. Deze branch raakt die MySQL-database niet aan. De huidige WattGoedkoper-code gebruikt een eigen private SQLite-database. Voor een latere MySQL-migratie eerst hostingkoppeling en datamigratie afzonderlijk beoordelen; gebruik nooit Zonlio-data of -credentials.
+De Hostinger-screenshot laat **u886757484_wattgoedkoper** zien, maar vermeldt ook **zonlio.nl** als gekoppelde website. Deze branch raakt die MySQL-database niet aan. De eigenaar heeft inmiddels een **nieuwe, lege MySQL-database onder wattgoedkoper.nl** aangemaakt. Voor deze nieuwe installatie is de backend uitgebreid met optionele MySQL-opslag, zie [HOSTINGER-MYSQL.md](HOSTINGER-MYSQL.md). Gebruik nooit Zonlio-data of -credentials.
 
 ### Mailbeveiliging en grenzen
 
