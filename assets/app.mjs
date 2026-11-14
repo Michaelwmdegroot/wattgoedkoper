@@ -285,7 +285,8 @@ async function apiPost(action,body) {
 }
 async function submitReport(event) {
   event.preventDefault();
-  const form=event.currentTarget;
+  // Listener is delegated from the dialog: use the actual submitting form.
+  const form=event.target;
   if(!form.reportValidity())return;
   const email=String(new FormData(form).get('email')||'').trim().toLowerCase();
   const status=$('#report-status'),button=$('#report-send');
