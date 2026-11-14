@@ -128,6 +128,7 @@ def render(path,title,description,lead,category,body):
         graph.append({'@type':'Article','headline':title,'description':description,'dateModified':lastmod,
                       'inLanguage':'nl-NL','mainEntityOfPage':canonical,'author':{'@type':'Organization','name':'WattGoedkoper'}})
     schema={'@context':'https://schema.org','@graph':graph}
+    jsonld=json.dumps(schema,ensure_ascii=False).replace('</','<\\/')
     breadcrumb_html=''
     for i,(url,label) in enumerate(crumb_items):
         if i:breadcrumb_html+='<span aria-hidden="true">/</span>'
@@ -182,7 +183,7 @@ def render(path,title,description,lead,category,body):
 <title>{escape(title)} | WattGoedkoper</title><meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{canonical}">
 <link rel="icon" href="/assets/brand-mark.svg" type="image/svg+xml"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css"><link rel="stylesheet" href="/assets/guide-cluster.css">
 <meta property="og:type" content="article"><meta property="og:locale" content="nl_NL"><meta property="og:title" content="{escape(title,quote=True)}"><meta property="og:description" content="{escape(description,quote=True)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{og_image}"><meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('</','<\\/')}</script>{example_script}
+<script type="application/ld+json">{jsonld}</script>{example_script}
 </head>
 <body class="editorial-page">
 <a class="skip-link" href="#inhoud">Ga naar inhoud</a>
