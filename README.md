@@ -1,5 +1,8 @@
 # WattGoedkoper
 
+> **Overdracht 14 november 2026:** De eigenaar heeft de live Hostinger-MySQL-installatie, adminlogin en een testadviesaanvraag bevestigd. Het volgende traject is het **premium eenscherms-energieplan, rapport per e-mail, NIVO-only advies en compacte admindetail**. Deze wensen zijn nog niet geïmplementeerd. Zie [GPT-6 Pro overdracht](docs/HANDOFF-2026-11-14-GPT6PRO.md), [productspecificatie](docs/UX-LEAD-FUNNEL-V05.md) en [startprompt](docs/START-PROMPT-GPT6PRO.md). De inbox was op het laatste scherm **niet verbonden**. **Herhaal de database-installatie niet.**
+
+
 Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Persoonlijk advies via **NIVO Groep Holland** en **Thuisbatterij Team** is een optionele vervolgstap.
 
 ## Status — premium energiehuis 0.3, operationele uitbreiding 0.4

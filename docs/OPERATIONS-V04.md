@@ -1,5 +1,8 @@
 # WattGoedkoper 0.4 — dashboard, inbox en leadmagnet
 
+> **Statusupdate 14 november:** MySQL, adminlogin en live testadviesaanvraag zijn door eigenaar bevestigd. `info@wattgoedkoper.nl` is in het laatste dashboardbeeld **nog niet gekoppeld**. Dit document beschrijft de eerdere operationele fase; de volgende bouwopdracht staat in [UX/leadfunnel v0.5](UX-LEAD-FUNNEL-V05.md) en [overdracht](HANDOFF-2026-11-14-GPT6PRO.md). Herhaal setup niet.
+
+
 ## Opgeleverd in deze branch
 
 Het gratis interactieve energiehuis en het bestaande beveiligde PHP/SQLite-leadsysteem blijven ongewijzigd. Het dashboard is uitgebreid met een statuspipeline, partnertelling, nieuwe aanvragen ouder dan 24 uur en een activiteitengrafiek met voltooide scans over 14 dagen. Er is een aparte inbox voor **info@wattgoedkoper.nl**, uitsluitend toegankelijk na beheerlogin. Berichten worden server-side gelezen via Hostinger IMAP en als platte tekst getoond. Het mailformulier stuurt uitsluitend op uitdrukkelijk verzoek via Hostinger SMTP.

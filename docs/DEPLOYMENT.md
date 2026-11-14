@@ -1,5 +1,8 @@
 # Hostinger deployment — hervatdocument
 
+> **Actueel bericht 14 november 2026:** GitHub → Hostinger is actief, de eigenaar heeft de private MySQL-configuratie veilig ingericht, ingelogd op het admin-dashboard en een testlead teruggevonden. De oudere inventarisatie hieronder is historisch en deels achterhaald; **niet opnieuw installeren of live database resetten**. Zie [actuele GPT-6 Pro overdracht](HANDOFF-2026-11-14-GPT6PRO.md). De mailbox/reportmail is nog niet bevestigd als werkend.
+
+
 Doel: `https://wattgoedkoper.nl/`, bron `Michaelwmdegroot/wattgoedkoper`, branch `main`.
 
 ## Huidige toestand
