@@ -210,8 +210,8 @@ EXTRA_CSS = '''
 
 def build():
     html = (ROOT/'index.html').read_text(encoding='utf-8')
-    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','plan-studio.css','home-cockpit.css','content.css'])
-    style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|premium|plan-studio|home-cockpit|content)\.css[\'"])[^>]*>', re.IGNORECASE)
+    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','plan-studio.css','home-cockpit.css','brand-refresh.css','content.css'])
+    style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|premium|plan-studio|home-cockpit|brand-refresh|content)\.css[\'"])[^>]*>', re.IGNORECASE)
     html, count = style_pattern.subn('', html)
     if count < 1:
         raise ValueError('Could not find the playground stylesheet links.')
@@ -231,6 +231,7 @@ def build():
     bundle = re.sub(r'</script', lambda match: '<\\/' + match.group(0)[2:], bundle, flags=re.IGNORECASE)
     bundle = bundle.replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')
     html = html.replace('</body>', '<script type="module" id="preview-app">\n' + bundle + '\n</script>\n</body>')
+    html = re.sub(r'<link[^>]+(?:rel="(?:manifest|apple-touch-icon)"|href="/favicon\\.ico")[^>]*>', '', html)
     html = inline_assets(html)
     TARGET.parent.mkdir(exist_ok=True)
     TARGET.write_text('\n'.join(line.rstrip() for line in html.splitlines())+'\n', encoding='utf-8')
