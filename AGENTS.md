@@ -27,3 +27,11 @@ Dutch consumer energy planning tool and lead generation for NIVO Groep Holland a
 - Root: assets/model.mjs, tests/model.test.mjs, source registry, project/deploy docs and integration.
 - Frontend contributor: index.html, assets/app.mjs, assets/styles.css, assets visual files.
 - Backend contributor: api/, lib/, admin/, scripts/ backend setup, tests/backend* and dev router.
+
+## Handoff / next workstream — 14 November 2026
+
+- Read [docs/HANDOFF-2026-11-14-GPT6PRO.md](docs/HANDOFF-2026-11-14-GPT6PRO.md) and [docs/UX-LEAD-FUNNEL-V05.md](docs/UX-LEAD-FUNNEL-V05.md) before coding. The project is LIVE with a confirmed MySQL lead test; do not reinitialize database, rotate encryption keys, or copy real data.
+- Owner decision for new advice requests: **NIVO Groep Holland only**. Remove partner selector in UI AND enforce server-side routing; keep historical partner records intact.
+- A **transactional report email** requested by a visitor does NOT grant consent for NIVO contact, CRM processing or marketing. Keep advice consent and analytics opt-in separate; report sending is not built yet. Public mail must remain disabled until the correct Hostinger mailbox has been configured and verified.
+- Premium primary plan dialog and admin lead detail must fit essential content and CTA/actions in one desktop viewport (test 1366x768 and 1440x900); responsive mobile needs accessible action without obscured elements. Preserve numerical model and accessibility.
+- Deliver implementation on a feature branch with PR, privacy/docs, real browser screenshots and CI evidence. Main auto-deploys to Hostinger; treat production mail and live customer data as high-risk.
