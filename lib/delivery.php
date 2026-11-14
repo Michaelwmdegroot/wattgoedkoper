@@ -48,7 +48,7 @@ function wg_delivery_settings(array $config): ?array {
         ||preg_match('/[\\r\\n]/',$token)||!is_array($hosts)||!function_exists('curl_init')){return null;}
     $parts=parse_url($url);
     if(!is_array($parts)||($parts['scheme']??null)!=='https'||empty($parts['host'])
-        ||isset($parts['user'],$parts['pass'])||isset($parts['query'])||isset($parts['fragment'])
+        ||(isset($parts['user'])||isset($parts['pass']))||isset($parts['query'])||isset($parts['fragment'])
         ||isset($parts['port'])&&(int)$parts['port']!==443){return null;}
     $host=strtolower($parts['host']);
     // An exact, owner-approved hostname is required; no wildcard or IP destination.
@@ -144,7 +144,7 @@ function wg_delivery_transport(array $envelope,array $settings): array {
     $success=curl_exec($handle);
     $code=(int)curl_getinfo($handle,CURLINFO_RESPONSE_CODE);
     curl_close($handle);
-    if($success===false){return ['kind'=>'retry','error'=>'NETWORK_UNCERTAIN'];}
+    if($success===false||$code===0){return ['kind'=>'retry','error'=>'NETWORK_UNCERTAIN'];}
     $ack=json_decode($answer,true);
     // 200/201 or idempotent 409 only count after an explicit, valid receipt.
     if(($code>=200&&$code<300||$code===409)&&is_array($ack)
@@ -200,9 +200,14 @@ function wg_delivery_process(PDO $db,array $config,int $limit=10,?callable $synt
             else{
                 $data=wg_decrypt($row['payload'],$config);
                 $envelope=wg_delivery_envelope($claim['id'],$row,$data);
-                $outcome=$syntheticSender!==null?$syntheticSender($envelope,$config):wg_delivery_transport($envelope,$settings);
             }
         }catch(Throwable){$outcome=['kind'=>'fail','error'=>'INVALID_CONSENT'];}
+        if(isset($envelope)&&is_array($envelope)){
+            try{
+                $outcome=$syntheticSender!==null?$syntheticSender($envelope,$config):wg_delivery_transport($envelope,$settings);
+            }catch(Throwable){$outcome=['kind'=>'retry','error'=>'NETWORK_UNCERTAIN'];}
+            unset($envelope);
+        }
         $status=wg_delivery_finish($db,$claim,$outcome);
         if(isset($summary[$status])){$summary[$status]++;}
     }
