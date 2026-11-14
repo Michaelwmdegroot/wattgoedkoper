@@ -52,3 +52,14 @@
   .wg2-status-list div{display:block}
   .wg2-status-list dd{text-align:left;max-width:100%;margin-top:5px}
 }
+
+/* Separate technical delivery from human CRM status. */
+.wg2-delivery-summary{margin:12px 2px 0;line-height:1.55}
+.wg2-delivery-legend{margin:2px 0 11px}
+.wg2-delivery-status{white-space:nowrap;background:#edf1ec;color:#5c706d}
+.wg2-delivery-status.acknowledged{background:#e2f1e8;color:#236147}
+.wg2-delivery-status.failed{background:#fff0e8;color:#8e4933}
+.wg2-delivery-status.pending,.wg2-delivery-status.processing{background:#fff7da;color:#6d5b1f}
+.wg2-delivery-detail{display:flex;gap:7px;align-items:flex-start;flex-direction:column;margin:12px 0;border:1px solid #e5e9dd;border-radius:11px;background:#f6f7ee;padding:12px;font-size:11px;line-height:1.5}
+.wg2-delivery-detail strong{color:#163b42}
+.wg2-delivery-detail span{color:#647a73;overflow-wrap:anywhere}
