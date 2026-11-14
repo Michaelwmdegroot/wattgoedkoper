@@ -231,7 +231,22 @@ function openBattery() {
 function planBody() {
   return renderPlanDashboard({r:state.report,personalized:state.personalized,labelFor,icon,money,number,range,escape,modelVersion:MODEL_VERSION});
 }
-function openPlan() {openDialog('plan','Dit is jouw energieplan.',planBody(),'JOUW HUIS. JOUW KEUZES.');track('scan_complete');}
+function openPlan() {
+  openDialog('plan','Dit is jouw energieplan.',planBody(),'JOUW HUIS. JOUW KEUZES.');
+  track('scan_complete');
+  if(document.querySelector('.preview-ribbon'))return; // offline demo never uses backend
+  ensureSession().then(session=>{
+    if(state.dialog!=='plan'||session.reportMailEnabled)return;
+    const button=$('#report-send'),status=$('#report-status');
+    if(button)button.disabled=true;
+    if(status)status.textContent='Rapportmail wordt ingericht. Je kunt je plan wel gratis bekijken en je huis bewaren.';
+  }).catch(()=>{
+    if(state.dialog!=='plan')return;
+    const button=$('#report-send'),status=$('#report-status');
+    if(button)button.disabled=true;
+    if(status)status.textContent='Rapportmail is op dit moment niet beschikbaar. De berekening blijft gratis.';
+  });
+}
 function saveHome() {try{localStorage.setItem(STORE_HOME,JSON.stringify({...snapshot(),savedAt:new Date().toISOString()}));toast('Je huis en plan zijn op dit apparaat bewaard. Contactgegevens worden niet bewaard.');renderControls();}catch{toast('Bewaren is niet mogelijk in deze browser. Je kunt de berekening wel blijven bekijken.');}}
 function restoreHome() {
   try{const saved=JSON.parse(localStorage.getItem(STORE_HOME));if(!saved?.input||!Array.isArray(saved.selectedIds))throw new Error();const r=simulateHome(saved.input,saved.selectedIds);remember();state.input=r.input;state.selectedIds=r.selectedIds;state.personalized=Boolean(saved.personalized);state.tariffsEdited=Boolean(saved.tariffsEdited);state.view='plan';refresh();toast('Je bewaarde huis is terug.');}catch{toast('Het bewaarde huis kon niet worden geopend. Je huidige huis blijft staan.');}
@@ -274,13 +289,13 @@ async function ensureSession() {
   state.sessionPromise=(async()=>{
     let response;try{response=await fetch('/api/index.php?action=session',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});}catch{throw new Error('Aanvragen zijn nu niet beschikbaar. Je kunt je energiehuis wel gewoon gebruiken.');}
     let data;try{data=await response.json();}catch{throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je energiehuis blijft volledig werken.');}
-    if(!response.ok||!data.ok||!data.configured||!data.csrf)throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je kunt je plan wel bewaren.');state.session={csrf:data.csrf,createdAt:data.createdAt};return state.session;
+    if(!response.ok||!data.ok||!data.configured||!data.csrf)throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je kunt je plan wel bewaren.');state.session={csrf:data.csrf,createdAt:data.createdAt,reportMailEnabled:data.reportMailEnabled===true};return state.session;
   })().finally(()=>{state.sessionPromise=null;});return state.sessionPromise;
 }
 async function apiPost(action,body) {
   const session=await ensureSession();let response;
-  try{response=await fetch(`/api/index.php?action=${encodeURIComponent(action)}`,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-CSRF-Token':session.csrf,Accept:'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});}catch{throw new Error('De verbinding is onderbroken. Je aanvraag is nog niet bevestigd. Probeer opnieuw; dezelfde aanvraag wordt niet dubbel opgeslagen.');}
-  let data;try{data=await response.json();}catch{throw new Error('Je aanvraag is niet bevestigd. Probeer het later opnieuw.');}
+  try{response=await fetch(`/api/index.php?action=${encodeURIComponent(action)}`,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-CSRF-Token':session.csrf,Accept:'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});}catch{throw new Error(action==='report_email'?'De verbinding is onderbroken. De rapportmail kan een onzekere verzendstatus hebben; controleer eerst je inbox.':'De verbinding is onderbroken. Je aanvraag is nog niet bevestigd. Probeer opnieuw; dezelfde aanvraag wordt niet dubbel opgeslagen.');}
+  let data;try{data=await response.json();}catch{throw new Error(action==='report_email'?'De mailserver heeft de verzending niet bevestigd. Controleer je inbox voordat je opnieuw probeert.':'Je aanvraag is niet bevestigd. Probeer het later opnieuw.');}
   if(!response.ok||!data.ok){if(response.status===403)state.session=null;throw new Error(data.error?.code==='SETUP_REQUIRED'?'Aanvragen zijn nog niet beschikbaar. Bewaar je plan op je apparaat.':data.error?.message||'Je aanvraag is niet bevestigd. Controleer je gegevens en probeer opnieuw.');}return data;
 }
 async function submitReport(event) {
