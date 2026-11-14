@@ -422,6 +422,19 @@ document.addEventListener('click',event=>{
   else if(button.hasAttribute('data-save-privacy')){const previous=state.analytics;state.analytics=$('#analytics-consent').checked;try{localStorage.setItem(STORE_ANALYTICS,state.analytics?'yes':'no');}catch{}closeDialog();toast(state.analytics?'Gebruiksstatistieken staan aan.':'Gebruiksstatistieken staan uit.');if(state.analytics&&!previous)track('page_view');}
   else if(button.hasAttribute('data-print')){openPlan();$$('.plan-assumptions').forEach(item=>item.open=true);window.print();}
 });
+// Lightweight first-screen shortcuts focus real controls without side effects.
+$('#intro-path')?.addEventListener('click',event=>{
+  const target=event.target.closest('[data-quick]');
+  if(!target)return;
+  if(target.dataset.quick==='house'){
+    $('#tab-home').click();
+    $('#tab-home').focus({preventScroll:true});
+  }else if(target.dataset.quick==='measures'){
+    $('#upgrade-dock button[data-upgrade="solar"]')?.focus({preventScroll:true});
+  }else if(target.dataset.quick==='plan'){
+    $('#open-plan').click();
+  }
+});
 $('#open-plan').addEventListener('click',openPlan);
 $('#tool-dialog').addEventListener('submit',event=>{if(event.target.id==='report-email-form')submitReport(event);});
 $('#privacy-settings').addEventListener('click',openPrivacy);
