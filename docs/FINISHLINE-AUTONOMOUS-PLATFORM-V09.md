@@ -189,3 +189,9 @@ Zonder nu het ontwikkelwerk te blokkeren:
 ---
 
 **Productregel:** Bouw niet eindeloos nieuwe functies. Rond eerst de betrouwbare reis van bezoeker tot ontvangen NIVO-lead af. Daarna gebruikt WattGoedkoper zijn eigen SEO, content, rekenkern en monitoring om duurzaam te groeien — met de eigenaar aan het stuur bij uitzonderingen.
+
+## Uitvoeringsnotitie — 15 november 2026 (nog niet gemerged)
+
+De overname heeft feitelijk de toen actuele main SHA `521a0bd235624652c9e86c931c4a78a4528fb75c` gecontroleerd. Er staan inmiddels drie aparte featurebranch-PR's open voor eigenaarreview: [#28](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/28) corrigeert de MySQL-onderhouds-CLI (beide CI-workflows groen), [#29](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/29) levert Dashboard 2.0 vier tabs met echte en onbekende bronnen (beide CI-workflows groen), en [#30](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/30) voegt een default-OFF NIVO-deliveryoutbox en onafhankelijke worker toe (CI ter verificatie). Geen van deze PR's is naar productie gemerged.
+
+Dit verandert de finish-line exitcriteria niet: geen live Hostinger-bewijs, SMTP-inboxbezorging, eigenaar-geautoriseerde NIVO-ontvanger/ACK, backup-restore of definitieve privacy-/juridische acceptatie. Een synthetische ACK is een testfixture, geen externe afleverbevestiging. `docs/NIVO-DELIVERY-CONTRACT-V1.md` in PR #30 beschrijft het toekomstige ontvangerscontract en de private activeringsgate. Dashboard-aflevercijfers zijn pas voltooid wanneer #29/#30 na review zijn gecombineerd en end-to-end zijn bewezen.
