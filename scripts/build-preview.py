@@ -47,7 +47,7 @@ def offline_app(source):
     """Fail closed before a preview could create a server session or lead."""
     message = (
         'Dit is de zelfstandige preview. Adviesaanvragen staan hier uit. '
-        'Je kunt je hele energiehuis en plan wel uitproberen en als PDF bewaren.'
+        'Je kunt je hele energiehuis en plan wel uitproberen en lokaal bewaren.'
     )
     source, session_count = re.subn(
         r'(async\s+function\s+ensureSession\s*\([^)]*\)\s*\{)',
@@ -222,7 +222,7 @@ def build():
     if re.search(r'<script\b[^>]*\bsrc\s*=|<link\b[^>]*\brel=[\'"]stylesheet', html, re.IGNORECASE):
         raise ValueError('An external script or stylesheet remains in the preview.')
     html = html.replace('</head>', '<style id="preview-styles">' + css + '\n' + EXTRA_CSS + '</style>\n</head>')
-    ribbon = '<div class="preview-ribbon"><strong>SPEELBARE PREVIEW</strong> · je gegevens blijven op dit apparaat · adviesaanvragen uitgeschakeld</div>'
+    ribbon = '<div class="preview-ribbon"><strong>SPEELBARE PREVIEW</strong> · je gegevens blijven op dit apparaat · advies en rapportmail uitgeschakeld</div>'
     html, count = re.subn(r'(<body\b[^>]*>)', lambda match: match.group(1) + '\n' + ribbon, html, count=1, flags=re.IGNORECASE)
     if count != 1:
         raise ValueError('Could not find the document body.')
