@@ -7,14 +7,14 @@ const http=require('node:http');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'visual-review-output');
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.woff':'font/woff','.xml':'application/xml','.txt':'text/plain'};
 const lead={
-  id:'WG-SYNTHETIC-01',createdAt:'2026-11-14T12:00:00Z',updatedAt:'2026-11-14T12:00:00Z',status:'new',partner:'nivo',
+  id:'WG-ABCDEF123456',createdAt:'2026-11-14T12:00:00Z',updatedAt:'2026-11-14T12:00:00Z',status:'new',partner:'nivo',delivery:{status:'pending',attempts:0,nextAttemptAt:'2026-11-14T12:00:00Z',reference:null,errorCode:null},
   data:{name:'Voorbeeld Gebruiker',email:'voorbeeld@example.test',phone:'',postcode:'2311AB',
     interests:['battery'],summary:{year:2027,modelVersion:'test-model',annualSavingsLow:100,annualSavingsHigh:250},
     inputs:{electricityUse:3500},consentVersion:'2026-11-v2',consentText:'Synthetische toestemming voor NIVO Groep Holland',acceptedAt:'2026-11-14T12:00:00Z'}
 };
 const stats={ok:true,leadCount:1,retentionDays:90,conversion:null,events:[],
   totals:{page_view:0,scan_start:1,scan_complete:1,advice_open:1,lead_accepted:0},
-  statuses:[{status:'new',count:1}],partners:[{partner:'nivo',count:1}],overdueNew:0};
+  statuses:[{status:'new',count:1}],partners:[{partner:'nivo',count:1}],overdueNew:0,delivery:{pending:1,processing:0,acknowledged:0,failed:0},deliveryConfigured:false};
 let server,browser;
 const report={screenshots:[],checks:[],errors:[]};
 function check(name,condition){assert.ok(condition,name);report.checks.push(name);}
@@ -59,10 +59,15 @@ async function mockApi(page){
     check(vp.width+' four navigation views',nav.length===4&&nav.join(' ').includes('Tools'));
     check(vp.width+' dashboard privacy',!(await page.locator('#stats-grid').innerText()).includes('100%'));
     check(vp.width+' default overview',await page.locator('#overview-api-state').isVisible());
+    check(vp.width+' delivery queue pending is not falsely acknowledged',
+      (await page.locator('#overview-delivery-state').innerText()).includes('in wachtrij') &&
+      (await page.locator('#stats-grid').innerText()).includes('0'));
     await screenshot(page,'wg2-overview-'+vp.width);
     await page.locator('[data-admin-tab="aanvragen"]').click();
     await page.locator('#lead-table button').first().waitFor();
     check(vp.width+' lead details available',await page.locator('#lead-table').innerText().then(t=>t.includes('Voorbeeld Gebruiker')));
+    check(vp.width+' shows outbox separate from contact status',
+      (await page.locator('#lead-table').innerText()).includes('In wachtrij'));
     await page.locator('#lead-search').fill('geen-match');
     check(vp.width+' page search clearly scoped',(await page.locator('#lead-search-note').innerText()).includes('geladen aanvragen'));
     check(vp.width+' page search hides nonmatches',(await page.locator('#lead-table').innerText()).includes('Geen matches'));
@@ -74,7 +79,8 @@ async function mockApi(page){
     await screenshot(page,'wg2-seo-'+vp.width);
     await page.locator('[data-admin-tab="tools"]').click();
     await page.locator('#tools-api').filter({hasText:'Database bereikbaar'}).waitFor();
-    check(vp.width+' no unverified delivery promise',(await page.locator('#tools-delivery').innerText()).includes('geen geautoriseerde'));
+    check(vp.width+' no unverified delivery promise',(await page.locator('#tools-delivery').innerText()).includes('Transport uitgeschakeld'));
+    check(vp.width+' stored delivery states are correctly reconciled',(await page.locator('#tools-delivery').innerText()).includes('1 wachtend'));
     await screenshot(page,'wg2-tools-'+vp.width);
     const widths=await page.evaluate(()=>({document:document.documentElement.scrollWidth,viewport:innerWidth}));
     check(vp.width+' no horizontal viewport overflow',widths.document<=widths.viewport+2);
