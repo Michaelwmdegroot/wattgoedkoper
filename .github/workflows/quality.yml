@@ -45,6 +45,8 @@ jobs:
       - run: php tests/report_mail_test.php
       - name: Verify NIVO delivery outbox, receipts, retry and consent without network
         run: php tests/delivery_test.php
+      - name: Verify single private maintenance runner, heartbeat, lock and alerts
+        run: php tests/operations_test.php
       - name: Verify Hostinger installer without PHP system function
         env:
           WG_TEST_MYSQL_NAME: wattgoedkoper_ci
