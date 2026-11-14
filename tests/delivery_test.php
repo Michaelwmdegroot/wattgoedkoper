@@ -24,6 +24,8 @@ try{
     $db=wg_db($config);
     deliveryCheck($db->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite','ephemeral SQLite database');
     $checks++;
+    deliveryCheck((int)$db->query('PRAGMA foreign_keys')->fetchColumn()===1,'SQLite foreign keys enforced for outbox retention');
+    $checks++;
     $now=gmdate('Y-m-d\\TH:i:s\\Z');
     $insert=$db->prepare('INSERT INTO leads
       (id,idempotency_hash,request_hash,created_at,updated_at,status,partner,payload,consent_version)
