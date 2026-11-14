@@ -1,0 +1,53 @@
+<?php
+declare(strict_types=1);
+// CI-only integration test. Uses an ephemeral, empty MySQL service, never Hostinger production.
+require dirname(__DIR__).'/lib/bootstrap.php';
+function check(bool $ok,string $what): void {
+    if (!$ok) { throw new RuntimeException('MySQL backend test failed: '.$what); }
+}
+if(!extension_loaded('pdo_mysql')){throw new RuntimeException('pdo_mysql required by MySQL integration test');}
+$name=getenv('WG_TEST_MYSQL_NAME')?:'wattgoedkoper_ci';
+$user=getenv('WG_TEST_MYSQL_USER')?:'wattgoedkoper_ci';
+$pass=getenv('WG_TEST_MYSQL_PASSWORD')?:'ci-password-not-a-secret';
+$cfg=[
+    'origin'=>'https://wattgoedkoper.nl',
+    'admin_username'=>'testadmin',
+    'admin_password_hash'=>password_hash('local-only-testing-password',PASSWORD_DEFAULT),
+    'encryption_key'=>base64_encode(random_bytes(32)),
+    'hmac_key'=>bin2hex(random_bytes(32)),
+    'retention_days'=>90, 'private_dir'=>sys_get_temp_dir(),
+    'database'=>['driver'=>'mysql','host'=>'127.0.0.1','name'=>$name,'user'=>$user,'password'=>$pass]
+];
+$db=wg_db($cfg);
+check(wg_is_mysql($db),'MySQL PDO selected');
+check($db->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql','driver name');
+$tables=$db->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
+foreach (['leads','daily_events','rate_limits','metadata'] as $table) { check(in_array($table,$tables,true),'table '.$table); }
+$payload=['name'=>'CI Test','email'=>'test@example.invalid','consent'=>true,'consentVersion'=>WG_CONSENT_VERSION];
+$encrypted=wg_encrypt($payload,$cfg);
+check(!str_contains($encrypted,'CI Test'),'PII not plaintext in DB payload');
+check(wg_decrypt($encrypted,$cfg)===$payload,'AES-256-GCM roundtrip');
+$now=gmdate('Y-m-d\TH:i:s\Z');
+$insert=$db->prepare('INSERT INTO leads(id,idempotency_hash,request_hash,created_at,updated_at,status,partner,payload,consent_version) VALUES(?,?,?,?,?,?,?,?,?)');
+$insert->execute(['WG-CI-FRESH',str_repeat('a',64),str_repeat('b',64),$now,$now,'new','tbt',$encrypted,WG_CONSENT_VERSION]);
+$db->prepare('UPDATE leads SET status=? WHERE id=?')->execute(['contacted','WG-CI-FRESH']);
+$checkLead=$db->query("SELECT * FROM leads WHERE id='WG-CI-FRESH'")->fetch();
+check($checkLead['status']==='contacted','update status');
+check(wg_decrypt($checkLead['payload'],$cfg)===$payload,'lead decryption');
+wg_event($db,'scan_complete');wg_event($db,'scan_complete');
+$ct=(int)$db->query("SELECT `count` FROM daily_events WHERE `event`='scan_complete'")->fetchColumn();
+check($ct===2,'mysql event upsert');
+$_SERVER['REMOTE_ADDR']='127.0.0.10';
+wg_rate($db,$cfg,'unit-test',10,600);wg_rate($db,$cfg,'unit-test',10,600);
+check((int)$db->query('SELECT MAX(hits) FROM rate_limits')->fetchColumn()===2,'mysql rate limit upsert');
+$old=gmdate('Y-m-d\TH:i:s\Z',time()-95*86400);
+$insert->execute(['WG-CI-OLD',str_repeat('c',64),str_repeat('d',64),$old,$old,'new','nivo',$encrypted,WG_CONSENT_VERSION]);
+$cleared=wg_housekeeping($db,$cfg,true);
+check($cleared['leads']===1,'retention removes old lead');
+check((int)$db->query('SELECT COUNT(*) FROM leads')->fetchColumn()===1,'recent lead kept');
+check((int)$db->query("SELECT COUNT(*) FROM metadata WHERE `key`='last_purge'")->fetchColumn()===1,'metadata mysql upsert');
+check(wg_housekeeping($db,$cfg,false)['leads']===0,'skip premature housekeeping');
+$update=$db->prepare("UPDATE leads SET status='contacted' WHERE id='WG-CI-FRESH'");
+$update->execute();
+check($update->rowCount()===1,'status update found-rows semantics');
+echo "MySQL backend integration: 15 checks passed\n";

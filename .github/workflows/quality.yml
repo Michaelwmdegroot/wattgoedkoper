@@ -8,7 +8,22 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 12
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: local-ci-root
+          MYSQL_DATABASE: wattgoedkoper_ci
+          MYSQL_USER: wattgoedkoper_ci
+          MYSQL_PASSWORD: ci-password-not-a-secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -plocal-ci-root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v7
@@ -17,11 +32,17 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: pdo_sqlite, openssl
+          extensions: pdo_sqlite, pdo_mysql, openssl
           coverage: none
       - run: npm test
       - run: npm run check
       - run: python3 tests/backend_test.py --php php
       - run: php tests/mail_safety_test.php
+      - name: Verify MySQL integration on ephemeral CI database
+        env:
+          WG_TEST_MYSQL_NAME: wattgoedkoper_ci
+          WG_TEST_MYSQL_USER: wattgoedkoper_ci
+          WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
+        run: php tests/mysql_backend_test.php
       - name: Check PHP syntax
         run: find api lib scripts -name '*.php' -print0 | xargs -0 -n1 php -l

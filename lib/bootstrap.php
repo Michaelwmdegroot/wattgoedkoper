@@ -33,7 +33,8 @@ function wg_config(): ?array {
     $path = $dir . '/config.php';
     if (!is_file($path) || !is_readable($path) || !is_writable($dir) || (is_file($dir . '/wattgoedkoper.sqlite') && !is_writable($dir . '/wattgoedkoper.sqlite'))) { return null; }
     $config = require $path;
-    if (!is_array($config) || !extension_loaded('pdo_sqlite') || !extension_loaded('openssl')) { return null; }
+    if (!is_array($config) || !extension_loaded('openssl')) { return null; }
+    if (($config['database']['driver'] ?? 'sqlite') !== 'mysql' && !extension_loaded('pdo_sqlite')) { return null; }
     foreach (['origin','admin_username','admin_password_hash','encryption_key','hmac_key'] as $key) {
         if (!isset($config[$key]) || !is_string($config[$key]) || $config[$key] === '') { return null; }
     }
@@ -41,6 +42,18 @@ function wg_config(): ?array {
     $origin = parse_url($config['origin']);
     if (!$origin || !isset($origin['scheme'], $origin['host']) || isset($origin['query']) || isset($origin['fragment']) || !in_array($origin['scheme'], ['https','http'], true)) { return null; }
     if ($origin['scheme'] !== 'https' && !in_array($origin['host'], ['localhost','127.0.0.1','::1'], true)) { return null; }
+    // Existing SQLite installations remain valid; MySQL is an explicit, private opt-in.
+    if (isset($config['database'])) {
+        $dbSettings=$config['database'];
+        if (!is_array($dbSettings) || ($dbSettings['driver'] ?? '') !== 'mysql'
+            || !extension_loaded('pdo_mysql')
+            || !in_array(($dbSettings['host'] ?? ''),['localhost','127.0.0.1'],true)) { return null; }
+        foreach (['name','user','password'] as $field) {
+            if (!isset($dbSettings[$field]) || !is_string($dbSettings[$field]) || $dbSettings[$field]==='') { return null; }
+        }
+        if (!preg_match('/^[A-Za-z0-9_]{1,64}$/D', $dbSettings['name'])
+            || !preg_match('/^[A-Za-z0-9_]{1,64}$/D', $dbSettings['user'])) { return null; }
+    }
     $config['private_dir'] = $dir;
     $config['retention_days'] = max(1, min(365, (int)($config['retention_days'] ?? 90)));
     return $config;
@@ -49,18 +62,62 @@ function wg_require_config(?array $config): array {
     if (!$config) { wg_fail(503, 'SETUP_REQUIRED', 'De adviesaanvragen worden nog ingericht. Je kunt de energiescan wel gratis gebruiken.'); }
     return $config;
 }
+function wg_is_mysql(PDO $db): bool {
+    return $db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
+}
 function wg_db(array $config): PDO {
     umask(0077);
-    $db = new PDO('sqlite:' . $config['private_dir'] . '/wattgoedkoper.sqlite', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
+    if (($config['database']['driver'] ?? 'sqlite') === 'mysql') {
+        $settings = $config['database'];
+        if (!in_array(($settings['host'] ?? ''),['localhost','127.0.0.1'],true) || !extension_loaded('pdo_mysql')) {
+            throw new RuntimeException('MySQL not configured');
+        }
+        $options = [
+            PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES=>false
+        ];
+        if (defined('PDO::MYSQL_ATTR_FOUND_ROWS')) {
+            $options[constant('PDO::MYSQL_ATTR_FOUND_ROWS')] = true;
+        }
+        $db = new PDO(
+            'mysql:host='.$settings['host'].';dbname='.$settings['name'].';charset=utf8mb4',
+            $settings['user'], $settings['password'], $options
+        );
+        $db->exec("CREATE TABLE IF NOT EXISTS leads (
+            id VARCHAR(32) NOT NULL PRIMARY KEY, idempotency_hash CHAR(64) NOT NULL UNIQUE,
+            request_hash CHAR(64) NOT NULL, created_at CHAR(20) NOT NULL,
+            updated_at CHAR(20) NOT NULL, status VARCHAR(20) NOT NULL,
+            partner VARCHAR(20) NOT NULL, payload LONGTEXT NOT NULL,
+            consent_version VARCHAR(40) NOT NULL,
+            INDEX leads_created (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $db->exec("CREATE TABLE IF NOT EXISTS daily_events (
+            `day` CHAR(10) NOT NULL, `event` VARCHAR(40) NOT NULL,
+            `count` INT NOT NULL DEFAULT 0,
+            PRIMARY KEY (`day`,`event`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $db->exec("CREATE TABLE IF NOT EXISTS rate_limits (
+            bucket CHAR(64) NOT NULL PRIMARY KEY,
+            window_start BIGINT NOT NULL, hits INT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $db->exec("CREATE TABLE IF NOT EXISTS metadata (
+            `key` VARCHAR(64) NOT NULL PRIMARY KEY, `value` TEXT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        return $db;
+    }
+    $db = new PDO('sqlite:' . $config['private_dir'] . '/wattgoedkoper.sqlite', null, null, [
+        PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC
+    ]);
     $db->exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON; PRAGMA secure_delete=ON;');
     $db->exec("CREATE TABLE IF NOT EXISTS leads (
         id TEXT PRIMARY KEY, idempotency_hash TEXT NOT NULL UNIQUE, request_hash TEXT NOT NULL,
         created_at TEXT NOT NULL, updated_at TEXT NOT NULL, status TEXT NOT NULL,
         partner TEXT NOT NULL, payload TEXT NOT NULL, consent_version TEXT NOT NULL
     ); CREATE INDEX IF NOT EXISTS leads_created ON leads(created_at);
-    CREATE TABLE IF NOT EXISTS daily_events (day TEXT NOT NULL, event TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(day,event));
+    CREATE TABLE IF NOT EXISTS daily_events (`day` TEXT NOT NULL, `event` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`day`,`event`));
     CREATE TABLE IF NOT EXISTS rate_limits (bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, hits INTEGER NOT NULL);
-    CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);");
+    CREATE TABLE IF NOT EXISTS metadata (`key` TEXT PRIMARY KEY, `value` TEXT NOT NULL);");
     return $db;
 }
 function wg_session(array $config): void {
@@ -117,7 +174,10 @@ function wg_rate(PDO $db, array $config, string $scope, int $limit, int $seconds
     $ip = (string)($_SERVER['REMOTE_ADDR'] ?? 'unknown');
     $window = intdiv(time(), $seconds) * $seconds;
     $bucket = hash_hmac('sha256', $scope . '|' . $ip . '|' . $window, $config['hmac_key']);
-    $q = $db->prepare('INSERT INTO rate_limits(bucket,window_start,hits) VALUES(?,?,1) ON CONFLICT(bucket) DO UPDATE SET hits=hits+1');
+    $query=wg_is_mysql($db)
+        ? 'INSERT INTO rate_limits(bucket,window_start,hits) VALUES(?,?,1) ON DUPLICATE KEY UPDATE hits=hits+1'
+        : 'INSERT INTO rate_limits(bucket,window_start,hits) VALUES(?,?,1) ON CONFLICT(bucket) DO UPDATE SET hits=hits+1';
+    $q = $db->prepare($query);
     $q->execute([$bucket, $window]);
     $q = $db->prepare('SELECT hits FROM rate_limits WHERE bucket=?'); $q->execute([$bucket]);
     if ((int)$q->fetchColumn() > $limit) { header('Retry-After: ' . ($seconds - (time() - $window))); wg_fail(429, 'RATE_LIMIT', 'Er zijn veel verzoeken. Probeer het later opnieuw.'); }
@@ -136,17 +196,23 @@ function wg_decrypt(string $payload, array $config): array {
     return json_decode($plain, true, 32, JSON_THROW_ON_ERROR);
 }
 function wg_event(PDO $db, string $event): void {
-    $q = $db->prepare('INSERT INTO daily_events(day,event,count) VALUES(?,?,1) ON CONFLICT(day,event) DO UPDATE SET count=count+1');
+    $query=wg_is_mysql($db)
+        ? 'INSERT INTO daily_events(`day`,`event`,`count`) VALUES(?,?,1) ON DUPLICATE KEY UPDATE `count`=`count`+1'
+        : 'INSERT INTO daily_events(`day`,`event`,`count`) VALUES(?,?,1) ON CONFLICT(`day`,`event`) DO UPDATE SET `count`=`count`+1';
+    $q = $db->prepare($query);
     $q->execute([gmdate('Y-m-d'), $event]);
 }
 function wg_housekeeping(PDO $db, array $config, bool $force = false): array {
-    $last = $db->query("SELECT value FROM metadata WHERE key='last_purge'")->fetchColumn();
+    $last = $db->query("SELECT `value` FROM metadata WHERE `key`='last_purge'")->fetchColumn();
     if (!$force && $last && time() - (int)$last < 86400) { return ['leads'=>0]; }
     $q = $db->prepare('DELETE FROM leads WHERE created_at < ?');
     $q->execute([gmdate('Y-m-d\TH:i:s\Z', time() - $config['retention_days'] * 86400)]); $count = $q->rowCount();
     $q = $db->prepare('DELETE FROM rate_limits WHERE window_start < ?'); $q->execute([time() - 172800]);
-    $q = $db->prepare('DELETE FROM daily_events WHERE day < ?'); $q->execute([gmdate('Y-m-d', time() - 400 * 86400)]);
-    $q = $db->prepare("INSERT INTO metadata(key,value) VALUES('last_purge',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value"); $q->execute([(string)time()]);
+    $q = $db->prepare('DELETE FROM daily_events WHERE `day` < ?'); $q->execute([gmdate('Y-m-d', time() - 400 * 86400)]);
+    $query=wg_is_mysql($db)
+        ? "INSERT INTO metadata(`key`,`value`) VALUES('last_purge',?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
+        : "INSERT INTO metadata(`key`,`value`) VALUES('last_purge',?) ON CONFLICT(`key`) DO UPDATE SET `value`=excluded.`value`";
+    $q = $db->prepare($query); $q->execute([(string)time()]);
     return ['leads'=>$count];
 }
 function wg_validate_lead(array $data): array {

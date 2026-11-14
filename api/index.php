@@ -9,7 +9,13 @@ try {
     $config = wg_config();
     if ($action === 'health') {
         wg_method('GET');
-        wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null, 'version'=>'1.0.0']);
+        $databaseReady=false;
+        if ($config !== null) {
+            try { $db=wg_db($config); $databaseReady=(bool)$db->query('SELECT 1')->fetchColumn(); }
+            catch (Throwable $ignored) { $databaseReady=false; }
+            unset($db);
+        }
+        wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null && $databaseReady, 'databaseReady'=>$databaseReady, 'version'=>'1.1.0']);
     }
     if ($action === 'session' && !$config) { wg_method('GET'); wg_json(['ok'=>true,'configured'=>false,'csrf'=>null,'createdAt'=>null,'authenticated'=>false]); }
     $config = wg_require_config($config);
@@ -67,7 +73,7 @@ try {
     }
     if ($action === 'admin_stats') {
         wg_method('GET');
-        $since=gmdate('Y-m-d',time()-29*86400); $q=$db->prepare('SELECT day,event,count FROM daily_events WHERE day>=? ORDER BY day');$q->execute([$since]);$events=$q->fetchAll();
+        $since=gmdate('Y-m-d',time()-29*86400); $q=$db->prepare('SELECT `day`,`event`,`count` FROM daily_events WHERE `day`>=? ORDER BY `day`');$q->execute([$since]);$events=$q->fetchAll();
         $totals=array_fill_keys(['page_view','scan_start','scan_complete','advice_open','lead_accepted'],0);
         foreach($events as $e){if(array_key_exists($e['event'],$totals)){$totals[$e['event']]+=(int)$e['count'];}}
         $q=$db->prepare('SELECT COUNT(*) FROM leads WHERE created_at >= ?');$q->execute([$since]);$leadCount=(int)$q->fetchColumn();

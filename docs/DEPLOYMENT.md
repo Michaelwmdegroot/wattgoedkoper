@@ -15,7 +15,7 @@ De bestaande GitHub-koppeling hoeft niet opnieuw gemaakt te worden. Bevestig eer
 
 ## Waarom PHP/static
 
-De huidige site gebruikt al PHP-hosting. Een lichte frontend plus PHP-API kan op dezelfde soort hosting draaien en vereist geen WordPress. Er is geen Node-runtime of frontendbuild in productie. PHP 8.2+, PDO SQLite, OpenSSL en schrijfbare opslag buiten de webroot moeten op de concrete hosting worden bevestigd.
+De huidige site gebruikt al PHP-hosting. Een lichte frontend plus PHP-API kan op dezelfde soort hosting draaien en vereist geen WordPress. Er is geen Node-runtime of frontendbuild in productie. PHP 8.2+, PDO MySQL, OpenSSL en een schrijfbare private map buiten de webroot moeten op de concrete hosting worden bevestigd. De nieuwe lege MySQL-database is door de eigenaar op wattgoedkoper.nl aangemaakt; de oude Zonlio-database blijft buiten gebruik.
 
 Officiële Hostinger-documentatie:
 - https://www.hostinger.com/support/1583302-how-to-deploy-a-git-repository-in-hostinger/
@@ -45,9 +45,9 @@ Koppel de bestaande geautoriseerde GitHub-installatie van Hostinger aan de juist
 
 ### 4. Private configuratie
 
-Voer de CLI-setup uit zoals beschreven in `docs/backend.md`, met canonieke origin `https://wattgoedkoper.nl`. Standaardopslag is `../wattgoedkoper-private/`, buiten de documentroot. Gebruik een uniek beheerderswachtwoord via veilige invoer; toon of commit dit nooit.
+Voer voor de nieuwe Hostinger-database **`php scripts/setup-mysql.php --origin=https://wattgoedkoper.nl --username=gekozen-beheernaam`** uit zoals beschreven in `docs/HOSTINGER-MYSQL.md`. Draai niet eerst het oude SQLite-setupscript. Standaardopslag is `../wattgoedkoper-private/`, buiten de documentroot. Gebruik een uniek beheerderswachtwoord via veilige invoer; toon of commit dit nooit.
 
-Back-ups moeten SQLite-data én encryptiesleutel/config samen bevatten en buiten Git blijven. Richt dagelijks onderhoud in via `scripts/maintenance.php`. Controleer retentie, back-uprotatie en herstel.
+Back-ups moeten de MySQL-database én de encryptiesleutel/config samen bevatten en buiten Git blijven. Richt dagelijks onderhoud in via `scripts/maintenance.php`. Controleer retentie, back-uprotatie en herstel.
 
 ### 5. Live rooktest
 
@@ -68,4 +68,4 @@ Pas hierna is productie operationeel. Noteer domein, releasecommit, testdatum, h
 
 ## Herstel
 
-Bij een fout: vorige documentroot/release en bijbehorende database uit het herstelpunt terugzetten. Private WattGoedkoper-leaddata blijft buiten de Git-deploy en mag niet worden overschreven. Geen force-push gebruiken om deploygeschiedenis te herschrijven.
+Bij een fout: vorige documentroot/release en bijbehorende database uit het herstelpunt terugzetten. Private WattGoedkoper-leaddata (MySQL) en de private configuratie blijven buiten de Git-deploy en mogen niet worden overschreven. Geen force-push gebruiken om deploygeschiedenis te herschrijven.
