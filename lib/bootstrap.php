@@ -47,7 +47,7 @@ function wg_config(): ?array {
         $dbSettings=$config['database'];
         if (!is_array($dbSettings) || ($dbSettings['driver'] ?? '') !== 'mysql'
             || !extension_loaded('pdo_mysql')
-            || ($dbSettings['host'] ?? '') !== 'localhost') { return null; }
+            || !in_array(($dbSettings['host'] ?? ''),['localhost','127.0.0.1'],true)) { return null; }
         foreach (['name','user','password'] as $field) {
             if (!isset($dbSettings[$field]) || !is_string($dbSettings[$field]) || $dbSettings[$field]==='') { return null; }
         }
@@ -69,7 +69,7 @@ function wg_db(array $config): PDO {
     umask(0077);
     if (($config['database']['driver'] ?? 'sqlite') === 'mysql') {
         $settings = $config['database'];
-        if (($settings['host'] ?? '') !== 'localhost' || !extension_loaded('pdo_mysql')) {
+        if (!in_array(($settings['host'] ?? ''),['localhost','127.0.0.1'],true) || !extension_loaded('pdo_mysql')) {
             throw new RuntimeException('MySQL not configured');
         }
         $options = [
@@ -81,7 +81,7 @@ function wg_db(array $config): PDO {
             $options[constant('PDO::MYSQL_ATTR_FOUND_ROWS')] = true;
         }
         $db = new PDO(
-            'mysql:host=localhost;dbname='.$settings['name'].';charset=utf8mb4',
+            'mysql:host='.$settings['host'].';dbname='.$settings['name'].';charset=utf8mb4',
             $settings['user'], $settings['password'], $options
         );
         $db->exec("CREATE TABLE IF NOT EXISTS leads (
