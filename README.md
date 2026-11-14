@@ -1,5 +1,7 @@
 # WattGoedkoper
 
+> **ACTUEEL PROJECTPLAN — v0.9 / 14 november 2026:** [WattGoedkoper zelfstandig afronden: Finish Line](docs/FINISHLINE-AUTONOMOUS-PLATFORM-V09.md). Het goedgekeurde interactieve product en het eerste SEO-cluster zijn via [PR #20](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/20) op `main` gemerged (commit `5d5dac9`). **Doel:** snel een betrouwbare, onderhoudsarme SEO- en NIVO-leadmachine afronden met het bestaande `/admin/` als eigen dashboard. De zes laatste werkpakketten staan in [#21–#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21); de regie staat in [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14). **NIVO Portal-koppeling wordt voorbereid, niet zonder beveiligings-/eigenaargo geactiveerd.** Post-merge CI is groen; de externe Hostinger-/mail-/ontvangstchecks blijven apart te verifiëren.
+
 > **PROJECTOVERDRACHT — 14 november 2026:** De v0.7-ontwikkelfase (één-scherm energiehuis, interactieve Plan Studio, branding, beveiligde NIVO-leadflow) is door de eigenaar afgesloten. De volgende agent bouwt **één compleet consumentenplatform**: SEO-onderwerpen, hoogwaardige landingspagina's, relevante interactieve vergelijkingen en een vrijwillige NIVO-adviesfunnel. Lees [formele overdracht](docs/HANDOFF-FULL-PRODUCT-2026-11-14.md), [roadmap](docs/ROADMAP-SEO-PRODUCT-LEADGEN.md) en [startprompt](docs/START-PROMPT-NEXT-AGENT.md). Open epics: [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14) t/m [#18](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/18). De laatst geverifieerde applicatie-baseline was `d7be722c3baf` (beide CI-workflows groen); een doc-only handoffcommit kan daarop volgen.
 
 > **Release v0.7 · 14 november 2026:** Het goedgekeurde nieuwe WattGoedkoper-logo, het losse favicon en de compacte driestappenbalk boven het energiehuis zijn via [PR #13](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/13) naar `main` gemerged (mergecommit `2c693848b82a`). Zie [brand-/home-implementatie en browsertests](docs/BRAND-AND-HERO-V07.md). `main` is gekoppeld aan Hostinger; de daadwerkelijke live-uitrol wordt afzonderlijk gecontroleerd. De rapportmail blijft standaard uit. MySQL, leads, privésleutels en NIVO-toestemming zijn ongewijzigd.
@@ -12,13 +14,13 @@
 
 Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Nieuwe persoonlijke adviesaanvragen gaan uitsluitend naar **NIVO Groep Holland**, na expliciet akkoord. Historische partnergegevens blijven bewaard onder hun oorspronkelijke toestemming.
 
-## Status — v0.7 op `main`, met compacte energiehuiscockpit v0.6 en Plan Studio v0.5
+## Status — v0.8 op `main`, Finish Line v0.9 in voorbereiding
 
 De interactieve woning heeft een premium visuele uitwerking: vijf fotografische woningtypes, afzonderlijke installatielagen, vijftien eigen beelden, lokale lettertypen en vernieuwde kennis- en uitlegpagina’s. Hostinger heeft volgens de gebruiker op 14 november 2026 de GitHub-deployment naar wattgoedkoper.nl voltooid. De daadwerkelijke PHP-backendconfiguratie en mailkoppeling moeten afzonderlijk op de juiste hosting worden bevestigd.
 
 **[Download de speelbare preview](preview/wattgoedkoper-preview.html)** en open het bestand in een browser. Huis, berekeningen, scenario’s en uitleg werken in één bestand. Adviesverzending en netwerkverkeer zijn in deze preview uitgeschakeld.
 
-Zie [de nieuwe backoffice, mailbox en leadmagnet-roadmap](docs/OPERATIONS-V04.md). Zonder private serverconfiguratie blijft de advies-API veilig gesloten. De mailbox werkt uitsluitend na het toevoegen van het juiste info@wattgoedkoper.nl-account op de server.
+Zie voor de actuele afronding [Finish Line](docs/FINISHLINE-AUTONOMOUS-PLATFORM-V09.md); [de eerdere backoffice-roadmap](docs/OPERATIONS-V04.md) is historisch. Zonder private serverconfiguratie blijft de advies-API veilig gesloten. De mailbox werkt uitsluitend na het toevoegen van het juiste info@wattgoedkoper.nl-account op de server.
 
 ## De ervaring
 
