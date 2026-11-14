@@ -153,7 +153,7 @@ function wg_delivery_transport(array $envelope,array $settings): array {
         &&preg_match('/^[A-Za-z0-9._:-]{1,128}$/D',$ack['receiptId'])){
         return ['kind'=>'ack','reference'=>$ack['receiptId']];
     }
-    if(in_array($code,[408,425,429],true)||$code>=500||($code>=200&&$code<300)){
+    if(in_array($code,[408,409,425,429],true)||$code>=500||($code>=200&&$code<300)){
         return ['kind'=>'retry','error'=>$code>=200&&$code<300?'ACK_MISSING':'HTTP_RETRYABLE'];
     }
     return ['kind'=>'fail','error'=>$code>=300&&$code<400?'HTTP_REDIRECT':'HTTP_REJECTED'];
