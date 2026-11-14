@@ -76,7 +76,7 @@ function wg_mail_part($stream, int $uid, $part, string $section = ''): string {
         $converted=@iconv($charset,'UTF-8//IGNORE',$text);
         if (is_string($converted)) { $text=$converted; }
     }
-    return mb_substr($text,0,24000,'UTF-8');
+    return function_exists('mb_substr') ? mb_substr($text,0,24000,'UTF-8') : substr($text,0,24000);
 }
 function wg_mail_read(array $config, int $uid): array {
     if ($uid<1) { wg_fail(422,'VALIDATION','Ongeldige berichtcode.'); }
@@ -115,7 +115,7 @@ function wg_mail_send(array $config,string $recipient,string $subject,string $bo
     if (!filter_var($recipient,FILTER_VALIDATE_EMAIL) || strlen($recipient)>254 || strpbrk($recipient,"\r\n")!==false) {
         wg_fail(422,'VALIDATION','Vul één geldig e-mailadres in.');
     }
-    if ($subject==='' || mb_strlen($subject)>140 || preg_match('/[\r\n\x00-\x1F\x7F]/',$subject)) {
+    if ($subject==='' || strlen($subject)>220 || preg_match('/[\r\n\x00-\x1F\x7F]/',$subject)) {
         wg_fail(422,'VALIDATION','Controleer het onderwerp.');
     }
     if (trim($body)==='' || strlen($body)>15000) { wg_fail(422,'VALIDATION','Controleer de berichttekst.'); }
@@ -146,9 +146,14 @@ function wg_mail_send(array $config,string $recipient,string $subject,string $bo
             'Content-Transfer-Encoding: base64'
         ];
         $data=implode("\r\n",$headers)."\r\n\r\n".chunk_split(base64_encode($body),76,"\r\n")."\r\n.\r\n";
-        if (fwrite($socket,$data)===false) { throw new RuntimeException('SMTP transport failed'); }
+        for($offset=0,$len=strlen($data);$offset<$len;){
+            $written=fwrite($socket,substr($data,$offset));
+            if($written===false||$written===0){throw new RuntimeException('SMTP transport interrupted');}
+            $offset+=$written;
+        }
         wg_smtp_expect($socket,[250]);
-        wg_smtp_cmd($socket,'QUIT',[221]);
+        // A successful 250 after DATA is final acceptance; QUIT errors must not suggest retrying.
+        @fwrite($socket,"QUIT\r\n");
     } catch(Throwable $e) {
         wg_fail(503,'MAIL_SEND_FAILED','Verzending is niet bevestigd. Controleer de mailbox en probeer niet blind opnieuw.');
     } finally { fclose($socket); }
