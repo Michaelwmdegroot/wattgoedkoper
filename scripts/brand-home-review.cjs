@@ -7,8 +7,20 @@ const ROOT=path.resolve(__dirname,'..'),OUT=path.join(ROOT,'visual-review-output
 const metrics={checks:[],screenshots:[],errors:[]};
 async function verify(label,task){try{await task();metrics.checks.push({label,status:'pass'});}catch(error){metrics.checks.push({label,status:'fail',message:error.message});throw error;}}
 function within(a,b,margin=3){return a.right<=b.left+margin||b.right<=a.left+margin;}
+async function waitForVisuals(page){
+  return page.evaluate(async()=>{
+    await document.fonts.ready;
+    await Promise.all([...document.images].map(async img=>{
+      img.loading='eager';
+      try{await img.decode()}catch{}
+    }));
+    return [...document.images].filter(img=>!img.complete||img.naturalWidth===0)
+      .map(img=>img.getAttribute('src')?.slice(0,100));
+  });
+}
 async function shot(page,name){
-  await page.evaluate(()=>document.fonts.ready);
+  const broken=await waitForVisuals(page);
+  assert.deepEqual(broken,[],name+' has broken or unfinished imagery');
   await page.screenshot({path:path.join(OUT,'brand-'+name+'.png'),animations:'disabled'});
   metrics.screenshots.push('brand-'+name+'.png');
 }
@@ -68,7 +80,13 @@ async function testPng(name,width,height){
       try{
         await page.setContent(html,{waitUntil:'load'});
         await page.locator('.photo-scene').waitFor();
-        await page.evaluate(()=>document.fonts.ready);
+        await verify(name+' / house and upgrade photography decoded',async()=>{
+          const broken=await waitForVisuals(page);
+          assert.deepEqual(broken,[],'Broken images or assets');
+          const image=page.locator('.scene-base').first();
+          assert.ok(await image.evaluate(img=>img.complete&&img.naturalWidth>0),
+            'Hero house image has no pixels');
+        });
         await verify(name+' / aligned brand, guidance and cockpit fit',async()=>{
           const g=await viewport(page);assert.equal(g.scrollY,0);
           assert.ok(g.docWidth<=g.width+1,'horizontal overflow');
