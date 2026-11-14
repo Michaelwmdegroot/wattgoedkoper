@@ -36,6 +36,10 @@ jobs:
           coverage: none
       - run: npm test
       - run: npm run check
+      - name: Build and validate SEO publication
+        run: |
+          python3 scripts/build-content.py
+          npm run check:seo
       - run: python3 tests/backend_test.py --php php
       - run: php tests/mail_safety_test.php
       - run: php tests/report_mail_test.php

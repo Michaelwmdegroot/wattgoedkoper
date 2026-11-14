@@ -29,6 +29,8 @@ jobs:
         run: |
           python3 scripts/build-content.py
           python3 scripts/build-preview.py
+      - name: Verify crawlable content and internal links
+        run: npm run check:seo
       - name: Review real browser behavior and capture evidence
         run: node scripts/visual-review.cjs
       - name: Verify v0.5 plan, advice and admin viewports
@@ -39,6 +41,8 @@ jobs:
         run: node scripts/home-cockpit-review.cjs
       - name: Verify brand assets, homepage guidance and responsive layout
         run: node scripts/brand-home-review.cjs
+      - name: Review editorial journeys, example engine and responsive layouts
+        run: node scripts/seo-browser-review.cjs
       - name: Upload visual review evidence
         if: always()
         uses: actions/upload-artifact@v4

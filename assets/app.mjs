@@ -2,6 +2,7 @@ import { DEFAULT_INPUT, formatEuro, MODEL_VERSION, SOURCES } from './model.mjs';
 import { simulateHome, UPGRADES } from './playground-model.mjs';
 import { renderHouseScene } from './house-scene.mjs';
 import { renderPlanDashboard, renderPlanWorkspace } from './plan-ui.mjs';
+import { resolveContextEntry } from './context-entry.mjs';
 
 // A house to experiment with. Detailed inputs are optional; results never need contact details.
 const $ = (selector, parent = document) => parent.querySelector(selector);
@@ -453,4 +454,18 @@ $('#scene-stage').addEventListener('dragleave',event=>{if(!$('#scene-stage').con
 $('#scene-stage').addEventListener('drop',event=>{event.preventDefault();$('#scene-stage').classList.remove('is-drop-ready','is-drag-over');const id=event.dataTransfer.getData('text/plain');if(UPGRADES.some(u=>u.id===id)){if(state.selectedIds.includes(id)){toast('Deze upgrade staat al in je plan. Klik erop om hem weg te halen.');return;}toggleUpgrade(id);}});
 refresh();
 if(state.analytics)track('page_view');
+// A knowledge page may open a relevant explanation, but may never change choices.
+function showContentEntry(){
+  const entry=resolveContextEntry(location.hash);
+  if(!entry)return;
+  if(entry.kind==='upgrade')openUpgrade(entry.id);
+  else if(entry.kind==='plan')openPlan();
+}
+window.addEventListener('hashchange',showContentEntry);
+window.addEventListener('wg:content-entry',event=>{
+  const entry=resolveContextEntry(event.detail);
+  if(entry?.kind==='upgrade')openUpgrade(entry.id);
+  else if(entry?.kind==='plan')openPlan();
+});
 if(location.hash==='#advies')openAdvice();
+else showContentEntry();

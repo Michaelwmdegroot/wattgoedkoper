@@ -108,6 +108,7 @@ def module_bundle(entry=ENTRY):
         visited.add(path)
 
     visit(entry)
+    visit(ROOT/'assets/guide-comparison.mjs')  # Embedded editorial comparison for the offline preview.
     return 'const __wattModules = Object.create(null);\n' + '\n'.join(modules)
 
 
@@ -161,6 +162,7 @@ def article_bridge(contents):
       event.preventDefault();
       event.stopImmediatePropagation();
       article.querySelector('#preview-article-content').innerHTML = previewPages[path];
+      __wattModules['assets/guide-comparison.mjs'].mountExample(article);
       if (!article.open) article.showModal();
       article.scrollTop = 0;
       if (target.hash) {
@@ -171,6 +173,7 @@ def article_bridge(contents):
       event.preventDefault();
       event.stopImmediatePropagation();
       returnHome();
+      if (target.hash.startsWith('#verken-')) window.dispatchEvent(new CustomEvent('wg:content-entry', {detail:target.hash}));
     } else if (article.open && href.startsWith('#')) {
       const id = decodeURIComponent(target.hash.slice(1));
       const section = [...article.querySelectorAll('[id]')].find(node => node.id === id);
@@ -210,7 +213,7 @@ EXTRA_CSS = '''
 
 def build():
     html = (ROOT/'index.html').read_text(encoding='utf-8')
-    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','plan-studio.css','home-cockpit.css','brand-refresh.css','content.css'])
+    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','plan-studio.css','home-cockpit.css','brand-refresh.css','content.css','guide-cluster.css'])
     style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|premium|plan-studio|home-cockpit|brand-refresh|content)\.css[\'"])[^>]*>', re.IGNORECASE)
     html, count = style_pattern.subn('', html)
     if count < 1:

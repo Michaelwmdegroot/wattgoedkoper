@@ -1,0 +1,39 @@
+/* v0.8 connected editorial cluster; brand tokens inherited from content.css. */
+.editorial-page .guide-quick-choice{margin:26px 0 33px;padding:23px 26px;border:1px solid #d7e3d3;background:linear-gradient(135deg,#edf2e2,#fffef9);border-radius:20px;box-shadow:0 12px 36px #163a2510}
+.editorial-page .guide-quick-choice strong{display:block;font-family:"DM Serif Display",Georgia,serif;font-size:25px;font-weight:400;line-height:1.12;margin:8px 0 10px}
+.editorial-page .guide-quick-choice p{margin:0 0 16px}
+.editorial-page .guide-primary-action{display:inline-flex;align-items:center;justify-content:center;background:#123747;color:white;font-weight:750;font-size:13px;padding:14px 20px;border-radius:12px;text-decoration:none;box-shadow:0 6px 20px #092d3e15;line-height:1.4}
+.editorial-page .guide-primary-action:hover{background:#205266;color:#fff}
+.editorial-page .guide-quick-choice .guide-primary-action{color:white;text-decoration:none}
+.editorial-page .guide-pills{display:flex;gap:9px;flex-wrap:wrap;margin:21px 0}
+.editorial-page .guide-pill{font-size:12px;font-weight:700;color:#315342;background:#e7ecdf;border:1px solid #d2deca;padding:7px 12px;border-radius:99px}
+.editorial-page .guide-panel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:23px 0 30px}
+.editorial-page .guide-panel{background:#fffefa;border:1px solid #e0e5d7;border-radius:16px;padding:20px;box-shadow:0 7px 16px #17392207;min-width:0}
+.editorial-page .guide-panel h3{margin:0 0 8px;font-family:"DM Serif Display",Georgia,serif;font-size:23px;font-weight:400;line-height:1.2}
+.editorial-page .guide-panel p{font-size:14px;line-height:1.7;margin:0}
+.editorial-page .guide-panel a{display:inline-block;margin-top:10px;font-size:12px;font-weight:800}
+.editorial-page .guide-check{padding-left:25px;margin:17px 0 24px}
+.editorial-page .guide-check li{margin:11px 0}
+.editorial-page .guide-detail{margin:22px 0 30px;border:1px solid #dfe6d8;border-radius:15px;padding:19px 23px;background:#f7f8ed}
+.editorial-page .guide-detail summary{font-weight:750;cursor:pointer;color:#143b46}
+.editorial-page .guide-detail p{margin:12px 0 0}
+.editorial-page .energy-example{margin:24px 0 35px;background:#f4f5eb;border:1px solid #d9e4ce;padding:25px;border-radius:20px}
+.editorial-page .energy-example h3{font:400 29px/1.15 "DM Serif Display",Georgia,serif;letter-spacing:-.6px;margin:0 0 8px}
+.editorial-page .energy-example>p{margin:0 0 17px;font-size:14px}
+.editorial-page .example-controls{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;margin:0 0 20px}
+.editorial-page .example-controls label{display:block;font-size:12px;font-weight:750;color:#34515a}
+.editorial-page .example-controls input,.editorial-page .example-controls select{width:100%;margin-top:7px;min-height:39px;accent-color:#0d3a4b}
+.editorial-page .example-controls select{border:1px solid #cbd6cd;border-radius:10px;background:white;padding:7px;color:#143747}
+.editorial-page .example-result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.editorial-page .example-result{border:1px solid #dce4d4;background:#fffefa;border-radius:13px;padding:17px 14px;min-width:0;display:flex;flex-direction:column}
+.editorial-page .example-result-label{font-size:11px;line-height:1.5;font-weight:750;color:#527052;min-height:34px}
+.editorial-page .example-result strong{font:400 27px/1.15 "DM Serif Display",Georgia,serif;display:block;color:#102f39;margin:9px 0 5px}
+.editorial-page .example-result p{font-size:11px;line-height:1.6;margin:0 0 8px}
+.editorial-page .example-result small{margin-top:auto;font-size:10px;color:#526567}
+.editorial-page .example-context{font-size:11px;line-height:1.6;margin:16px 0 0!important;color:#62716c}
+.editorial-page .guide-hub-intro{background:#eaf0df;border:1px solid #d7e5c9;border-radius:18px;padding:25px;margin:20px 0}
+.editorial-page .guide-hub-intro p{margin:0}
+.editorial-page .guide-promise{border-left:3px solid #e9bd30;padding:10px 19px;background:#fffbee;border-radius:0 10px 10px 0;margin:26px 0}
+.editorial-page .guide-promise p{margin:0}
+@media(max-width:650px){.editorial-page .guide-panel-grid,.editorial-page .example-controls{grid-template-columns:1fr}.editorial-page .example-result-grid{grid-template-columns:1fr}.editorial-page .example-result-label{min-height:0}.editorial-page .guide-quick-choice,.editorial-page .energy-example{padding:20px}.editorial-page .guide-primary-action{display:flex;width:100%}}
+@media(prefers-reduced-motion:reduce){.editorial-page .guide-primary-action{scroll-behavior:auto}}
