@@ -76,12 +76,16 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
             clear_limits();invalid={**base,**patch};check(request('leads',invalid,csrf)[0]==422,label+' rejected')
         clear_limits();code,accepted,_=request('leads',base,csrf);lead_id=accepted.get('id')
         check(code==201 and lead_id and accepted['status']=='new','valid lead accepted only after durable save')
+        with sqlite3.connect(private/'wattgoedkoper.sqlite') as db:
+            delivery=db.execute('SELECT status,attempts FROM delivery_outbox WHERE lead_id=?',(lead_id,)).fetchone()
+            check(delivery==('pending',0),'new consented NIVO lead receives an outbox item in same transaction')
         code,replayed,_=request('leads',base,csrf);check(code==200 and replayed['id']==lead_id and replayed['replayed'],'retry is idempotent')
         check(request('leads',{**base,'name':'Changed'},csrf)[0]==409,'same idempotency key with different content rejected')
         with sqlite3.connect(private/'wattgoedkoper.sqlite') as db:
             encrypted=db.execute('SELECT payload FROM leads').fetchone()[0]
             check('consumer@example.test' not in encrypted and '=1+1' not in encrypted,'contact data is encrypted at rest')
             check(db.execute('SELECT COUNT(*) FROM leads').fetchone()[0]==1,'idempotent retry creates no duplicate')
+            check(db.execute('SELECT COUNT(*) FROM delivery_outbox').fetchone()[0]==1,'idempotent retry creates no extra outbox item')
             check(db.execute('SELECT COUNT(*) FROM leads WHERE partner<>\'nivo\'').fetchone()[0]==0,'mail-only test produced no lead and new leads are NIVO-only')
             check(db.execute("SELECT COUNT(*) FROM daily_events WHERE event='lead_accepted'").fetchone()[0]==0,'no analytics counter without consent')
         base2={**base,'idempotencyKey':secrets.token_hex(16),'name':'<img src=x onerror=alert(1)>','analyticsConsent':True}
@@ -91,11 +95,16 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
         check(code==200 and csrf!=oldcsrf,'login rotates session and CSRF')
         check(request('admin_status',{'id':lead_id,'status':'contacted'},oldcsrf)[0]==403,'old CSRF cannot mutate admin data')
         code,listing,_=request('admin_leads');check(code==200 and listing['total']==2,'authenticated admin sees persisted leads')
+        check(all(item['delivery']['status']=='pending' for item in listing['leads']),'admin reads per-lead delivery state')
         first=next(x for x in listing['leads'] if x['id']==lead_id)
         check(first['data']['email']=='consumer@example.test' and first['data']['postcode']=='2311AB','admin decrypts normalized contact details')
         check(first['data']['inputs']=={'electricityUse':3500,'hasSolar':True,'people':3},'only approved scan fields are persisted')
         check(first['data']['consentVersion']=='2026-11-v2' and first['data']['consentText'] and first['data']['acceptedAt'],'consent evidence persists with server timestamp')
         check(first['partner']=='nivo' and 'NIVO Groep Holland' in first['data']['consentText'],'new leads are always routed to NIVO and consent names recipient')
+        stats=request('admin_stats')[1]
+        check(stats['delivery']['pending']==2 and stats['delivery']['acknowledged']==0 and stats['deliveryConfigured'] is False,
+            'dashboard reports real pending queue, never claims unapproved NIVO delivery')
+        check(request('admin_delivery_retry',{'id':lead_id},csrf)[0]==409,'unfailed lead cannot be manually retried')
         source=(ROOT/'admin/admin.mjs').read_text();check('innerHTML' not in source and 'textContent' in source,'admin renders untrusted fields as text')
         check(request('events',{'event':'scan_complete','consent':False},csrf)[0]==422,'analytics denied without consent')
         check(request('events',{'event':'lead_accepted','consent':True},csrf)[0]==422,'client cannot forge accepted-lead counter')
@@ -109,6 +118,8 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
         maintenance=subprocess.run([args.php,'scripts/maintenance.php'],cwd=ROOT,env=env,capture_output=True,text=True)
         check(maintenance.returncode==0 and request('admin_leads')[1]['total']==1,'retention maintenance removes expired personal data')
         check(request('admin_delete',{'id':lead_id},csrf)[0]==200 and request('admin_leads')[1]['total']==0,'explicit deletion removes lead')
+        with sqlite3.connect(private/'wattgoedkoper.sqlite') as db:
+            check(db.execute('SELECT COUNT(*) FROM delivery_outbox').fetchone()[0]==0,'retention and explicit deletion cascade outbox metadata')
         check(request('admin_logout',{},csrf)[0]==200 and request('admin_stats')[0]==401,'logout revokes access')
         csrf=request('session')[1]['csrf'];clear_limits()
         results=[request('admin_login',{'username':'wgtest','password':'wrong'},csrf)[0] for _ in range(9)]
