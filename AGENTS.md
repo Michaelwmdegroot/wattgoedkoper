@@ -9,6 +9,7 @@ Dutch consumer energy planning tool and lead generation for NIVO Groep Holland a
 - Scenarios must not double count savings. 2026 saldering and 2027 onward are separate models.
 - Personal information is submitted only by explicit advice request. No trackers or third party marketing scripts. Use aggregate events only after optional analytics consent.
 - No secrets or real customer data in Git, build output, logs or frontend. Backend fails closed before secure setup.
+- Admin mail is optional, server-only, read-only IMAP and explicit human SMTP send. Never embed passwords in client code or Git. Keep wattgoedkoper.nl and zonlio.nl separated; do not use the Hostinger MySQL DB linked to zonlio.nl without verification.
 
 ## Architecture
 - Plain HTML/CSS/ES modules at the repository root for direct PHP/static Hostinger Git deployment.
