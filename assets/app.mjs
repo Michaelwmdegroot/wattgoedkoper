@@ -16,6 +16,7 @@ const pct = value => `${Math.round(value || 0)}%`;
 const STORE_HOME = 'wattgoedkoper-huis-v2';
 const STORE_ANALYTICS = 'wattgoedkoper-analytics-v1';
 const HOME_TYPES = [['terraced','Rijwoning'],['corner','Hoekhuis'],['semi','2-onder-1-kap'],['detached','Vrijstaand'],['apartment','Appartement']];
+const UPGRADE_ART = {solar:'/assets/images/solar-card.webp',battery:'/assets/images/battery-card.webp',heatpump:'/assets/images/heatpump-card.webp',insulation:'/assets/images/insulation-card.webp','smart-use':'/assets/images/smart-use-card.webp'};
 const PERIODS = [['before1945','Vóór 1945'],['1945-1974','1945 – 1974'],['1975-1991','1975 – 1991'],['1992-2005','1992 – 2005'],['after2005','Na 2005']];
 const state = { input:{...DEFAULT_INPUT}, selectedIds:[], tab:'home', view:'current', daylight:65, personalized:false, tariffsEdited:false, report:null, scene:null, history:[], dialog:null, dialogReturn:null, analytics:false, session:null, sessionPromise:null, leadFingerprint:null, leadKey:null, started:false };
 try { state.analytics = localStorage.getItem(STORE_ANALYTICS) === 'yes'; } catch {}
@@ -52,6 +53,7 @@ function savedHomeExists() { try{return Boolean(localStorage.getItem(STORE_HOME)
 
 function renderControls() {
   const input=state.input;
+  const moreOpen=Boolean($('#home-more')?.open);
   $$('#tool-tabs [data-tab]').forEach(button=>{const active=button.dataset.tab===state.tab;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
   $('#home-controls').setAttribute('aria-labelledby',`tab-${state.tab}`);
   if(state.tab==='home') {
@@ -59,11 +61,11 @@ function renderControls() {
       <section class="control-section">${fieldLabel('Dit lijkt op mijn huis')}<div class="home-type-grid" role="group" aria-label="Type woning">${HOME_TYPES.map(([id,name])=>`<button type="button" class="home-type-option" data-field="homeType" data-value="${id}" aria-pressed="${input.homeType===id}">${miniHouse(id)}<span>${name}</span></button>`).join('')}</div></section>
       <section class="control-section">${fieldLabel('Wie wonen er?','personen')}<div class="people-control"><button class="stepper-button" data-step="-1" aria-label="Eén bewoner minder" ${input.people<=1?'disabled':''}>−</button><span class="people-icons" aria-hidden="true">${Array.from({length:Math.min(input.people,5)},()=>icon('person')).join('')}${input.people>5?`<small>+${input.people-5}</small>`:''}</span><output class="people-count" aria-label="Aantal bewoners">${input.people}</output><button class="stepper-button" data-step="1" aria-label="Eén bewoner meer" ${input.people>=15?'disabled':''}>+</button></div></section>
       <section class="control-section">${fieldLabel('De woning is…')}${choices('ownership',[['owner','van mij'],['tenant','gehuurd']],'ownership-switch')}</section>
-      <section class="control-section">${fieldLabel('Hoe goed blijft de warmte binnen?')}${choices('insulation',[['poor','Kan beter'],['average','Redelijk'],['good','Goed']])}</section>
+      <details class="control-more" id="home-more" ${moreOpen?'open':''}><summary>Isolatie &amp; installaties <span aria-hidden="true">+</span></summary><div class="control-more-body"><section class="control-section">${fieldLabel('Hoe goed blijft de warmte binnen?')}${choices('insulation',[['poor','Kan beter'],['average','Redelijk'],['good','Goed']])}</section>
       <section class="control-section">${fieldLabel('Heb je dit al?','huidige situatie')}<div class="equipment-list">${equipment('hasSolar','Zonnepanelen','solar')}${equipment('hasBattery','Thuisbatterij','battery')}${equipment('hasHeatPump','Warmtepomp','heatpump')}${equipment('hasEv','Elektrische auto','ev')}</div></section>
       <button class="control-link" data-dialog="house">${input.area} m² · ${PERIODS.find(p=>p[0]===input.buildPeriod)?.[1]} <span aria-hidden="true">↗</span></button>
-      ${input.ownership==='tenant'||input.homeType==='apartment'?'<p class="control-note">Voor installaties is overleg met je verhuurder of VvE nodig. Slim verbruiken kun je alvast proberen.</p>':''}
-      ${savedHomeExists()?'<button class="control-link" data-restore>Open mijn bewaarde huis ↗</button>':''}`;
+      </div></details>${input.ownership==='tenant'||input.homeType==='apartment'?'<p class="control-note">Voor installaties is overleg met je verhuurder of VvE nodig. Slim verbruiken kun je alvast proberen.</p>':''}
+      ${savedHomeExists()?'<button class="control-link saved-home-link" data-restore>Open mijn bewaarde huis ↗</button>':''}`;
   } else if(state.tab==='energy') {
     const flow=state.report.baseline.flow;
     $('#home-controls').innerHTML=`
@@ -88,15 +90,15 @@ function renderResults() {
   const r=state.report,hasPlan=r.selectedIds.length>0,baseline=r.baseline.bill.total,after=r.scenario.bill.total,maxCost=Math.max(1,Math.abs(baseline),Math.abs(after));
   $('#live-results').innerHTML=`
     <div class="result-eyebrow">${hasPlan?(r.savings>=0?'Je bespaart naar schatting':'Je kosten nemen toe met'):'Wat kan jouw huis besparen?'}</div>
-    <div class="saving-value ${r.savings<0?'is-negative':''}" data-saving="${r.savings}">${hasPlan?money(Math.abs(r.savings)):'Wat als…'}</div>
-    <div class="saving-period">${hasPlan?'per jaar met jouw combinatie':'jij je eerste upgrade probeert?'}</div>
+    <div class="saving-value ${r.savings<0?'is-negative':''} ${hasPlan?'':'saving-word'}" data-saving="${r.savings}">${hasPlan?money(Math.abs(r.savings)):'Wat als…'}</div>
+    <div class="saving-period">${hasPlan?'<span class="saving-unit">per jaar</span> met jouw combinatie':'jij je eerste upgrade probeert?'}</div>
     ${hasPlan?`<p class="saving-range">Bandbreedte besparing <strong>${range(r.savingsLow,r.savingsHigh)}</strong></p>`:'<p class="result-context">Voeg hieronder iets toe aan je huis.<br>Het verschil zie je meteen.</p>'}
     <div class="cost-comparison">${costBar('Nu · per jaar',baseline,Math.abs(baseline)/maxCost*100)}${costBar('Met je plan',after,Math.abs(after)/maxCost*100,'after')}</div>
     <div class="self-use-values"><span>Stroom uit eigen opwek</span><strong>${pct(r.baseline.selfSufficiency)} <span aria-hidden="true">→</span> ${pct(r.scenario.selfSufficiency)}</strong></div>
     <div class="self-use-meter" role="img" aria-label="${pct(r.scenario.selfSufficiency)} van je stroomverbruik uit eigen opwek in dit plan"><span style="width:${Math.min(100,r.scenario.selfSufficiency)}%"></span></div>
     <div class="result-investment"><span class="result-eyebrow">Eenmalige investering</span><strong class="investment-value">${hasPlan?range(r.investmentLow,r.investmentHigh):'Nog niets gekozen'}</strong></div>
-    ${r.budget.exceeded?`<p class="result-warning">Tot ${money(r.budget.overBy)} boven je budget. Je kunt je plan blijven vergelijken.</p>`:''}
-    ${hasPlan&&r.savings<=0?'<p class="result-warning">Deze combinatie verlaagt je jaarkosten niet. Probeer een andere keuze of pas je tarieven aan.</p>':''}
+    <div class="result-warnings">${r.budget.exceeded?`<p class="result-warning">Tot ${money(r.budget.overBy)} boven je budget. Je kunt je plan blijven vergelijken.</p>`:''}
+    ${hasPlan&&r.savings<=0?'<p class="result-warning">Deze combinatie verlaagt je jaarkosten niet. Probeer een andere keuze of pas je tarieven aan.</p>':''}</div>
     <button class="button button-ink result-button" data-dialog="plan">${hasPlan?'Bekijk mijn energieplan':'Bekijk mijn vertrekpunt'} ${icon('arrow')}</button>
     <div class="year-switch" role="group" aria-label="Rekenjaar"><span>Rekenjaar</span><button data-field="year" data-value="2026" aria-pressed="${r.year===2026}">2026</button><button data-field="year" data-value="2027" aria-pressed="${r.year===2027}">2027</button></div>
     <p class="result-footnote">${state.personalized?'Jouw instellingen':'Voorbeeldhuis'} · ${state.input.usageKnown?'jaarverbruik ingevuld':'verbruik geschat'}. Tarieven ${state.tariffsEdited?'aangepast':'zijn voorbeelden'}. Variabele kosten, exclusief vaste kosten.</p>`;
@@ -107,7 +109,7 @@ function renderUpgrades() {
     const blocked=!u.eligible&&!u.selected;
     const value=u.existing?'Al in je huis':blocked?(u.id==='battery'&&!state.input.hasSolar?'Eerst zon op je dak':'Bekijk wat nodig is'):u.selected?'Toegevoegd aan je plan':`${u.marginalSavings>=0?'+':'−'} ${money(Math.abs(u.marginalSavings))} / jaar`;
     const descriptions={'smart-use':'slimmer met energie omgaat?',solar:'je eigen stroom opwekt?',battery:'zonnestroom bewaart?',insulation:'de warmte binnenhoudt?',heatpump:'met minder gas verwarmt?'};
-    return `<article class="upgrade-card${u.selected?' is-selected':''}${blocked?' is-disabled':''}" draggable="${!blocked}" data-drag-upgrade="${u.id}"><button class="upgrade-toggle" type="button" data-upgrade="${u.id}" aria-pressed="${u.selected}" aria-label="${escape(u.label)}${u.selected?' uit je plan halen':' proberen'}"><span class="upgrade-icon">${icon(u.id)}</span><span class="upgrade-state" aria-hidden="true">${u.selected?'✓':u.existing?'✓':'+'}</span><strong class="upgrade-name">${escape(u.label)}</strong><span class="upgrade-description">${descriptions[u.id]}</span><span class="upgrade-value">${value}</span></button><button class="upgrade-info" data-upgrade-info="${u.id}" aria-label="Uitleg en instellingen voor ${escape(u.label)}">i</button></article>`;
+    return `<article class="upgrade-card${u.selected?' is-selected':''}${blocked?' is-disabled':''}" draggable="${!blocked}" data-drag-upgrade="${u.id}"><img class="upgrade-art" src="${UPGRADE_ART[u.id]}" alt="" width="960" height="640" decoding="async"><button class="upgrade-toggle" type="button" data-upgrade="${u.id}" aria-pressed="${u.selected}" aria-label="${escape(u.label)}${u.selected?' uit je plan halen':' proberen'}"><span class="upgrade-icon">${icon(u.id)}</span><span class="upgrade-state" aria-hidden="true">${u.selected?'✓':u.existing?'✓':'+'}</span><strong class="upgrade-name">${escape(u.label)}</strong><span class="upgrade-description">${descriptions[u.id]}</span><span class="upgrade-value">${value}</span></button><button class="upgrade-info" data-upgrade-info="${u.id}" aria-label="Uitleg en instellingen voor ${escape(u.label)}"><span aria-hidden="true">↗</span></button></article>`;
   }).join('');
 }
 function renderSummary() {
@@ -119,7 +121,7 @@ function updateScene() {
   const options={input:state.input,selectedIds:state.selectedIds,view:state.view,daylight:state.daylight,flows:state.view==='plan'?state.report.scenario.flow:state.report.baseline.flow,onAction:onHouseAction};
   if(!state.scene)state.scene=renderHouseScene($('#house-scene'),options);else state.scene.update(options);
   $$('.view-switch [data-view]').forEach(button=>{const active=button.dataset.view===state.view;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
-  $('#scene-caption').textContent=state.view==='current'?'Zo begint jouw verhaal.':state.selectedIds.length?`${state.selectedIds.length} ${state.selectedIds.length===1?'idee':'ideeën'}. Een huis met nieuwe mogelijkheden.`:'Een huis vol mogelijkheden.';
+  $('#scene-caption').textContent=state.view==='current'?'Jouw huis. Vol mogelijkheden.':state.selectedIds.length?'Eén plan. Jouw huis. Meer mogelijkheden.':'Een huis vol mogelijkheden.';
   $('#scene-hint').textContent=state.view==='current'&&state.selectedIds.length?'Kies ‘Met je plan’ om je upgrades te zien.':'Tik op je huis of probeer hieronder een upgrade.';
   $('#home-state-label').innerHTML=`<span class="example-dot" aria-hidden="true"></span>${state.personalized?'Jouw energiehuis · alles blijft aanpasbaar':'Voorbeeldhuis · pas aan naar jouw situatie'}`;
   $('#day-label').textContent=state.daylight<25?'Avond':state.daylight<50?'Ochtend':state.daylight<80?'Overdag':'Volop zon';
@@ -229,7 +231,7 @@ function planBody() {
   const rows=[['Totaal stroomverbruik','electricityUse','kWh'],['Afname van het net','gridImport','kWh'],['Opwek zonnepanelen','pvProduction','kWh'],['Teruglevering','gridExport','kWh'],['Gasverbruik','gasUse','m³']];
   return `<p class="dialog-intro">${state.personalized?'Jouw instellingen, jouw keuzes.':'Dit is het voorbeeldhuis; pas het aan voor jouw situatie.'} Je kunt dit plan bewaren en blijven aanpassen.</p><div class="detail-stat-grid"><div class="detail-stat"><span>Besparing per jaar</span><strong>${range(r.savingsLow,r.savingsHigh)}</strong><small>rekenjaar ${r.year} · variabele kosten</small></div><div class="detail-stat"><span>Eenmalig investeren</span><strong>${range(r.investmentLow,r.investmentHigh)}</strong><small>inclusief indicatieve installatie, vóór subsidie</small></div></div>
     <div class="plan-measures">${r.selectedIds.length?r.selectedIds.map(id=>`<div class="plan-measure-row"><span class="equipment-icon">${icon(id)}</span><div><strong>${escape(labelFor(id))}</strong><span>${range(r.available.find(a=>a.id===id).investmentLow,r.available.find(a=>a.id===id).investmentHigh)} investering</span></div><button class="text-button no-print" data-upgrade-info="${id}">Details ↗</button></div>`).join(''):'<p>Je hebt nog geen upgrades gekozen. Dit is je huidige situatie.</p>'}</div>
-    ${r.budget.exceeded?`<p class="result-warning">De bovengrens ligt ${money(r.budget.overBy)} boven je budget van ${money(r.budget.amount)}.</p>`:''}
+    <div class="result-warnings">${r.budget.exceeded?`<p class="result-warning">De bovengrens ligt ${money(r.budget.overBy)} boven je budget van ${money(r.budget.amount)}.</p>`:''}
     <h3>Waar gaat je energie heen?</h3><table class="plan-table"><thead><tr><th scope="col">Per jaar</th><th scope="col">Nu</th><th scope="col">Met je plan</th></tr></thead><tbody>${rows.map(([label,key,unit])=>`<tr><th scope="row">${label}</th><td>${number(r.baseline.flow[key])} ${unit}</td><td>${number(flow[key])} ${unit}</td></tr>`).join('')}<tr><th scope="row">Variabele energiekosten</th><td>${money(r.baseline.bill.total)}</td><td>${money(r.scenario.bill.total)}</td></tr></tbody></table>
     <div class="dialog-actions no-print"><button class="button button-yellow" data-save>Bewaar op mijn apparaat</button><button class="button button-ghost" data-print>Bewaar als PDF ↗</button></div>
     <details class="plan-assumptions"><summary>Zo komen we aan deze indicatie</summary><p>Rekenmodel ${escape(MODEL_VERSION)}. De besparing is een bandbreedte op basis van dezelfde woning en tarieven. De dag-nachtanimatie is illustratief en is geen uurprognose.</p><ul>${r.warnings.map(item=>`<li>${escape(item)}</li>`).join('')}</ul><table class="plan-table"><tbody>${r.assumptions.map(a=>`<tr><th scope="row">${escape(a.label)}</th><td>${escape(a.value)}</td></tr>`).join('')}</tbody></table><a href="/rekenmodel.html">Volledige rekenmethode en bronverwijzingen ↗</a></details>

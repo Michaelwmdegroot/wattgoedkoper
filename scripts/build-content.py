@@ -3,6 +3,8 @@
 from pathlib import Path
 from html import escape
 import json
+import re
+import unicodedata
 ROOT=Path(__file__).resolve().parents[1]
 SOURCES={
 'salderen':('Rijksoverheid','https://www.rijksoverheid.nl/themas/klimaat-milieu-en-natuur/energie-thuis/salderingsregeling'),
@@ -66,11 +68,62 @@ pages=[
 <h2>Controleer subsidie vóór je beslist</h2><p>ISDE heeft voorwaarden voor onder meer woning, uitvoering en maatregel. Trek daarom niet alvast een algemeen bedrag van je investering af. De voorgenomen wijzigingen voor 2027 moeten tegen de actuele RVO-regels worden gecontroleerd. {source('isde')} · {source('isde2027')}</p>
 ''')]
 
+PAGE_ART = {
+    'kennis/zonnepanelen/index.html': ('solar-card.webp', 'Zonnepanelen in warm daglicht'),
+    'kennis/thuisbatterij/index.html': ('battery-card.webp', 'Een thuisbatterij bij een woning'),
+    'kennis/energiecontract/index.html': ('smart-use-card.webp', 'Slim inzicht in energiegebruik'),
+    'kennis/isolatie-warmtepomp/index.html': ('heatpump-card.webp', 'Een warmtepomp bij een woning'),
+}
+
+BRAND = '<span class="content-brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m4 8 5 17 7-11 7 11 5-17"/><path d="m17 4-5 8h7l-4 8"/></svg></span><span>watt<span class="content-brand-light">goedkoper</span>.</span>'
+ARROW = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>'
+
+def heading_id(text):
+    plain = re.sub('<[^>]+>', '', text)
+    plain = unicodedata.normalize('NFKD', plain).encode('ascii', 'ignore').decode()
+    return re.sub(r'[^a-z0-9]+', '-', plain.lower()).strip('-')
+
 def render(path,title,description,lead,category,body):
     canonical='https://wattgoedkoper.nl/'+path.replace('index.html','')
     schema={'@context':'https://schema.org','@type':'WebPage','name':title,'description':description,'url':canonical,'inLanguage':'nl-NL'}
-    related=''.join(f'<a href="/{p.replace("index.html", "")}">{c} ↗</a>' for p,t,d,l,c,b in pages if p.startswith('kennis/') and p!=path)
-    return f'''<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123b31"><title>{escape(title)} | WattGoedkoper</title><meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{canonical}"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css"><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script></head><body><a class="skip-link" href="#inhoud">Ga naar inhoud</a><header class="content-header"><a class="content-brand" href="/">watt<span>goedkoper</span>.</a><a href="/#main-content">Speel met je energiehuis ↗</a></header><main id="inhoud" class="content-layout"><nav class="breadcrumbs" aria-label="Kruimelpad"><a href="/">Home</a> / {category}</nav><span class="article-eyebrow">WATTGOEDKOPER · {category}</span><h1>{title}</h1><p class="article-lead">{lead}</p><div class="article-meta">Bijgewerkt op 14 november 2026 · Indicatief inzicht, geen offerte of garantie</div><div class="article-body">{body}<div class="article-cta"><h2>Wat betekent dit voor jouw huis?</h2><p>Ontdek je mogelijkheden met de gratis energiehuis. Je krijgt direct je volledige resultaat.</p><a href="/#main-content">Maak mijn energieplan ↗</a></div><h2>Verder lezen</h2><div class="guide-links">{related}</div></div></main><footer class="content-footer"><span>© 2026 WattGoedkoper</span><a href="/rekenmodel.html">Rekenmodel & bronnen</a><a href="/privacy.html">Privacy</a><a href="/">Terug naar je energiehuis</a></footer></body></html>'''
+    headings=[]
+    def add_heading(match):
+        attrs, text = match.groups()
+        existing = re.search(r'id="([^"]+)"', attrs)
+        anchor = existing.group(1) if existing else heading_id(text)
+        headings.append((anchor, re.sub('<[^>]+>', '', text)))
+        return f'<h2{attrs if existing else attrs + chr(32) + "id=" + chr(34) + anchor + chr(34)}>{text}</h2>'
+    body = re.sub(r'<h2([^>]*)>(.*?)</h2>', add_heading, body)
+    body = body.replace('<table>', '<div class="article-table" tabindex="0" role="region" aria-label="Rekentabel, horizontaal te scrollen"><table>').replace('</table>', '</table></div>')
+    contents=''.join(f'<a href="#{escape(anchor)}">{escape(text)}</a>' for anchor,text in headings)
+    related=''.join(f'<a class="guide-card" href="/{p.replace("index.html", "")}"><img src="/assets/images/{PAGE_ART[p][0]}" alt="" width="400" height="267" loading="lazy"><span><small>VERDER ONTDEKKEN</small><strong>{escape(c)}</strong></span>{ARROW}</a>' for p,t,d,l,c,b in pages if p.startswith('kennis/') and p!=path)
+    if path in PAGE_ART:
+        filename,alt=PAGE_ART[path]
+        art=f'<div class="article-hero-art"><img src="/assets/images/{filename}" alt="{escape(alt)}" width="768" height="512" fetchpriority="high"><span class="art-caption">Een beetje inzicht. Meer mogelijkheden.</span></div>'
+    elif path == 'rekenmodel.html':
+        art='<div class="article-hero-art editorial-illustration" aria-hidden="true"><span class="editorial-orbit orbit-one"></span><span class="editorial-orbit orbit-two"></span><div class="editorial-note"><span>HELDER INZICHT</span><svg viewBox="0 0 120 76"><path class="chart-base" d="M10 66h100"/><rect x="17" y="33" width="17" height="33" rx="4"/><rect x="51" y="21" width="17" height="45" rx="4"/><rect x="85" y="7" width="17" height="59" rx="4"/></svg><strong>Elke aanname<br>op tafel.</strong><i>Jij houdt de regie.</i></div><span class="editorial-seal">100%<small>uitlegbaar</small></span></div>'
+    else:
+        art='<div class="article-hero-art editorial-illustration privacy-illustration" aria-hidden="true"><span class="editorial-orbit orbit-one"></span><span class="editorial-orbit orbit-two"></span><div class="editorial-note"><span>JOUW KEUZE</span><svg class="privacy-shield" viewBox="0 0 120 90"><path d="m60 8 32 12v25c0 17-15 30-32 39-17-9-32-22-32-39V20Z"/><path d="m45 44 11 11 23-26"/></svg><strong>Je huis eerst.<br>Je gegevens later.</strong><i>Alleen als jij dat wilt.</i></div></div>'
+    return f'''<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#faf8f2">
+<title>{escape(title)} | WattGoedkoper</title><meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{canonical}">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/content.css">
+<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script>
+</head>
+<body class="editorial-page">
+<a class="skip-link" href="#inhoud">Ga naar inhoud</a>
+<header class="content-header"><div class="content-header-inner"><a class="content-brand" href="/" aria-label="WattGoedkoper, startpagina">{BRAND}</a><nav class="content-nav" aria-label="Hoofdnavigatie"><a href="/#main-content">Je energiehuis</a><a href="#verder-lezen">Advies &amp; inspiratie</a><a href="/rekenmodel.html">Hoe rekenen we?</a></nav><a class="content-start" href="/#main-content">Mijn energieplan {ARROW}</a></div></header>
+<main id="inhoud" class="content-layout">
+<nav class="breadcrumbs" aria-label="Kruimelpad"><a href="/">Home</a><span aria-hidden="true">/</span><span>{escape(category)}</span></nav>
+<section class="article-hero" aria-labelledby="article-title"><div class="article-hero-copy"><span class="article-eyebrow">{escape(category)}</span><h1 id="article-title">{escape(title)}</h1><p class="article-lead">{escape(lead)}</p><div class="article-meta"><span>Bijgewerkt op 14 november 2026</span><span>Indicatief inzicht, geen offerte of garantie</span></div></div>{art}</section>
+<div class="article-reading-layout"><aside class="article-sidebar"><nav class="article-contents" aria-label="In dit artikel"><span class="contents-title">In dit artikel</span>{contents}</nav><a class="sidebar-invite" href="/#main-content"><span>VAN INZICHT NAAR JE EIGEN HUIS</span><strong>Wat zou jij<br>kunnen besparen?</strong><span class="sidebar-invite-link">Probeer het zelf {ARROW}</span></a></aside><article class="article-body">{body}</article></div>
+<section class="article-cta" aria-labelledby="article-cta-title"><div><span class="article-eyebrow">JOUW HUIS. JOUW MOGELIJKHEDEN.</span><h2 id="article-cta-title">Wat betekent dit<br>voor jouw huis?</h2><p>Ontdek je mogelijkheden met het gratis energiehuis.<br>Je krijgt direct je volledige resultaat.</p></div><a href="/#main-content">Maak mijn energieplan {ARROW}</a></section>
+<section class="related-section" id="verder-lezen" aria-labelledby="related-title"><div class="related-heading"><span class="article-eyebrow">BLIJF NIEUWSGIERIG</span><h2 id="related-title">Een beetje meer weten.</h2></div><div class="guide-links">{related}</div></section>
+</main>
+<footer class="content-footer"><div class="content-footer-top"><a class="content-brand" href="/" aria-label="WattGoedkoper, startpagina">{BRAND}</a><p>Jouw huis. Jouw keuzes.</p><nav aria-label="Informatie"><a href="/rekenmodel.html">Rekenmodel &amp; bronnen</a><a href="/privacy.html">Privacy</a><a href="/">Terug naar je energiehuis</a></nav></div><div class="content-footer-bottom"><span>© 2026 WattGoedkoper</span><p>Persoonlijk advies op jouw verzoek via <strong>NIVO Groep Holland</strong> en <strong>Thuisbatterij Team</strong>.</p></div></footer>
+</body></html>'''
 
 for row in pages:
     target=ROOT/row[0];target.parent.mkdir(parents=True,exist_ok=True);target.write_text(render(*row))

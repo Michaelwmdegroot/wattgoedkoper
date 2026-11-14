@@ -1,0 +1,306 @@
+{
+  "generated": "2026-11-14",
+  "method": "built-in image_gen.imagegen",
+  "reference": "Owner-supplied WattGoedkoper premium webpage direction",
+  "notes": "Conceptual illustrations. No actual installation or manufacturer endorsement is implied. Pixel geometry is preserved by generated edits; feathered CSS masks isolate upgrades.",
+  "cards": [
+    {
+      "name": "zonnepanelen",
+      "webp": "zonnepanelen.webp",
+      "source": "zonnepanelen-source.png",
+      "width": 960,
+      "height": 640,
+      "source_width": 1536,
+      "source_height": 1024,
+      "prompt": "Use case: product-mockup. Create one beautiful premium editorial product photograph, landscape 3:2, for a Dutch home energy website's small feature card. Real photographic textures, refined high-end architecture magazine aesthetic, soft warm golden afternoon sunlight, warm ivory and natural sage green palette. Place the main subject entirely within the RIGHT 45 percent of the image. LEFT 55 percent is softly lit plain warm ivory plaster, mostly empty so website typography can be added there. Natural vignette of light green foliage only near far upper/right edge. NO text, NO letters, NO numbers, NO watermarks, NO logo, NO borders, NO interface, NO collage. Subject: a close view of deep black premium photovoltaic solar panels set cleanly into a warm terracotta tiled Dutch roof, roof angled diagonally upward on right, finely detailed silicon cell pattern and slim black frame, delicate reflected sky, a subtle sunbeam, lush greenery beyond. Composition balances realistic architectural detail on the right with creamy calm empty space at left. The product should be immediately recognizable at thumbnail size."
+    },
+    {
+      "name": "warmtepomp",
+      "webp": "warmtepomp.webp",
+      "source": "warmtepomp-source.png",
+      "width": 960,
+      "height": 640,
+      "source_width": 1536,
+      "source_height": 1024,
+      "prompt": "Use case: product-mockup. Create one beautiful premium editorial product photograph, landscape 3:2, for a Dutch home energy website's small feature card. Real photographic textures, refined high-end architecture magazine aesthetic, soft warm golden afternoon sunlight, warm ivory and natural sage green palette. Place the main subject entirely within the RIGHT 45 percent of the image. LEFT 55 percent is softly lit plain warm ivory plaster, mostly empty so website typography can be added there. Natural vignette of light green foliage only near far upper/right edge. NO text, NO letters, NO numbers, NO watermarks, NO logo, NO borders, NO interface, NO collage. Subject: a single modern premium unbranded off-white air-source heat pump outdoor unit, sturdy rectangular enclosure with one sophisticated large dark circular fan grille, on a small concrete plinth alongside an elegant cream plaster Dutch house wall. Garden foliage and small grasses at bottom right. Product shown in three-quarter angle, beautifully detailed but functional, mostly right side, warm sunlight across the top. Immediately recognizable at thumbnail size."
+    },
+    {
+      "name": "thuisbatterij",
+      "webp": "thuisbatterij.webp",
+      "source": "thuisbatterij-source.png",
+      "width": 960,
+      "height": 640,
+      "source_width": 1536,
+      "source_height": 1024,
+      "prompt": "Use case: product-mockup. Create one beautiful premium editorial product photograph, landscape 3:2, for a Dutch home energy website's small feature card. Real photographic textures, refined high-end architecture magazine aesthetic, soft warm golden afternoon sunlight, warm ivory and natural sage green palette. Place the main subject entirely within the RIGHT 45 percent of the image. LEFT 55 percent is softly lit plain warm ivory plaster, mostly empty so website typography can be added there. Natural vignette of light green foliage only near far upper/right edge. NO text, NO letters, NO numbers, NO watermarks, NO logo, NO borders, NO interface, NO collage. Subject: one minimalist tall premium white home energy battery cabinet, compact vertical rounded rectangle with a fine seam and small warm yellow indicator light, standing beside an elegant cream plaster house exterior, leaves above and a small fern to right. Cabinet on right half in a three-quarter angle, realistic powder-coated metal, soft highlights, immediately recognizable at thumbnail size. No lightning logo, no text or branding."
+    },
+    {
+      "name": "slim-verbruiken",
+      "webp": "slim-verbruiken.webp",
+      "source": "slim-verbruiken-source.png",
+      "width": 960,
+      "height": 640,
+      "source_width": 1536,
+      "source_height": 1024,
+      "prompt": "Use case: product-mockup. Create one beautiful premium editorial product photograph, landscape 3:2, for a Dutch home energy website's small feature card. Real photographic textures, refined high-end architecture magazine aesthetic, soft warm golden afternoon sunlight, warm ivory and natural sage green palette. Place the main subject entirely within the RIGHT 45 percent of the image. LEFT 55 percent is softly lit plain warm ivory background, mostly empty so website typography can be added there. Natural vignette of light green foliage only near far upper/right edge. NO text, NO letters, NO numbers, NO watermarks, NO logo, NO borders, NO collage. Subject: a sophisticated modern smartphone with a slightly off-white display showing ONLY a very simple abstract green bar chart made of five blank green columns (no UI text at all) and a tiny warm yellow lightning-shaped glyph, standing upright leaning slightly on a pale stone surface alongside one elegant white European Schuko smart energy plug, a few natural green leaves at lower right. Phone on right half, three-quarter angle, polished soft metal edges, physical tangible product photography. Calm and premium, immediately recognizable at thumbnail size."
+    },
+    {
+      "name": "isoleren",
+      "webp": "isoleren.webp",
+      "source": "isoleren-source.png",
+      "width": 960,
+      "height": 640,
+      "source_width": 1536,
+      "source_height": 1024,
+      "prompt": "Use case: product-mockup. Create one beautiful premium editorial product photograph, landscape 3:2, for a Dutch home energy website's small feature card. Real photographic textures, refined high-end architecture magazine aesthetic, soft warm golden afternoon sunlight, warm ivory and natural sage green palette. Place the main subject entirely within the RIGHT 45 percent of the image. LEFT 55 percent is softly lit plain warm ivory background, mostly empty so website typography can be added there. Natural vignette of light green foliage only near far upper/right edge. NO text, NO letters, NO numbers, NO watermarks, NO logo, NO borders, NO collage. Subject: a beautifully crafted physical architectural cutaway sample of Dutch home insulation: one vertical wedge of cream plaster interior wall, thick rich golden mineral wool insulation, air gap, and warm terracotta brick outer wall, with a fine pale timber window section. Show exact natural tactile layers in a realistic attractive product photograph, not an infographic. The cutaway sample rises from the bottom RIGHT corner, close-up three-quarter angle, immaculate brick/mortar craftsmanship and tactile fibers. Main sample entirely on right half, soft warm ivory background on the left. No diagrams, no arrows or labelling."
+    }
+  ],
+  "hero_prompt_records": [
+    {
+      "record": "HERO_ART.md",
+      "content": "# WattGoedkoper hero imagery\n\nCreated 14 November 2026 with the built-in image generation tool. These are production scene assets, not interface mockups. Source PNGs are retained; WebP copies are format-optimized at quality 88 without resizing or visual edits.\n\n## Delivered assets\n\nAll six files are 1536 × 1024, opaque, landscape 3:2.\n\n| Scene | Clean scene | Scene with equipment |\n| --- | --- | --- |\n| Detached home | `energy-home-base.webp` | `energy-home-upgrades.webp` |\n| Attached/end-of-terrace home | `hero-row-base.webp` | `hero-row-upgraded.webp` |\n| Small apartment building | `hero-apartment-base.webp` | `hero-apartment-upgraded.webp` |\n\nEach also has a same-named PNG source. All clean scenes intentionally omit solar panels, heatpumps and batteries. Equipment should appear only when the interactive state warrants it. The apartment scene shows building-level/communal equipment; eligibility and permission rules remain the responsibility of the calculation/interface layer.\n\n## Image layer coordinates\n\nPixel coordinates refer to the 1536 × 1024 master. Use these as generous equipment region bounds, not as architectural measurements. Tight masks with subtle feathering are preferred. The paired edits are geometrically closely aligned, but image generation can introduce small tone/texture changes elsewhere; they are not pixel-identical edits.\n\n| Scene | Solar polygon or bounds | Heatpump including plinth | Battery including plinth |\n| --- | --- | --- | --- |\n| Detached | (430,345), (531,208), (1018,151), (956,307) | x302–409, y742–851 | x1165–1227, y696–830 |\n| Attached | (530,290), (638,165), (1074,82), (1015,232) | x516–637, y735–853 | x1058–1132, y640–855 |\n| Apartment | x458–1180, y112–216 | x183–274, y780–879 | x1363–1432, y687–847 |\n\nThe detached scene has twelve visible solar panels; the attached scene has ten. These are illustrative scene assets and should not be presented as an exact drawing of the user's panel count.\n\n## Prompt set\n\n### Detached clean scene\n\nUse case: photorealistic-natural. Asset type: actual production photograph for an interactive Dutch energy-planning website, NO website interface. Create one premium luminous landscape 3:2 editorial architectural image of a beautiful but believable compact Dutch two-storey family house, cream mineral-render facade, sharply detailed warm terracotta gabled tile roof, slender dark bronze window frames, large ground-floor glass doors with warm interior. Near frontal three-quarter camera, 50mm architectural photography, full house and roof visible, house centered in frame and fills about 70% width and 70% height. Neat welcoming front garden with hydrangeas, lavender, grass, understated sandstone footpath and a few small mature trees at frame edges. Soft distant Dutch roofs and trees, pale blue morning sky, sun from upper right with delicate warm rays through leaves. Natural Dutch landscape; no mountains. Sophisticated photographic realism with tactile materials and a sunny optimistic mood, rich but soft natural greens and pale cream tones. Wide breathing space of garden on both sides and sky above. Leave the front-left lower facade and right side facade unobstructed for later addition of energy equipment. Keep roof clean terracotta tiles, absolutely NO solar panels, NO heatpump, NO battery, NO EV charger, NO wind turbines, NO people, NO text, NO letters, NO labels, NO interface, NO logo, NO watermark. Aesthetic direction is the warm realistic house in the supplied screenshot, but this is only the clean photographic scene, not a UI or screenshot.\n\n### Detached equipment edit\n\nUse case: precise-object-edit. Edit target is the attached clean house photograph. Produce the SAME 1536×1024 photo with exactly THREE additions only: (1) a neatly mounted rectangular array of 12 premium dark charcoal photovoltaic panels, 2 rows of 6, on the existing visible large terracotta roof plane, within roof edges, perspective aligned with the tile roof and below the chimney, covering roughly x480–1035 y165–330; (2) one realistic compact unbranded off-white air-source heatpump outdoor unit with visible round dark fan grille, standing beside the house at the far-left front wall around x350 y720, part of the plants naturally behind it, leaving door and glass unobstructed; (3) one single tall slim elegant unbranded white home battery cabinet standing at the right side wall around x1160 y740, below and slightly to right of the lower side window. All equipment sized plausibly for this house. Crucial keep CAMERA, CROP, HOUSE GEOMETRY, ROOF OUTLINE, WINDOWS, DOOR, CHIMNEY, ALL TREES, SHRUBS, FLOWERS, PATH, GRASS, SKY, LIGHTING and entire rest of photo pixel-aligned with the input. Do not regenerate or redesign any architecture. Keep base photorealistic material quality. No text, no logos, no letters, no labels, no interface. Exact same shot and framing, only these three energy upgrades added.\n\n### Attached clean scene\n\nUse case: photorealistic-natural. Asset type: production photo for Dutch energy-planning website. One 1536×1024 3:2 landscape editorial architectural image. Beautiful believable Dutch end-of-terrace home attached to a short row of two similar homes receding into the LEFT background. Selected main END HOUSE at center-right dominates image, fills about 65% frame width and 75% height, completely visible roof and ground. Cream mineral-render facade, terracotta tile pitched roof, slender dark bronze window frames, large ground-floor glass doors, a warm lit interior. It must clearly be an attached Dutch terrace house, NOT standalone detached, only single main corner/end home strongly featured; unobstructed end wall on right. Near frontal three-quarter 50mm architectural camera, lush but tidy Dutch gardens with hydrangeas lavender grass and pale stone footpath. Background distant modest Dutch houses trees and pale blue sky, natural believable scene. Soft golden sunshine from upper right through tree leaves framing corners, premium editorial photographic realism, tactile materials, natural luminous greens and cream. Main house roof fully visible and clean NO solar panels. No heatpump, no battery, no solar, no energy equipment, no cars, no people, no text, no logos, no UI, no labels, no watermark. Leave front lower wall at left and side wall at right clear for later energy equipment. Shot coordinates must be wide with garden around house, not a tight facade crop. This is the actual clean photograph, not a webpage.\n\n### Attached equipment edit\n\nUse case: precise-object-edit. Input image is the edit target. Modify this EXACT 1536×1024 photograph with THREE energy additions only. 1. Add a neat rectangular array of 10 dark-charcoal solar panels in two rows of five to the roof of the prominent rightmost end-of-terrace home ONLY, with perspective precisely aligned to this pitched roof. Array fits approximately x520–1070 y98–280, neatly inside roof edges and does not extend onto neighboring roofs. 2. One compact unbranded off-white heatpump with round dark fan grille at the lower front-left of main house, on ground around x425 y740, beside the front door not obstructing it, with a small concrete plinth. 3. One single elegant narrow tall white home battery cabinet at the RIGHT SIDE wall around x1150 y729, grounded beside the wall, leaving other elements visible. Keep camera, framing, house geometry, neighboring houses, roof outline, facade, windows, door, trees, plants, garden path and sky lighting and all unchanged areas EXACTLY aligned to the input. Absolutely do not redesign building. No people, text, labels, brand or logos. Same scene and lighting, only the three upgrades.\n\n### Apartment clean scene\n\nUse case: photorealistic-natural. Asset type: production photo for Dutch energy-planning website. One 1536×1024 3:2 landscape premium editorial architectural image of a small beautiful contemporary Dutch apartment building, exactly three storeys, light cream brick and pale natural mineral-render facade, clean dark bronze slender window frames, a handful of airy balconies with glass balustrades, warm interiors, subtle wood detailing at entry, simple flat roof. Compact approachable residential scale, NOT skyscraper or luxury resort. Building centered fills 70% frame width and 70% height, full roof and building base visible. Slightly elevated near-frontal three-quarter architectural 50mm camera from 6 meters high so a modest portion of flat roof is visible. Lush manicured communal Dutch garden with hydrangeas, ornamental grasses, lawn and sandstone access path, sunny trees framing outer corners, soft neighboring Dutch roofs in distance, no mountains. Warm golden sun from upper right, natural pale blue sky, sophisticated photographic realism, crisp tactile materials, harmonious greens cream warm wood. Keep roof empty clean with NO solar panels, NO battery cabinets, NO heatpump or other energy equipment. Clear visible wall to ground level on left and right for optional later added appliances. No people, no cars, no signage, no labels, no letters, no text, no logos, no interface, no watermarks. Clean architectural photo only.\n\n### Apartment equipment edit\n\nUse case: precise-object-edit. Input photograph is exact edit target. Add three energy upgrades to this SAME 1536×1024 apartment building photo while preserving all image content and geometry. 1. Add two neat low-tilt rows of dark charcoal photovoltaic solar panels on the flat roof behind the parapet, tilted solar panels are visible as a realistic slim dark band rising slightly above the roofline between x450 and x1180, below sky y90–185. Photovoltaics have supports set back on flat roof, must not float in sky or sit on facade. 2. Add one realistic compact unbranded off-white outdoor heatpump with round black grille near ground in garden at left corner of building around x267 y796, not blocking any entrance, small plinth. 3. Add one tall slim white unbranded residential battery cabinet on ground at far right side of building around x1361 y741. This illustrates communal equipment. Preserve camera/crop/building geometry/windows/balconies/plants/lighting/tree leaves/ground/path exactly, no restyling. Keep the image pixel-aligned with base outside those additions. No people, no text, no logos, no UI, no labels, no watermark.\n"
+    },
+    {
+      "record": "TERRACED_ART.md",
+      "content": "# True terraced middle-home imagery\n\nCreated using built-in image generation, 14 November 2026. Intended to replace the earlier end-of-terrace row pair for the `terraced` / `Rijwoning` type.\n\nFiles are 1536 × 1024. PNG sources and optimized WebP copies are provided:\n\n- `hero-terraced-base.webp`\n- `hero-terraced-upgraded.webp`\n\nThe main middle home has attached neighbors on both sides and no exposed side wall. Ten illustrative solar panels occupy only the central roof. Clean base contains no equipment.\n\nEquipment masks in original pixel coordinates:\n\n- Solar polygon with small margin: (474,248), (498,130), (1024,130), (1056,248)\n- Heatpump and plinth bounds: x440–554, y704–812\n- Battery and plinth bounds: x1085–1152, y636–825\n\nUse tight masks and soft edge feathering because generation edits are closely aligned rather than pixel identical. Full solar panel outline is a trapezoid whose upper corners are inset.\n\n## Clean scene prompt\n\nUse case: photorealistic-natural. Asset type: clean production photograph for an interactive Dutch energy-planning website. Create one 1536×1024 landscape 3:2 premium architectural photograph of a genuine Dutch TUSSENWONING: the CENTRAL home in a straight row of three identical attached terraced family houses. Essential: neighboring attached houses must clearly continue on BOTH LEFT AND RIGHT sides of the central home, NO exposed side wall on the central house, NO corner house, NO detached house. Camera exactly near frontal, eye-level 50mm architectural view, parallel central front facade, no extreme perspective. The whole central home is visible and occupies about 50% of frame width; cropped neighboring house facades extend naturally toward both frame edges. All share one continuous pitched terracotta tiled roof with roof ridge parallel to street, completely visible roof above the central home. Main central house cream rendered facade, slender dark bronze window frames, two upper bedroom windows, ground floor front door slightly left of center and generous glazed living room window on right. Central main home about x430–1100 on image, roof y130–380, facade y380–820. Beautiful believable compact Dutch scale, two storeys plus pitched roof. Warm interiors subtly visible. A lush welcoming neat front garden, hydrangeas, lavender, soft grasses, low hedges indicating garden boundaries, sandstone access path leading to central door. Neighboring gardens repeat understatedly. Small mature tree leaves frame upper corners but do not obstruct central roof. Pale blue sky, soft warm golden sun from upper right, sophisticated editorial photographic realism, tactile cream render and warm roof tiles, natural fresh greens. No solar panels, no heatpumps, no batteries, no EV chargers, no energy equipment, no cars, no people, no text, no signage, no labels, no logos, no interface, no watermark. Leave a patch of ground at front-left and front-right of main central facade unobstructed for later energy equipment. Must clearly read as the middle home of an attached row; neighbors on BOTH sides are essential.\n\n## Equipment edit prompt\n\nUse case: precise-object-edit. Input is exact edit target photo of Dutch TERRACED CENTRAL MIDDLE HOME with adjacent homes on both sides. Produce same 1536×1024 photograph, ONLY add three clean energy upgrades to the CENTRAL home between its two downpipes x407 and x1175. (1) A neat rectangular array of ten premium dark charcoal solar panels, TWO ROWS of FIVE in landscape orientation, on the central segment of the roof, perspective aligned to the roof and neatly fitting around x490–1090 and y135–245. Leave a visible margin of terracotta roof tiles around the panel array. The panels must NOT extend onto the neighboring roofs at left and right. (2) One small off-white unbranded heatpump with dark round fan grille standing on a subtle plinth against the central facade LEFT of the main door, approximately x445–540 y736–825; preserve main entrance unobstructed. (3) One single narrow tall elegant unbranded white home battery cabinet against central front facade just RIGHT of living-room window but LEFT of the right downpipe, approximately x1090–1140 y661–824, on ground. Respect believable human scale. Keep ALL CAMERA FRAMING, HOUSE FACADE, ROOF OUTLINE, CHIMNEYS, WINDOWS, DOORS, NEIGHBORS ON BOTH SIDES, TREES, GRASS, GARDEN, FOOTPATH, SKY and LIGHTING EXACTLY aligned to the base. Do not alter building geometry, no creative restyling. Only these three additions. No people, text, markings, logos, UI, labels or watermarks.\n\n"
+    },
+    {
+      "method": "Built-in image_gen.imagegen",
+      "date": "2026-11-14",
+      "reference": "energy-home-base.png",
+      "format": "1536x1024",
+      "coordinates": "Normalized to full original image (x / 1536, y / 1024), approximate intentionally padded to include shadows",
+      "images": [
+        {
+          "type": "semi",
+          "base": "hero-semi-base.webp",
+          "upgraded": "hero-semi-upgraded.webp",
+          "base_source": "hero-semi-base.png",
+          "upgraded_source": "hero-semi-upgraded.png",
+          "base_prompt": "Use case: precise-object-edit / architectural visualization. Input image 1 is the style, material, lighting and photographic camera reference for a matching family of Dutch energy website house photos. Maintain the same premium editorial photographic realism, warm ivory cream plaster, terracotta tiled roof, slim dark bronze window frames, green lawn, hydrangeas, lavender, tree leaves framing upper corners, blue sky and sunny golden afternoon light from upper right. Full architecture visible within image edges with a little sky above the roof and lawn foreground. Natural high-end architecture magazine photography, no people. Landscape 3:2, 1536x1024. NO TEXT, logos, UI, graphics, annotations or watermarks. No energy equipment anywhere: absolutely no solar panels, no heatpump units, no batteries. Keep front and right side of the main house unobscured so energy equipment can be added later. Replace the detached single house with a clearly recognizable Dutch TWO-UNDER-ONE-ROOF SEMI-DETACHED PAIR: exactly TWO adjacent homes beneath one connected continuous warm terracotta gable roof, with a visible party-wall seam dividing two equivalent homes, TWO separate front doors and TWO small separate entry paths/gardens. View from slightly to the right at eye level, showing both front facades and the right end wall. Main selected home is the RIGHT home, fully visible, nearest camera, occupies central and right section of composition; left home occupies left center. The right home's low front wall to LEFT of its doorway has some blank cream plaster area for a future heatpump; its outer RIGHT side wall blank near ground for future battery. Two floors plus pitched attic roof, contemporary renovated Dutch family housing, believable scale. The building should fill approximately 80% of image width and 75% height, with beautiful restrained garden surrounds.",
+          "upgraded_prompt": "Use case: precise-object-edit. Edit this exact photograph ONLY by adding THREE energy upgrades to the RIGHTMOST main home. Preserve ALL existing architecture, geometry, windows, roof tile rows, roof edges, door, chimney, plants, tree leaves, lawn, shadows, sunlight, color grading, image resolution, perspective and crop EXACTLY. Do not zoom, reframe or alter any unrelated pixels. This is an exact matching before/after photograph for a responsive energy simulator; unchanged background is extremely important. Added equipment must be naturally photographic, unbranded, realistic. NO text, letters, logos, signs, UI, arrows, watermarks or people. Only the rightmost home gets energy upgrades; left neighbor(s) remain without any equipment. 1) Add a neat array of ten deep black slim-framed solar panels, two rows of five, on the visible sloping roof of the RIGHT HOME only, within approx x=760..1190 and y=190..345 in the original 1536x1024 image. Match roof perspective and keep original visible roof margins. 2) Add one compact off-white outdoor air-source heat pump unit with one dark circular fan on a discreet plinth in the garden directly against the front wall to the LEFT of the RIGHT home's door, approximately x=850..965, y=737..832. It fits between the large ground-floor window and the doorway, realistic installation size, no obstruction of entrance. Replace only the small foliage immediately in its way. 3) Add one compact tall white home battery cabinet with small amber light on the exposed far RIGHT side wall, at approximately x=1220..1304, y=663..819, in front of the low side window but without changing the window. Slim rounded cabinet and soft naturally matched shadow. Preserve everything else exactly.",
+          "geometry": {
+            "solarPolygon": [
+              [
+                0.444,
+                0.344
+              ],
+              [
+                0.495,
+                0.214
+              ],
+              [
+                0.748,
+                0.176
+              ],
+              [
+                0.714,
+                0.316
+              ]
+            ],
+            "heatpumpBBox": [
+              0.548,
+              0.724,
+              0.632,
+              0.845
+            ],
+            "batteryBBox": [
+              0.748,
+              0.668,
+              0.81,
+              0.847
+            ],
+            "hotspots": {
+              "solar": [
+                0.596,
+                0.26
+              ],
+              "heatpump": [
+                0.592,
+                0.773
+              ],
+              "battery": [
+                0.784,
+                0.748
+              ]
+            },
+            "houseBounds": [
+              0.109,
+              0.067,
+              0.881,
+              0.839
+            ]
+          }
+        },
+        {
+          "type": "corner",
+          "base": "hero-corner-base.webp",
+          "upgraded": "hero-corner-upgraded.webp",
+          "base_source": "hero-corner-base.png",
+          "upgraded_source": "hero-corner-upgraded.png",
+          "base_prompt": "Use case: precise-object-edit / architectural visualization. Input image 1 is the style, material, lighting and photographic camera reference for a matching family of Dutch energy website house photos. Maintain the same premium editorial photographic realism, warm ivory cream plaster, terracotta tiled roof, slim dark bronze window frames, green lawn, hydrangeas, lavender, tree leaves framing upper corners, blue sky and sunny golden afternoon light from upper right. Full architecture visible within image edges with a little sky above the roof and lawn foreground. Natural high-end architecture magazine photography, no people. Landscape 3:2, 1536x1024. NO TEXT, logos, UI, graphics, annotations or watermarks. No energy equipment anywhere: absolutely no solar panels, no heatpump units, no batteries. Keep front and right side of the main house unobscured so energy equipment can be added later. Replace the detached single house with a clearly recognizable Dutch END-OF-TERRACE / CORNER ROW HOUSE: three compact adjoining family homes form one continuous terrace continuing away towards the LEFT. The nearest RIGHTMOST end house is the selected main house and is prominently central/right; show its front facade and large exposed RIGHT gable end wall. Two attached neighboring homes recede to the LEFT under a connected terracotta roof, each with visible separate entrance and windows so the terrace is unmistakable. Two floors plus pitched attic roof, stylish renovated Dutch compact family houses with cream plaster, not a single villa. Small neat front gardens with low hedge divisions and paved paths to doors. Main house's low front wall on left of its front door has blank cream plaster for a future heatpump, and clear outer right end wall near the ground for future battery. The complete rightmost house and most of the two adjoining houses must be in frame. Beautiful green corner garden and restrained hydrangeas in foreground. Building fills 82% of width, 75% height.",
+          "upgraded_prompt": "Use case: precise-object-edit. Edit this exact photograph ONLY by adding THREE energy upgrades to the RIGHTMOST main home. Preserve ALL existing architecture, geometry, windows, roof tile rows, roof edges, door, chimney, plants, tree leaves, lawn, shadows, sunlight, color grading, image resolution, perspective and crop EXACTLY. Do not zoom, reframe or alter any unrelated pixels. This is an exact matching before/after photograph for a responsive energy simulator; unchanged background is extremely important. Added equipment must be naturally photographic, unbranded, realistic. NO text, letters, logos, signs, UI, arrows, watermarks or people. Only the rightmost home gets energy upgrades; left neighbor(s) remain without any equipment. 1) Add a neat array of ten deep black slim-framed solar panels, two rows of five, on the visible sloping roof of the RIGHTMOST END HOME only, within approx x=750..1110 and y=204..338 in original 1536x1024 image. Match roof perspective and keep original visible roof margins. 2) Add one compact off-white outdoor air-source heat pump unit with one dark circular fan on discreet plinth directly against the front wall to LEFT of the RIGHTMOST home's door, approximately x=790..891, y=741..828. Realistic installation size, no obstruction of entrance. Replace only the small foliage immediately in its way. 3) Add one compact tall white home battery cabinet with small amber light on exposed RIGHT gable side wall, at approximately x=1138..1220, y=647..811, upright on a narrow base by wall. Slim rounded cabinet and soft naturally matched shadow. Preserve everything else exactly.",
+          "geometry": {
+            "solarPolygon": [
+              [
+                0.408,
+                0.357
+              ],
+              [
+                0.472,
+                0.229
+              ],
+              [
+                0.726,
+                0.19
+              ],
+              [
+                0.684,
+                0.327
+              ]
+            ],
+            "heatpumpBBox": [
+              0.505,
+              0.726,
+              0.582,
+              0.837
+            ],
+            "batteryBBox": [
+              0.695,
+              0.642,
+              0.758,
+              0.835
+            ],
+            "hotspots": {
+              "solar": [
+                0.572,
+                0.273
+              ],
+              "heatpump": [
+                0.542,
+                0.774
+              ],
+              "battery": [
+                0.733,
+                0.736
+              ]
+            },
+            "houseBounds": [
+              0.025,
+              0.11,
+              0.833,
+              0.839
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "assets/images/battery-card.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 47572,
+      "sha256": "a5550d89b6d40c8aa0ea88c4a5998f5d22b64640c0c6b1f433b95d3e3dba6a85"
+    },
+    {
+      "path": "assets/images/heatpump-card.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 86512,
+      "sha256": "5751c8d3e57c84753e5951402d201f2b0d921193ffe563b684e9d7d67ed876aa"
+    },
+    {
+      "path": "assets/images/hero-apartment-base.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 455254,
+      "sha256": "af7875eca2b0d5095231cee27a7ebd7d9deb8c8851b83c4e902ebe9d0e574d99"
+    },
+    {
+      "path": "assets/images/hero-apartment-upgraded.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 387724,
+      "sha256": "638d5299b38f7170a682045b2834661be9d8c4e3cb53934f17357626a6c60d8f"
+    },
+    {
+      "path": "assets/images/hero-corner-base.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 439378,
+      "sha256": "fd0fcafc5c5d7a9a145d3b5778a5c7ffdd4ee78393997507c21e0b907170a26a"
+    },
+    {
+      "path": "assets/images/hero-corner-upgraded.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 383932,
+      "sha256": "0a9a21b45ddce6e29e205bb764dac5442a5050efc14e60bfd142f8418a53f447"
+    },
+    {
+      "path": "assets/images/hero-detached-base.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 473574,
+      "sha256": "675c648052488d65ef7287a50cb15ba2c37840cbd92e2676cd448832d0034d77"
+    },
+    {
+      "path": "assets/images/hero-detached-upgraded.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 427784,
+      "sha256": "c1733489b199982bdb91c4f961b2ff74915f61fe49927d59f47a8207ba1044f8"
+    },
+    {
+      "path": "assets/images/hero-semi-base.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 437224,
+      "sha256": "e338c47d2e85e479b82a22b8b40cd739b5c336daf9c656d44deac1da6584bdc3"
+    },
+    {
+      "path": "assets/images/hero-semi-upgraded.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 380470,
+      "sha256": "6a1f6081ea42151b025ce7ef2ec9da87bb901a4122c91ed095f0653b89843f0a"
+    },
+    {
+      "path": "assets/images/hero-terraced-base.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 505408,
+      "sha256": "0f59df5a55e5e5b909df5e99d6e1f2c79148a9d69890c146506996d600b03478"
+    },
+    {
+      "path": "assets/images/hero-terraced-upgraded.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 393676,
+      "sha256": "8a55eae5d0149270f66c6dbdf5432e744967b53d7bfad97c1d7004cf1a551918"
+    },
+    {
+      "path": "assets/images/insulation-card.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 62744,
+      "sha256": "a1854e66be13c2ab1d860bf9913c1af8776ba4b3ccb1d2c80fabedcda4a6fa42"
+    },
+    {
+      "path": "assets/images/smart-use-card.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 39668,
+      "sha256": "850177dfdf500474fd297210c7b139a72fdf7d2596c5fa9d1581272ab477d383"
+    },
+    {
+      "path": "assets/images/solar-card.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 89682,
+      "sha256": "19b6a31237f8f332c6dbf2a9a8692065ada4d6800fa068550e294d590facb3ef"
+    }
+  ]
+}

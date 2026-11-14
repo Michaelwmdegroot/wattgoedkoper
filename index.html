@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f4ed">
+  <meta name="theme-color" content="#fbfaf6">
   <title>WattGoedkoper — Speel met de mogelijkheden van je huis</title>
   <meta name="description" content="Maak je huis watt slimmer. Probeer zonnepanelen, een thuisbatterij, isolatie en een warmtepomp op je huis. Zie direct het verschil in je persoonlijke energieplan.">
   <link rel="canonical" href="https://wattgoedkoper.nl/">
@@ -15,6 +15,7 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="stylesheet" href="/assets/house-scene.css">
+  <link rel="stylesheet" href="/assets/premium.css">
   <script type="module" src="/assets/app.mjs"></script>
 </head>
 <body class="playground-page">
@@ -22,12 +23,14 @@
 <header class="app-header">
   <div class="header-inner app-width">
     <a href="/" class="wordmark" aria-label="WattGoedkoper, startpagina"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m4 8 5 17 7-11 7 11 5-17"/><path d="m17 4-5 8h7l-4 8"/></svg></span><span>watt<span class="brand-light">goedkoper</span><span class="brand-dot">.</span></span></a>
-    <div class="header-tools"><a class="header-explainer" href="/rekenmodel.html">Hoe rekenen we? <span aria-hidden="true">↗</span></a><span class="free-label"><span aria-hidden="true"></span>Gratis. Geen account.</span><button class="button button-ink" id="open-plan">Mijn energieplan <span aria-hidden="true">↗</span></button></div>
+    <nav class="header-nav" aria-label="Hoofdnavigatie"><a href="#main-content">Energiehuis <span aria-hidden="true">⌄</span></a><a href="#maatregelen">Maatregelen <span aria-hidden="true">⌄</span></a><a href="#inspiratie">Advies &amp; inspiratie <span aria-hidden="true">⌄</span></a></nav>
+    <div class="header-tools"><a class="header-explainer" href="/rekenmodel.html">Hoe rekenen we? <span class="info-circle" aria-hidden="true">i</span></a><span class="free-label"><span aria-hidden="true"></span>Gratis. Geen account.</span><button class="button button-ink" id="open-plan">Mijn energieplan <span aria-hidden="true">→</span></button></div>
   </div>
 </header>
 <main class="energy-app app-width" id="main-content">
   <section class="app-intro" aria-labelledby="tool-title">
-    <div><div class="intro-kicker"><span aria-hidden="true">✳</span> EEN BEETJE NIEUWSGIERIGHEID. EEN SLIMMER HUIS.</div><h1 id="tool-title">Maak je huis <span>watt slimmer.</span></h1><p>Probeer het op je huis. Zie meteen het verschil.</p></div>
+    <div class="intro-copy"><div class="intro-kicker">JOUW PERSOONLIJKE ENERGIEPLAN <span aria-hidden="true"></span></div><h1 id="tool-title">Maak je huis<br><span>watt slimmer.</span></h1><p>Ontdek wat bij jouw huis past, wat het oplevert<br class="desktop-break"> en hoeveel je kunt besparen op je <strong>energiekosten.</strong></p></div>
+    <div class="intro-note" aria-hidden="true">Een beetje nieuwsgierig.<br>Een huis vol mogelijkheden.<svg viewBox="0 0 80 65"><path d="M60 5Q65 33 18 50m-1-1 15-1m-15 1 8-12"/></svg></div>
     <div class="intro-actions"><span id="home-state-label" class="example-label"><span class="example-dot" aria-hidden="true"></span>Voorbeeldhuis · pas aan naar jouw situatie</span><button class="reset-button" id="reset-home"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7a6.5 6.5 0 1 1-.4 5M4 3v4h4"/></svg>Begin opnieuw</button></div>
   </section>
 
@@ -39,20 +42,25 @@
     </aside>
 
     <section class="scene-stage" id="scene-stage" aria-label="Bekijk wat er in je energiehuis verandert">
-      <div class="scene-toolbar"><span class="scene-label"><span aria-hidden="true"></span>JOUW ENERGIEHUIS</span><div class="view-switch" role="group" aria-label="Toon huidige situatie of je plan"><button class="active" data-view="current" aria-pressed="true">Nu</button><button data-view="plan" aria-pressed="false">Met je plan <span aria-hidden="true">✳</span></button></div></div>
+      <div class="scene-toolbar"><span class="scene-label"><span aria-hidden="true"></span>JOUW ENERGIEHUIS</span><div class="view-switch" role="group" aria-label="Toon huidige situatie of je plan"><button class="active" data-view="current" aria-pressed="true">Nu</button><button data-view="plan" aria-pressed="false">Met je plan <span aria-hidden="true">☀</span></button></div></div>
       <div id="house-scene" class="house-scene"></div>
       <div class="scene-message"><p id="scene-caption">Een huis vol mogelijkheden.</p><span id="scene-hint">Probeer hieronder een upgrade.</span></div>
-      <div class="day-controller"><div class="day-heading"><span>Een dag in je huis</span><output id="day-label" for="day-control">Overdag</output></div><div class="day-slider-row"><svg class="day-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5a8 8 0 1 0 10.5 10.5Z"/></svg><label class="sr-only" for="day-control">Bekijk het huis op een ander moment van de dag</label><input id="day-control" type="range" min="0" max="100" value="65" step="1" aria-describedby="day-disclaimer"><svg class="day-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M19 5l-1.5 1.5m-11 11L5 19"/></svg></div><p id="day-disclaimer">Sfeerillustratie van dag en nacht, geen uurprognose.</p></div>
+      <div class="day-controller"><div class="day-heading"><span>Een dag in je huis</span><output id="day-label" for="day-control">Overdag</output></div><div class="day-slider-row"><svg class="day-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5a8 8 0 1 0 10.5 10.5Z"/></svg><label class="sr-only" for="day-control">Bekijk het huis op een ander moment van de dag</label><input id="day-control" type="range" min="0" max="100" value="65" step="1" aria-describedby="day-disclaimer"><svg class="day-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M19 5l-1.5 1.5m-11 11L5 19"/></svg></div><p id="day-disclaimer">Sfeerbeeld, geen uurprognose of technisch ontwerp.</p></div>
+      <div class="scene-benefits"><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3C8 3 3 8 5 16c8 4 15-3 15-13ZM3 21 16 8"/></svg><span><strong>Jouw huis centraal</strong><small>Je eigen situatie als vertrekpunt</small></span></div><div><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 4 16 4 16 0V5M4 11v6c0 4 16 4 16 0v-6"/></svg><span><strong>Helder inzicht</strong><small>Besparing én investering</small></span></div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 9 4v7c0 5-9 9-9 9S3 18 3 13V6Zm-4 9 3 3 5-6"/></svg><span><strong>Jij houdt de regie</strong><small>Vrij proberen. Niets verplicht.</small></span></div></div>
     </section>
 
     <aside class="results-panel" aria-label="Het effect van je keuzes"><div class="results-heading"><span class="live-indicator" aria-hidden="true"></span><span>HET EFFECT VAN JE KEUZES</span></div><div id="live-results" class="live-results" aria-live="polite" aria-atomic="true"><p class="results-loading">Je eerste inzicht verschijnt zo.</p></div></aside>
 
     <div id="mobile-result" class="mobile-result" aria-label="Je besparing in één oogopslag"></div>
 
-    <section class="upgrade-section" aria-labelledby="upgrade-title"><div class="upgrade-heading"><div><span class="upgrade-spark" aria-hidden="true">✳</span><h2 id="upgrade-title">Wat als je…</h2></div><p>Klik op een upgrade. Kijk wat er verandert.</p><span class="dock-hint"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 3 10 7-5 1-2 5Z"/></svg>Proberen mag.</span></div><div class="upgrade-dock" id="upgrade-dock" aria-label="Probeer verduurzamingsmaatregelen"></div></section>
+    <section class="upgrade-section" id="maatregelen" aria-labelledby="upgrade-title"><div class="upgrade-heading"><div><h2 id="upgrade-title">Wat als je…</h2></div><p>Ontdek wat verschillende maatregelen doen voor jouw huis.</p><span class="dock-hint">Klik. Probeer. Vergelijk. <span aria-hidden="true">↘</span></span></div><div class="upgrade-dock" id="upgrade-dock" aria-label="Probeer verduurzamingsmaatregelen"></div></section>
   </div>
 
   <section id="plan-summary" class="plan-summary" aria-label="Jouw samengestelde energieplan"></section>
+
+  <section class="inspiration-section" id="inspiratie" aria-labelledby="inspiration-title"><div class="section-intro"><div><span class="mini-label">EEN SLIMME KEUZE BEGINT MET INZICHT</span><h2 id="inspiration-title">Even begrijpen.<br>Dan beter kiezen.</h2></div><p>Geen huis is hetzelfde. Ontdek hoe de maatregelen samenwerken en welke vragen je jezelf kunt stellen.</p></div><div class="inspiration-grid"><a class="story-card" href="/kennis/zonnepanelen/"><img src="/assets/images/solar-card.webp" alt="Zonnepanelen op een zonnig pannendak" loading="lazy" width="960" height="640"><div><span class="mini-label">ZONNEPANELEN</span><h3>Meer uit de zon.<br>Wat past op jouw dak?</h3><p>Opwek, eigen gebruik en terugleveren uitgelegd.</p><span class="story-link">Ontdek de mogelijkheden <span aria-hidden="true">↗</span></span></div></a><a class="story-card" href="/kennis/thuisbatterij/"><img src="/assets/images/battery-card.webp" alt="Een witte thuisbatterij bij een woning" loading="lazy" width="960" height="640"><div><span class="mini-label">THUISBATTERIJ</span><h3>Je eigen stroom.<br>Voor een later moment.</h3><p>Wanneer helpt een batterij je — en wanneer minder?</p><span class="story-link">Lees waar je op moet letten <span aria-hidden="true">↗</span></span></div></a><a class="story-card" href="/kennis/isolatie-warmtepomp/"><img src="/assets/images/heatpump-card.webp" alt="Een warmtepomp in een groene tuin" loading="lazy" width="960" height="640"><div><span class="mini-label">EEN COMFORTABEL HUIS</span><h3>Warmte binnen.<br>Meer comfort, minder gas.</h3><p>Waarom isoleren en anders verwarmen samenhangen.</p><span class="story-link">Verken jouw opties <span aria-hidden="true">↗</span></span></div></a></div></section>
+
+  <section class="transparency-section" aria-labelledby="transparency-title"><div class="transparency-icon" aria-hidden="true">↗</div><div><span class="mini-label">OPEN OVER ONS REKENWERK</span><h2 id="transparency-title">Een helder plan begint met eerlijke aannames.</h2><p>Je ziet een indicatie op basis van je invoer. Tarieven, verbruik en prijzen kun je zelf aanpassen. We laten de bandbreedte zien, zodat je ook weet wat nog onzeker is.</p></div><a class="button button-paper" href="/rekenmodel.html">Zo rekenen we <span aria-hidden="true">→</span></a></section>
 
   <footer class="tool-footer"><div class="footer-main"><span class="footer-promise">Jouw huis. Jouw keuzes.</span><nav aria-label="Informatie"><a href="/rekenmodel.html">Rekenmodel &amp; bronnen</a><a href="/privacy.html">Privacy</a><button id="privacy-settings" class="link-button">Privacy-instellingen</button></nav><span class="footer-disclaimer">Een onderbouwde indicatie, geen besparingsgarantie.</span></div><div class="footer-partners"><p>Persoonlijk advies op jouw verzoek via <strong>NIVO Groep Holland</strong> en <strong>Thuisbatterij Team</strong>.</p><nav aria-label="Meer over energie"><a href="/kennis/zonnepanelen/">Zonnepanelen</a><a href="/kennis/thuisbatterij/">Thuisbatterij</a><a href="/kennis/energiecontract/">Energiecontract</a><a href="/kennis/isolatie-warmtepomp/">Isolatie &amp; warmte</a></nav></div></footer>
 </main>

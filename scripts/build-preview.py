@@ -129,7 +129,7 @@ def article_bridge(contents):
 (() => {
   const previewPages = PREVIEW_CONTENT;
   const article = document.createElement('dialog');
-  article.className = 'preview-article';
+  article.className = 'preview-article editorial-page';
   article.setAttribute('aria-label', 'Uitleg bij je energiehuis');
   article.innerHTML = '<button type="button" class="preview-back" aria-label="Sluit uitlegpagina">← Terug naar je energiehuis</button><div class="content-layout" id="preview-article-content"></div>';
   document.body.appendChild(article);
@@ -210,8 +210,8 @@ EXTRA_CSS = '''
 
 def build():
     html = (ROOT/'index.html').read_text(encoding='utf-8')
-    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','content.css'])
-    style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|content)\.css[\'"])[^>]*>', re.IGNORECASE)
+    css = '\n'.join((ROOT/'assets'/name).read_text(encoding='utf-8') for name in ['styles.css','house-scene.css','premium.css','content.css'])
+    style_pattern = re.compile(r'<link\b(?=[^>]*\brel=[\'"]stylesheet[\'"])(?=[^>]*\bhref=[\'"]/assets/(?:styles|house-scene|premium|content)\.css[\'"])[^>]*>', re.IGNORECASE)
     html, count = style_pattern.subn('', html)
     if count < 1:
         raise ValueError('Could not find the playground stylesheet links.')

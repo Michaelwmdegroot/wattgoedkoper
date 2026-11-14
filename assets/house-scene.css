@@ -1,39 +1,44 @@
-.energy-scene{position:relative;width:100%;isolation:isolate;aspect-ratio:760/570;min-width:0;user-select:none;-webkit-tap-highlight-color:transparent}
-.house-illustration{display:block;width:100%;height:auto;overflow:visible}
-.house-hotspots{position:absolute;inset:0;pointer-events:none}
-.house-hotspot{position:absolute;display:flex;align-items:center;gap:7px;min-height:40px;padding:5px 9px 5px 6px;border:1px solid rgba(78,99,85,.13);border-radius:999px;background:rgba(255,253,243,.95);box-shadow:0 4px 14px rgba(38,62,48,.07);color:#344a44;font-family:inherit;font-size:12px;line-height:1.2;font-weight:600;cursor:pointer;pointer-events:auto;white-space:nowrap;transition:transform .2s ease,box-shadow .2s ease,background .2s ease;border-style:solid}
-.house-hotspot:hover{background:#fffdf2;transform:translateY(-3px);box-shadow:0 7px 18px rgba(38,62,48,.12)}
-.house-hotspot:active{transform:translateY(-1px) scale(.97)}
-.house-hotspot:focus-visible{outline:3px solid #315c67;outline-offset:4px}
-.house-hotspot-icon{display:grid;place-items:center;width:25px;height:25px;flex:none;border-radius:50%;background:#e8eee1;color:#68816a}
-.house-hotspot-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.house-hotspot-mark{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;margin-left:1px;background:#edf0e6;color:#68816a;font-size:13px;line-height:1;font-weight:700}
-.house-hotspot.is-present .house-hotspot-mark{background:#d3dfc7;color:#365542;font-size:10px}
-.house-hotspot.is-planned{border-color:#d5bc66;background:#fff7d7}
-.house-hotspot.is-planned .house-hotspot-icon,.house-hotspot.is-planned .house-hotspot-mark{background:#efda8b;color:#796425}
-.house-hotspot-solar{top:14%;right:12%}
-.house-hotspot-insulation{top:40%;left:4%}
-.house-hotspot-battery{top:67%;right:0}
-.house-hotspot-heatpump{top:80%;left:9%}
-.is-apartment .house-hotspot-solar{top:7%;right:11%}
-.house-plot-label{position:absolute;left:50%;bottom:-1.5%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;color:#63796a;font-size:10px;line-height:1.2;white-space:nowrap;letter-spacing:.02em;font-weight:500}
-.house-plot-label span{color:#829b70;font-size:10px}
-.house-flow{stroke-width:3;stroke-dasharray:3 9;animation:house-flow 2.2s linear infinite;filter:drop-shadow(0 1px 2px #fff7ca)}
-.house-flow-solar{stroke:#f8df76}
-.house-flow-stored{stroke:#e0f1b6;animation-direction:reverse}
-.house-flow-heat{stroke:#efbe87;animation-duration:3s}
-.house-flow-grid{stroke:#f0edda;animation-direction:reverse;animation-duration:3.2s}
-.house-fan{animation:house-fan 9s linear infinite}
-.house-new{animation:house-appear .45s ease-out both}
-.house-sun,.house-moon{transition:opacity .25s ease}
-.is-evening .house-building{filter:saturate(.82)}
-.is-evening .house-landscape,.is-evening .house-tree{filter:saturate(.65) brightness(.92)}
-.is-evening .house-hotspot{background:rgba(247,249,235,.96)}
-.is-evening .house-hotspot.is-planned{background:#f8edc4}
-@keyframes house-flow{to{stroke-dashoffset:-48}}
-@keyframes house-fan{to{transform:rotate(360deg)}}
-@keyframes house-appear{from{opacity:0}to{opacity:1}}
-@media(min-width:1450px){.house-hotspot{font-size:12px;min-height:40px;padding-right:11px}.house-hotspot-icon{width:28px;height:28px}.house-hotspot-icon svg{width:18px;height:18px}.house-hotspot-mark{width:19px;height:19px}}
-@media(max-width:1190px) and (min-width:901px){.house-hotspot{font-size:12px;gap:4px;min-height:36px;padding:4px 7px 4px 4px}.house-hotspot-icon{width:21px;height:21px}.house-hotspot-icon svg{width:14px;height:14px}.house-hotspot-mark{width:14px;height:14px}.house-hotspot-insulation{left:0}.house-hotspot-battery{right:-1%}.house-hotspot-heatpump{left:3%}}
-@media(max-width:500px){.house-hotspot{font-size:12px;gap:4px;min-height:40px;padding:5px 7px 5px 4px}.house-hotspot-icon{width:22px;height:22px}.house-hotspot-icon svg{width:15px;height:15px}.house-hotspot-mark{width:15px;height:15px;font-size:11px}.house-hotspot-solar{right:4%;top:12%}.house-hotspot-battery{right:-1%;top:65%}.house-hotspot-insulation{left:-1%;top:36%}.house-hotspot-heatpump{left:2%;top:78%}.house-plot-label{font-size:9px;bottom:-2%}}
-@media(prefers-reduced-motion:reduce){.house-flow,.house-fan,.house-new{animation:none}.house-hotspot,.house-sun,.house-moon{transition:none}.house-hotspot:hover{transform:none}}
+/* Generated photography stays decorative. Native HTML buttons own interactions. */
+.energy-scene.photo-scene{position:relative;width:100%;height:100%;aspect-ratio:3/2;isolation:isolate;user-select:none;-webkit-tap-highlight-color:transparent}
+.photo-visual{position:absolute;inset:0;isolation:isolate;filter:brightness(var(--scene-brightness,1));transition:filter .6s;mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0%,#000 14%,#000 77%,transparent 100%);mask-composite:intersect;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 12%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0%,#000 14%,#000 77%,transparent 100%);-webkit-mask-composite:source-in}
+.scene-base,.scene-equipment{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:fill;pointer-events:none}
+.scene-equipment{opacity:0;transition:opacity .35s;mask-repeat:no-repeat;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;-webkit-mask-size:100% 100%}
+.scene-equipment.is-visible{opacity:1}
+.scene-night-tint{position:absolute;inset:0;background:#2b4e83;opacity:var(--night-tint,0);mix-blend-mode:color;pointer-events:none;transition:opacity .6s}
+.scene-connectors,.scene-flows{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none;overflow:visible}
+.scene-connectors{z-index:2}
+.scene-connector path{fill:none;stroke:#fffff5;stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 1px 2px #17392924)}
+.scene-connector circle{fill:#ffd74a;stroke:#fffef3;stroke-width:4}
+.scene-flows{z-index:5}
+.energy-flow{fill:none;stroke:#ffe985;stroke-width:5;stroke-linecap:round;stroke-dasharray:2 15;filter:drop-shadow(0 0 4px #ffefaa);opacity:0;transition:opacity .3s;animation:energy-pulse 2.2s linear infinite}
+.energy-flow.flow-battery{stroke:#e5f5be;animation-direction:reverse;animation-duration:2.6s}
+.energy-flow.flow-heatpump{stroke:#f6dc99;animation-duration:3.4s}
+.has-solar .flow-solar{opacity:.8}
+.has-battery .flow-battery,.has-heatpump .flow-heatpump{opacity:.8}
+.is-evening .flow-solar{opacity:0}
+.insulation-highlight{fill:none;stroke:#ffe6a1;stroke-width:6;stroke-linecap:round;filter:drop-shadow(0 0 7px #fce8a1);opacity:0;transition:opacity .4s}
+.has-insulation .insulation-highlight{opacity:.65}
+.house-hotspots{position:absolute;inset:0;z-index:4;pointer-events:none}
+.house-hotspot{position:absolute;display:flex;align-items:center;gap:7px;min-height:40px;padding:5px 8px 5px 6px;white-space:nowrap;border:1px solid #e5e4d6;border-radius:100px;background:#fffef4f0;box-shadow:0 5px 12px #233a3418;color:#18383e;font-family:var(--font-body,'Avenir Next',sans-serif);font-size:11px;font-weight:800;line-height:1.2;pointer-events:auto;cursor:pointer;backdrop-filter:blur(7px);transition:transform .2s,background .2s,box-shadow .2s}
+.house-hotspot:hover{background:#fffdf2;transform:translateY(-3px);box-shadow:0 8px 17px #233a3425}
+.house-hotspot:active{transform:translateY(-1px)}
+.house-hotspot:focus-visible{outline:3px solid #234e5d;outline-offset:4px}
+.house-hotspot-icon{display:grid;place-items:center;width:27px;height:27px;flex:none;border-radius:50%;background:#edf1db;color:#56783c}
+.house-hotspot-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round}
+.house-hotspot-mark{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eef1df;color:#395d3d;font-size:12px;font-weight:700;line-height:1}
+.house-hotspot.is-planned{border-color:#e3cd7d;background:#fff8d7}
+.house-hotspot.is-planned .house-hotspot-mark{background:#ffdc4e;color:#24462f;font-size:10px}
+.house-hotspot.is-present:not(.is-planned) .house-hotspot-mark{background:#c9deac;font-size:10px}
+.house-hotspot-solar{left:51%;top:5%}
+.house-hotspot-insulation{left:8%;top:40%}
+.house-hotspot-heatpump{left:14%;top:74%}
+.house-hotspot-battery{right:2%;top:58%}
+.scene-status{position:absolute;z-index:3;left:0;right:0;bottom:5%;display:flex;align-items:center;justify-content:center;gap:12px;pointer-events:none}
+.scene-status>span{display:flex;align-items:center;gap:5px;font-family:var(--font-body,sans-serif);font-size:9px;font-weight:650;color:#4c6756;background:#fffef3cf;padding:4px 8px;border-radius:20px;line-height:1.4;border:1px solid #e1e6d466}
+.scene-status svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.scene-vve{font-size:8px!important}
+@keyframes energy-pulse{to{stroke-dashoffset:-68}}
+@media(max-width:1350px) and (min-width:801px){.house-hotspot{font-size:10px;gap:5px;min-height:36px;padding:4px 7px 4px 5px}.house-hotspot-icon{width:24px;height:24px}.house-hotspot-icon svg{width:16px;height:16px}.house-hotspot-mark{width:16px;height:16px}.house-hotspot-insulation{left:5%}.house-hotspot-battery{right:0}.house-hotspot-heatpump{left:10%}}
+@media(max-width:800px){.house-hotspot{font-size:9px;gap:4px;min-height:34px;padding:4px 6px 4px 4px}.house-hotspot-icon{width:22px;height:22px}.house-hotspot-icon svg{width:15px;height:15px}.house-hotspot-mark{width:14px;height:14px;font-size:11px}.house-hotspot-insulation{left:0;top:40%}.house-hotspot-heatpump{left:3%;top:78%}.house-hotspot-solar{left:38%;top:0}.house-hotspot-battery{right:0;top:61%}.scene-status{bottom:1%;gap:5px}.scene-status>span{font-size:8px;padding:3px 6px}.scene-status .scene-panel-count{display:none}}
+@media(max-width:620px){.photo-visual{mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%),linear-gradient(180deg,transparent 0,#000 12%,#000 82%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%),linear-gradient(180deg,transparent 0,#000 12%,#000 82%,transparent 100%)}.house-hotspot{font-size:10px;min-height:36px;gap:4px;box-shadow:0 3px 8px #173b2a13}.house-hotspot-solar{left:41%;top:2%}.house-hotspot-insulation{left:3%;top:40%}.house-hotspot-battery{right:1%;top:59%}.house-hotspot-heatpump{left:5%;top:77%}.scene-status{bottom:-5%;gap:6px}.scene-status>span{font-size:8px;background:#fffef6db;padding:3px 7px}.scene-status svg{width:12px;height:12px}.scene-status .scene-panel-count{display:flex}.scene-status .scene-ev{display:none}.scene-connector path{stroke-width:5}.scene-connector circle{r:9px}.energy-flow{stroke-width:6;stroke-dasharray:3 16}}
+@media(prefers-reduced-motion:reduce){.energy-flow{animation:none;stroke-dasharray:3 9}.house-hotspot,.scene-equipment,.photo-visual,.scene-night-tint{transition:none}.house-hotspot:hover{transform:none}}
