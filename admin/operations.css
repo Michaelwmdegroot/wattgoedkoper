@@ -110,3 +110,6 @@
 .admin-brand-word>span{color:#ffda43}
 @media(max-width:1100px){.admin-brand-word{font-size:14px}.admin-brand-tile{width:31px;height:31px;flex-basis:31px}.admin-brand-tile img{width:30px;height:30px}}
 @media(max-width:720px){.admin-brand-word{font-size:18px}}
+
+/* Specificity over the legacy .brand span rule. */
+a.brand.admin-brand-v07 > .admin-brand-word { font-weight:800; }
