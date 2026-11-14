@@ -1,0 +1,39 @@
+name: One-time WattGoedkoper brand asset synchronization
+on:
+  push:
+    branches: [feat/brand-logo-header-home-v07]
+permissions:
+  contents: write
+jobs:
+  render-and-sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Install isolated image rendering browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Render approved vector brand into standard browser icon files
+        run: node scripts/render-brand-icons.cjs
+      - name: Regenerate editorial pages and standalone offline preview
+        run: |
+          python3 scripts/build-content.py
+          python3 scripts/build-preview.py
+      - name: Sync generated assets on feature branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- favicon.ico apple-touch-icon.png assets/favicon-16.png assets/favicon-32.png assets/favicon-48.png assets/icon-192.png assets/icon-512.png assets/og-wattgoedkoper.png
+          git add -- preview/wattgoedkoper-preview.html rekenmodel.html privacy.html kennis/
+          if git diff --cached --quiet; then
+            echo "Generated artwork is current."
+            exit 0
+          fi
+          git commit -m "build(brand): synchronize icons, OG artwork and offline pages"
+          git push origin HEAD:feat/brand-logo-header-home-v07
