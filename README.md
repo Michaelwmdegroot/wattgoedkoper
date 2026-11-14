@@ -28,7 +28,7 @@ De deterministische jaarberekening onderscheidt totaalverbruik, netafname, opwek
 
 Het dag-/nachtbeeld is een illustratie, geen uurprognose. De hoofdgetallen zijn **variabele energiekosten**, zonder netbeheer, vaste leveringskosten en belastingvermindering. Vooraf ingevulde prijzen zijn **bewerkbare voorbeelden**, geen actuele aanbiedingen. De paneelregel schaalt de voorbeeldprijs evenredig mee met het aantal panelen; batterijcapaciteit en prijs zijn afzonderlijke aannames.
 
-Geen live meter-, adres-, PVGIS-, leveranciers-, e-mail- of CRM-koppelingen. Geen gegarandeerde besparing, handelsopbrengst, subsidietoekenning of technisch installatieadvies. De advies-API weigert aanvragen zolang veilige productieconfiguratie ontbreekt.
+Geen live meter-, adres-, PVGIS-, leveranciers- of CRM-koppelingen. De optionele beheerinbox kan na afzonderlijke private serverconfiguratie worden verbonden met Hostinger IMAP/SMTP; de consumenten-tool heeft geen automatische e-mailkoppeling. Geen gegarandeerde besparing, handelsopbrengst, subsidietoekenning of technisch installatieadvies. De advies-API weigert aanvragen zolang veilige productieconfiguratie ontbreekt.
 
 ## Techniek
 
