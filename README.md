@@ -1,12 +1,14 @@
 # WattGoedkoper
 
+> **Release v0.6 · 14 november 2026:** Het nieuwe energiehuis toont op laptopformaat het vertrekpunt, de interactieve woning, de live resultaatkaart en alle vijf verduurzamingsmaatregelen in één scherm. De goedgekeurde wijziging is via [PR #12](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/12) naar `main` gemerged (commit `843912bdec`). [Bekijk ontwerp en browseracceptatie](docs/HOME-COCKPIT-V06.md). De Hostinger-live-uitrol moet afzonderlijk worden bevestigd. Rapportmail blijft standaard uit.
+
 > **Release v0.5 · 14 november 2026:** De interactieve Plan Studio en NIVO-only adviesflow zijn via [PR #11](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11) gemerged naar `main`. Hostinger is gekoppeld aan `main`; de daadwerkelijke live-uitrol moet afzonderlijk worden gecontroleerd. De publieke rapportmail blijft standaard UIT tot veilige mailboxconfiguratie en een gecontroleerde bezorgtest. De bestaande MySQL-database, privéconfiguratie en sleutels zijn niet gewijzigd.
 >
 > Bekijk [Plan Studio en browsertests](docs/PLAN-STUDIO.md) en [het release- en activeringsrunbook](docs/RELEASE-V05.md).
 
 Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Nieuwe persoonlijke adviesaanvragen gaan uitsluitend naar **NIVO Groep Holland**, na expliciet akkoord. Historische partnergegevens blijven bewaard onder hun oorspronkelijke toestemming.
 
-## Status — v0.5 opgenomen in `main`; live-Hostingercontrole afzonderlijk
+## Status — v0.6 op `main`, met interactieve Plan Studio v0.5
 
 De interactieve woning heeft een premium visuele uitwerking: vijf fotografische woningtypes, afzonderlijke installatielagen, vijftien eigen beelden, lokale lettertypen en vernieuwde kennis- en uitlegpagina’s. Hostinger heeft volgens de gebruiker op 14 november 2026 de GitHub-deployment naar wattgoedkoper.nl voltooid. De daadwerkelijke PHP-backendconfiguratie en mailkoppeling moeten afzonderlijk op de juiste hosting worden bevestigd.
 

@@ -1,5 +1,7 @@
 # WattGoedkoper v0.6 — energiehuis als één desktopcockpit
 
+**Status 14 november 2026:** na groene Chromium-, PHP-, MySQL- en berekeningstests is [PR #12](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/12) samengevoegd met `main` (mergecommit `843912bdec5bc9bf6b3a58c058651c3116cf2d9f`). Er zijn geen wijzigingen aan database, mailactivatie of privésleutels uitgevoerd. Werkelijke Hostinger-live-uitrol moet apart worden gecontroleerd.
+
 **Doel:** alle primaire consumentenhandelingen in de eerste viewport: woning aanpassen, foto/overlays gebruiken, rekenresultaat beoordelen, en direct elk van de **vijf** maatregelen kiezen (inclusief zonnepanelen en thuisbatterij). Naar beneden scrollen mag voor artikelen, uitleg en langdurige instellingen, maar mag niet nodig zijn om het energiehuis te gebruiken.
 
 ## Ontwerpbesluiten
