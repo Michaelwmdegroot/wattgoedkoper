@@ -1,6 +1,7 @@
 /* Real public static journeys: content -> explanation -> opt-in Plan Studio.
    Uses only generated fixtures. No real lead, API, email or analytics write. */
 const {chromium}=require('playwright');
+const {pathToFileURL}=require('node:url');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const ROOT=path.resolve(__dirname,'..'),OUT=path.join(ROOT,'visual-review-output');
 const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.woff':'font/woff','.json':'application/json','.ico':'image/x-icon'};
@@ -58,6 +59,23 @@ function serverStart(){return new Promise(resolve=>{
    await screenshot(page,'seo-solar-entry-'+name);
    await page.close();
  }
+ // A standalone offline preview must also show working interactive editorial content.
+ const offline=await browser.newPage({viewport:{width:1366,height:768}});
+ const outbound=[];
+ offline.on('request',request=>{if(!request.url().startsWith('file:')&&!request.url().startsWith('data:'))outbound.push(request.url());});
+ await offline.goto(pathToFileURL(path.join(ROOT,'preview/wattgoedkoper-preview.html')).href,{waitUntil:'load'});
+ await offline.locator('.header-nav a[href="/kennis/"]').click();
+ await offline.locator('.preview-article[open]').waitFor();
+ await offline.locator('.preview-article a[href="/kennis/zonnepanelen-met-thuisbatterij/"]').first().click();
+ await offline.locator('.preview-article .example-result').first().waitFor();
+ await check('offline preview recalculates without any external requests',async()=>{
+   assert.equal(await offline.locator('.preview-article .example-result').count(),3);
+   await offline.locator('.preview-article [data-example-year]').selectOption('2026');
+   assert.ok((await offline.locator('.preview-article [data-example-context]').innerText()).includes('2026'));
+   assert.deepEqual(outbound,[]);
+ });
+ await screenshot(offline,'seo-offline-preview');
+ await offline.close();
  const privacy=await browser.newPage();
  await privacy.goto(base+'/#verken-zonnepanelen%00');
  await check('unknown fragment has no effect',async()=>{

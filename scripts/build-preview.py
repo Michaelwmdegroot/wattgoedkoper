@@ -108,6 +108,7 @@ def module_bundle(entry=ENTRY):
         visited.add(path)
 
     visit(entry)
+    visit(ROOT/'assets/guide-comparison.mjs')  # Embedded editorial comparison for the offline preview.
     return 'const __wattModules = Object.create(null);\n' + '\n'.join(modules)
 
 
@@ -161,6 +162,7 @@ def article_bridge(contents):
       event.preventDefault();
       event.stopImmediatePropagation();
       article.querySelector('#preview-article-content').innerHTML = previewPages[path];
+      __wattModules['assets/guide-comparison.mjs'].mountExample(article);
       if (!article.open) article.showModal();
       article.scrollTop = 0;
       if (target.hash) {

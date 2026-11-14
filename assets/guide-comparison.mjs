@@ -50,10 +50,14 @@ function render(root) {
     output.textContent='De voorbeeldberekening is niet beschikbaar. Probeer het energiehuis voor een eigen scenario.';
   }
 }
-if(typeof document!=='undefined'){
-  for(const root of document.querySelectorAll('[data-energy-example]')){
+export function mountExample(scope) {
+  if (!scope || typeof scope.querySelectorAll !== 'function') return;
+  for(const root of scope.querySelectorAll('[data-energy-example]')) {
+    if(root.dataset.exampleMounted==='true')continue;
+    root.dataset.exampleMounted='true';
     root.addEventListener('input',()=>render(root));
     root.addEventListener('change',()=>render(root));
     render(root);
   }
 }
+if(typeof document!=='undefined')mountExample(document);
