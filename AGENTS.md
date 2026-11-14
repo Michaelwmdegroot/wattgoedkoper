@@ -64,3 +64,12 @@
 - #2 legacy Hostinger/operations, niet opnieuw installeren; #3 lokaal langer bewaren, optioneel.
 
 **Eerste antwoord van nieuwe agent:** overdrachtsamenvatting met actuele repositoryfeiten, open/afgeronde afhankelijkheden en fasering. Daarna eerst een feitelijke audit en een samenhangende SEO-/productreleasesprint daadwerkelijk bouwen.
+
+## 15 november 2026 — P0-uitvoering in review (geen productie-release)
+
+- Laatst onafhankelijk gecontroleerde `main`: `521a0bd235624652c9e86c931c4a78a4528fb75c`. Geen van de volgende branches is door de agent gemerged.
+- **#21 → PR #28**: MySQL-/SQLite-maintenancecorrectie, regressie op echte onderhouds-CLI; beide GitHub Actions-workflows groen. Werkelijke Hostinger-cron/mail/back-up/restore nog niet geverifieerd.
+- **#22 → PR #29**: vier bestaande beheerschermen Overzicht/Aanvragen/SEO/Tools, eerlijke onbekend-statussen en synthetische browsertests/screenshots; beide workflows groen. Delivery-UI moet de outbox van #23 nog koppelen.
+- **#23 → PR #30**: consentgebonden outbox/worker en ontvangstbewijs, fail-closed zonder eigenaar-go; synthetische tests en MySQL-contract in CI. NIVO-ontvanger en echte ACK ontbreken nog.
+- **Geen klantdata buiten WattGoedkoper:** `nivo_delivery_enabled` staat standaard uit. Private Hostinger-configuratie, NIVO-overdracht en rapportmail worden niet door PR/merge automatisch geactiveerd.
+- **Vervolg:** eigenaarreview PR's, gecontroleerde merges, Hostinger-live smoke en één combinatie-PR voor dashboard-deliverystatus + #25. Afzonderlijke end-to-end NIVO-bezorgtest blijft noodzakelijk voor #26.
