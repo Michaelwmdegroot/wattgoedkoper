@@ -112,7 +112,7 @@ function wg_smtp_cmd($stream,string $line,array $expected): void {
 function wg_mail_send(array $config,string $recipient,string $subject,string $body): void {
     $mail=wg_mail_settings($config);
     if (!$mail) { wg_fail(503,'MAIL_SETUP_REQUIRED','De mailbox is nog niet ingesteld.'); }
-    if (!filter_var($recipient,FILTER_VALIDATE_EMAIL) || strlen($recipient)>254 || strpbrk($recipient,"\r\n")!==false) {
+    if (!filter_var($recipient,FILTER_VALIDATE_EMAIL) || strlen($recipient)>254 || preg_match('/[<>\\x00-\\x20\\x7F]/',$recipient)) {
         wg_fail(422,'VALIDATION','Vul één geldig e-mailadres in.');
     }
     if ($subject==='' || strlen($subject)>220 || preg_match('/[\r\n\x00-\x1F\x7F]/',$subject)) {
