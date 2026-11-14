@@ -41,7 +41,7 @@ function serverStart(){return new Promise(resolve=>{
         assert.equal(await page.locator('.example-result').count(),3);
         const baseline=await page.locator('[data-example-context]').innerText();
         await page.locator('[data-example-year]').selectOption('2026');
-        await page.locator('[data-example-panels]').fill('14');
+        await page.locator('[data-example-panels]').evaluate(input=>{input.value='14';input.dispatchEvent(new Event('input',{bubbles:true}));});
         assert.equal(await page.locator('[data-example-panel-label]').innerText(),'14');
         assert.notEqual(await page.locator('[data-example-context]').innerText(),baseline);
       });
