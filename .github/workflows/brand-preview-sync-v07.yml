@@ -1,0 +1,26 @@
+name: One-time offline brand preview sync
+on:
+  push:
+    branches: [feat/brand-logo-header-home-v07]
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Rebuild self-contained preview
+        run: |
+          python3 scripts/build-content.py
+          python3 scripts/build-preview.py
+      - name: Commit generated preview to feature branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- preview/wattgoedkoper-preview.html privacy.html rekenmodel.html kennis/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "build(preview): keep offline asset links self-contained"
+          git push origin HEAD:feat/brand-logo-header-home-v07
