@@ -104,6 +104,10 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
         stats=request('admin_stats')[1]
         check(stats['delivery']['pending']==2 and stats['delivery']['acknowledged']==0 and stats['deliveryConfigured'] is False,
             'dashboard reports real pending queue, never claims unapproved NIVO delivery')
+        operations=request('admin_operations')[1]
+        check(operations['ok'] and operations['cron']['status']=='unknown' and
+              operations['backup']['status']=='not_verified' and operations['delivery']['pending']==2,
+            'admin status reports unknown heartbeat and unverified backups without inventions')
         check(request('admin_delivery_retry',{'id':lead_id},csrf)[0]==409,'unfailed lead cannot be manually retried')
         source=(ROOT/'admin/admin.mjs').read_text();check('innerHTML' not in source and 'textContent' in source,'admin renders untrusted fields as text')
         check(request('events',{'event':'scan_complete','consent':False},csrf)[0]==422,'analytics denied without consent')
