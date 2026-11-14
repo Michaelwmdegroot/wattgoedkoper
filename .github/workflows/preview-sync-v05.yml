@@ -1,0 +1,31 @@
+name: Sync v0.5 generated offline preview (temporary)
+on:
+  push:
+    branches:
+      - feat/v05-premium-plan-mail-nivo-admin
+
+permissions:
+  contents: write
+
+jobs:
+  sync-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Generate standalone offline preview and editorial pages
+        run: |
+          python3 scripts/build-content.py
+          python3 scripts/build-preview.py
+      - name: Commit only generated public and preview files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- preview/wattgoedkoper-preview.html privacy.html rekenmodel.html sitemap.xml kennis/
+          if git diff --cached --quiet; then
+            echo "Generated files already up-to-date."
+            exit 0
+          fi
+          git commit -m "build(preview): synchronize v0.5 offline artifact and public content"
+          git push origin HEAD:feat/v05-premium-plan-mail-nivo-admin
