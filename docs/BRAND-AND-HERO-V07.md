@@ -1,5 +1,7 @@
 # WattGoedkoper v0.7 — merkimplementatie en compactere woningbovenbalk
 
+**Releasestatus 14 november 2026:** [PR #13](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/13) is na eigenaargoedkeuring en groene backend-/Chromium-CI gemerged naar `main` (commit `2c693848b82a1afd4223c8b53ab23d31cec18c55`). De publieke Hostinger-deployment en feitelijke faviconverversing moeten afzonderlijk worden geverifieerd; geen productiedatabase, klantgegevens, encryptiesleutels of mailboxconfiguratie zijn gewijzigd.
+
 ## Aanleiding
 
 De eigenaar heeft een nieuw WattGoedkoper-logo met donkerblauwe W, gele bliksem, baan en euroteken goedgekeurd, plus het bijbehorende losse icoon. Het oude websitewoordmerk was nog een losse tekstweergave met geel vierkant en de ruimte boven de woning was grotendeels leeg. Deze fase integreert de nieuwe identiteit en benut die ruimte als compacte, werkende navigatie, zonder het energiehuis tot een formulier te maken.
