@@ -20,13 +20,14 @@ jobs:
           python3 - <<'PY'
           import base64, hashlib, pathlib, subprocess, zlib
           chunks = [pathlib.Path(f'.review/plan-studio.{i}.b64').read_text().strip() for i in range(1,5)]
-          # Normalize two transcription characters before checking the complete source digest.
           chunks[0] = chunks[0].replace('Cn+8wsXnp','Cn+wsXnp').replace('1T0e1f1plXJ1p','1T0e1WhlXJ1p')
           patch = zlib.decompress(base64.b64decode(''.join(chunks), validate=True))
           assert hashlib.sha256(patch).hexdigest() == '7adac0edf573692b0ea8566b7364810ecb2f1b2627e884a81554ef793b95d6c5', 'Source checksum mismatch'
           subprocess.run(['git','apply','--check','-'], input=patch, check=True)
           subprocess.run(['git','apply','-'], input=patch, check=True)
           PY
+          # CI changes are committed through the authorized connector separately.
+          git restore -- .github/workflows/visual-review.yml
       - name: Test and regenerate the offline artifact
         run: |
           npm test
@@ -37,7 +38,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- .github/workflows/visual-review.yml AGENTS.md README.md assets/app.mjs assets/plan-ui.mjs assets/plan-studio.css docs/frontend-contract.md docs/PLAN-STUDIO.md index.html package.json scripts/build-preview.py scripts/plan-studio-review.cjs tests/plan-studio.test.mjs preview/wattgoedkoper-preview.html
+          git add -- AGENTS.md README.md assets/app.mjs assets/plan-ui.mjs assets/plan-studio.css docs/frontend-contract.md docs/PLAN-STUDIO.md index.html package.json scripts/build-preview.py scripts/plan-studio-review.cjs tests/plan-studio.test.mjs preview/wattgoedkoper-preview.html
           git diff --cached --stat
           git commit -m 'feat(plan): replace static report with interactive Plan Studio and tested offline preview'
           git push origin HEAD:feat/v05-premium-plan-mail-nivo-admin
