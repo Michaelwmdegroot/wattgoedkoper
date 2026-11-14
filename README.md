@@ -1,9 +1,11 @@
 # WattGoedkoper
 
-> **Implementatie v0.5:** Zie [releaseplan, mailbeveiliging en acceptatiechecklist](docs/RELEASE-V05.md) en [concept-PR #11](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11). `main` staat nog op de bewezen productieversie; er is geen merge of live mailactivatie uitgevoerd.\n\n> **Overdracht 14 november 2026:** De eigenaar heeft de live Hostinger-MySQL-installatie, adminlogin en een testadviesaanvraag bevestigd. Het volgende traject is het **premium eenscherms-energieplan, rapport per e-mail, NIVO-only advies en compacte admindetail**. Deze wensen zijn nog niet geïmplementeerd. Zie [GPT-6 Pro overdracht](docs/HANDOFF-2026-11-14-GPT6PRO.md), [productspecificatie](docs/UX-LEAD-FUNNEL-V05.md) en [startprompt](docs/START-PROMPT-GPT6PRO.md). De inbox was op het laatste scherm **niet verbonden**. **Herhaal de database-installatie niet.**
+> **Implementatie v0.5:** Zie [releaseplan, mailbeveiliging en acceptatiechecklist](docs/RELEASE-V05.md) en [concept-PR #11](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/11). `main` staat nog op de bewezen productieversie; er is geen merge of live mailactivatie uitgevoerd.
+
+> **Overdracht 14 november 2026:** De eigenaar heeft de live Hostinger-MySQL-installatie, adminlogin en een testadviesaanvraag bevestigd. Het volgende traject is het **premium eenscherms-energieplan, rapport per e-mail, NIVO-only advies en compacte admindetail**. Deze wensen zijn verwerkt in de v0.5-concept-PR, nog niet in productie. Zie [GPT-6 Pro overdracht](docs/HANDOFF-2026-11-14-GPT6PRO.md), [productspecificatie](docs/UX-LEAD-FUNNEL-V05.md) en [startprompt](docs/START-PROMPT-GPT6PRO.md). De inbox was op het laatste scherm **niet verbonden**. **Herhaal de database-installatie niet.**
 
 
-Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Persoonlijk advies via **NIVO Groep Holland** en **Thuisbatterij Team** is een optionele vervolgstap.
+Een gratis interactief energiehuis voor Nederlandse huishoudens. Bezoekers proberen verbeteringen op hun woning en zien direct het effect. Nieuwe persoonlijke adviesaanvragen gaan uitsluitend naar **NIVO Groep Holland**, na expliciet akkoord. Historische partnergegevens blijven bewaard onder hun oorspronkelijke toestemming.
 
 ## Status — werkende productie v0.4; premium v0.5 als concept-PR
 
