@@ -54,7 +54,7 @@ Voer het nieuwe wachtwoord via standaardinvoer in. Bestaande beheersessies worde
 | Gegevens | Opslag | Termijn |
 | --- | --- | --- |
 | Naam, e-mail, telefoon, postcode, toelichting, meegestuurde scan en toestemmingsbewijs | AES-256-GCM versleutelde payload in aparte MySQL (SQLite voor bestaande installaties) | Standaard 90 dagen |
-| Aanvraagcode, status, gekozen partner, aanmaakdatum en HMAC-deduplicatie | Private SQLite; nodig voor triage/idempotentie | Met de aanvraag, 90 dagen |
+| Aanvraagcode, status, ontvangende organisatie, aanmaakdatum en HMAC-deduplicatie | Private MySQL of oudere SQLite-installatie; nodig voor triage/idempotentie | Met de aanvraag, 90 dagen |
 | Anti-misbruikvensters | HMAC van IP/scope/tijdvenster; geen raw IP, user-agent of fingerprint | Maximaal circa 48 uur vóór dagelijkse opruiming |
 | Geaggregeerde events per dag | Alleen datum, eventnaam, aantal; uitsluitend na toestemming | 400 dagen |
 | PHP-sessie | Private sessiemap; CSRF, loginstatus, eventlimieten | Server-GC na 8 uur; beheerlogin maximaal 8 uur en 30 minuten inactief |
@@ -73,8 +73,8 @@ De onderhoudstaak verwijdert oude aanvragen en oude counters/rate-limitvensters 
 
 ## Toestemming & analytics
 
-- `consent:true` en `consentVersion:'2026-11-v1'` zijn verplicht voor de adviesaanvraag.
-- De partner is expliciet `nivo`, `tbt` of `either`. Er is geen stilzwijgende serverdefault voor beide partners.
+- `consent:true` en `consentVersion:'2026-11-v2'` zijn verplicht voor de adviesaanvraag.
+- Nieuwe adviesaanvragen gaan uitsluitend naar `nivo`; expliciete waarden `tbt` en `either` worden server-side geweigerd. Historische records in de database blijven ongewijzigd.
 - De toestemmingsversie, de volledige tekst, de geselecteerde partner en een serverdatum worden bij de aanvraag opgeslagen.
 - `analyticsConsent:true` is een afzonderlijke vrijwillige toestemming. De backend telt alleen dan een intern `lead_accepted`-event.
 - Het dashboard gebruikt `lead_accepted / scan_complete` voor conversie en toont het totale aantal aanvragen apart. Het zijn gebeurtenissen, geen unieke personen. Meerdere scans, herhaalverzoeken en ontbrekende metingen beïnvloeden dit getal. De geaggregeerde dataset ondersteunt geen betrouwbare unieke-bezoekerstelling of herleidbare klantreis.
@@ -113,10 +113,10 @@ Alle `admin_`-acties behalve login vereisen een actieve beheersessie. Exports en
   "email": "consument@example.test",
   "phone": "",
   "postcode": "2311AB",
-  "partner": "tbt",
+  "partner": "nivo",
   "interests": ["battery"],
   "consent": true,
-  "consentVersion": "2026-11-v1",
+  "consentVersion": "2026-11-v2",
   "analyticsConsent": false,
   "website": "",
   "inputs": {"electricityUse": 3500, "hasSolar": true},
@@ -134,3 +134,12 @@ python tests/backend_test.py --php /pad/naar/php
 ```
 
 De integratietest start een echte lokale PHP-server en maakt een tijdelijke private database met uitsluitend testgegevens. Tests bestrijken ongeconfigureerd gedrag, afgeschermde interne mappen, sessies, CSRF, origin, bodylimieten, consent, honeypot, idempotentie, versleuteling, beheerlogin, status, CSV-injectie, bewaartermijn, verwijdering en ratelimieten. De tijdelijke configuratie wordt na afloop verwijderd.
+
+
+## v0.5 — rapportmail en NIVO-only API
+
+Nieuwe leads zijn server-side NIVO-only en gebruiken toestemming `2026-11-v2`. Een oude cliënt die `partner:'tbt'` of `partner:'either'` instuurt krijgt een 422-validatiefout; het veld mag ook ontbreken en wordt dan `nivo`. Oude records houden hun oorspronkelijke partner, payload en consentversie.
+
+`POST /api/index.php?action=report_email` is een **afzonderlijk transactioneel** pad. De actie accepteert `{email,idempotencyKey,website:'',report:{modelVersion,year,homeType,selectedIds,savingsLow,savingsHigh,investmentLow,investmentHigh,baselineCost,plannedCost,electricityUse,gasUse,budgetOverBy}}`. Een valide CSRF, Origin, JSON, sessieleeftijd, geadresseerde- en getalvalidatie zijn verplicht. De server construeert zelf onderwerp, tekst en HTML; geen vrije mailvelden, geen kopieën of marketingopt-ins. Op ieder verzoek worden geen `leads`, CRM-records of stat-events aangemaakt. Replays/herhaalde verzendpogingen worden op basis van alleen tijdelijke HMAC-buckets geblokkeerd of bevestigd.
+
+**Fail-closed:** de configuratie `'report_mail_enabled'=>true` moet expliciet *in de private configuratie buiten documentroot* bestaan, en het bestaande mailaccount moet correct ingesteld zijn. Anders: HTTP 503 `REPORT_MAIL_DISABLED`. De `session`-response bevat uitsluitend het boolean veld `reportMailEnabled`. SMTP-acceptatie is geen garantie op inboxbezorging. De client rekent lokaal; de verzonden snapshot is een ongeverifieerde indicatie, niet een serverberekende of getekende offerte. Zie `docs/RELEASE-V05.md`.
