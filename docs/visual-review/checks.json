@@ -1,0 +1,632 @@
+{
+  "startedAt": "2026-11-14T03:20:48.925Z",
+  "browser": "Chromium / Playwright 1.56.1",
+  "checks": [
+    {
+      "name": "desktop initial / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "desktop initial / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "desktop initial / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "desktop initial / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "desktop initial / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "desktop initial / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / panels and battery add/remove",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / current view separates selected upgrades",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / native keyboard hotspot controls",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / house type, details and household controls",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / illustrative day-night keeps yearly calculation stable",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / tabs support arrow/Home keyboard navigation",
+      "status": "pass"
+    },
+    {
+      "name": "desktop / plan save/reset/restore",
+      "status": "pass"
+    },
+    {
+      "name": "desktop after interactions / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "desktop after interactions / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "house terraced / base and all equipment layers loaded and visible",
+      "status": "pass"
+    },
+    {
+      "name": "house terraced / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house terraced / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house terraced / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house terraced / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house corner / base and all equipment layers loaded and visible",
+      "status": "pass"
+    },
+    {
+      "name": "house corner / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house corner / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house corner / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house corner / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house semi / base and all equipment layers loaded and visible",
+      "status": "pass"
+    },
+    {
+      "name": "house semi / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house semi / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house semi / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house semi / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house detached / base and all equipment layers loaded and visible",
+      "status": "pass"
+    },
+    {
+      "name": "house detached / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house detached / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house detached / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house detached / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house apartment / base and all equipment layers loaded and visible",
+      "status": "pass"
+    },
+    {
+      "name": "house apartment / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house apartment / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house apartment / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "house apartment / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-module / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-module / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "tablet initial / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "tablet initial / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "tablet initial / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "tablet initial / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "tablet initial / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "tablet initial / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "tablet / negative and over-budget warnings remain separate",
+      "status": "pass"
+    },
+    {
+      "name": "tablet warnings / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "tablet warnings / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "tablet-module / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "tablet-module / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / mobile result is a compact bottom bar",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "mobile initial / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / panels and battery add/remove",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / current view separates selected upgrades",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / native keyboard hotspot controls",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / house type, details and household controls",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / illustrative day-night keeps yearly calculation stable",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / tabs support arrow/Home keyboard navigation",
+      "status": "pass"
+    },
+    {
+      "name": "mobile / plan save/reset/restore",
+      "status": "pass"
+    },
+    {
+      "name": "mobile after interactions / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "mobile after interactions / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-module / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-module / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / mobile result is a compact bottom bar",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile initial / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile plan / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "small mobile plan / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "small-mobile-module / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "small-mobile-module / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "knowledge solar / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "knowledge solar / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "rekenmodel / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "rekenmodel / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "editorial / contents link resolves",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-editorial / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-editorial / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "mobile knowledge / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "mobile knowledge / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "mobile rekenmodel / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "mobile rekenmodel / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-editorial / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-editorial / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "standalone initial / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "standalone initial / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "standalone initial / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "standalone initial / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "standalone initial / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "standalone initial / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / panels and battery add/remove",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / current view separates selected upgrades",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / native keyboard hotspot controls",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / house type, details and household controls",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / illustrative day-night keeps yearly calculation stable",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / tabs support arrow/Home keyboard navigation",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / plan save/reset/restore",
+      "status": "pass"
+    },
+    {
+      "name": "standalone after interactions / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "standalone after interactions / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / article modal and contents links work",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-standalone / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-standalone / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "desktop-standalone / standalone makes no network requests",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / mobile result is a compact bottom bar",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / solar hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / insulation hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / battery hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / heatpump hotspot is not covered",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / no horizontal document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "mobile standalone / every loaded image has pixels",
+      "status": "pass"
+    },
+    {
+      "name": "standalone / article modal and contents links work",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-standalone / no JavaScript exceptions",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-standalone / no browser console errors",
+      "status": "pass"
+    },
+    {
+      "name": "mobile-standalone / standalone makes no network requests",
+      "status": "pass"
+    }
+  ],
+  "cases": [
+    {
+      "name": "desktop-module",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "tablet-module",
+      "viewport": {
+        "width": 900,
+        "height": 1000
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "mobile-module",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "small-mobile-module",
+      "viewport": {
+        "width": 320,
+        "height": 812
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "desktop-editorial",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "mobile-editorial",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "desktop-standalone",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "mobile-standalone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": "pass",
+      "pageErrors": [],
+      "consoleErrors": []
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "desktop-top.png",
+    "desktop-initial.png",
+    "desktop-plan-top.png",
+    "desktop-plan.png",
+    "desktop-plan-dialog.png",
+    "house-terraced-equipment.png",
+    "house-corner-equipment.png",
+    "house-semi-equipment.png",
+    "house-detached-equipment.png",
+    "house-apartment-equipment.png",
+    "tablet-top.png",
+    "tablet-initial.png",
+    "tablet-two-warnings.png",
+    "mobile-top.png",
+    "mobile-fullpage.png",
+    "mobile-plan-top.png",
+    "mobile-plan.png",
+    "mobile-plan-dialog.png",
+    "mobile-upgrades.png",
+    "small-mobile-top.png",
+    "small-mobile-fullpage.png",
+    "knowledge-solar.png",
+    "rekenmodel.png",
+    "mobile-knowledge.png",
+    "mobile-rekenmodel.png",
+    "standalone-top.png",
+    "standalone-initial.png",
+    "standalone-plan-top.png",
+    "standalone-plan.png",
+    "standalone-plan-dialog.png",
+    "standalone-rekenmodel.png",
+    "mobile-standalone.png",
+    "mobile-standalone-rekenmodel.png"
+  ],
+  "finishedAt": "2026-11-14T03:21:22.507Z",
+  "summary": {
+    "passed": 125,
+    "failed": 0,
+    "casesPassed": 8,
+    "casesFailed": 0,
+    "screenshots": 33
+  }
+}

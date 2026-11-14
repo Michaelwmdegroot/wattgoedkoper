@@ -47,13 +47,15 @@ python3 tests/backend_test.py --php php
 python3 scripts/build-content.py
 python3 scripts/build-preview.py
 # Browsercontrole met Playwright (ook in GitHub Actions):
+npm install --no-save --package-lock=false playwright@1.56.1
+npx playwright install chromium
 node scripts/visual-review.cjs
 ```
 
 - 47 model- en scenariotests, inclusief combinaties, afhankelijkheden, negatieve uitkomsten en energiebehoud.
 - De bestaande backend heeft 55 integratiechecks; GitHub Actions voert die opnieuw uit bij een push.
-- De interactieve module-app en gebundelde preview zijn functioneel in een DOM-omgeving gecontroleerd: 16 respectievelijk 18 groepen, inclusief foutpaden en geen netwerkverkeer in de preview.
-- De workflow `visual-review.yml` maakt desktop-, tablet- en mobiele screenshots en controleert de interactieve bronwebsite en zelfstandige preview. De screenshots en browserrapportage staan bij de workflow-artifacts. Zie de actuele releasenotities voor de resultaatstatus.
+- 125 browsercontroles geslaagd, verdeeld over acht gevallen: desktop, tablet, mobiel, informatiepagina’s en de zelfstandige preview. Onder meer geometrie, alle vijf woningtypen, apparatuur, kiezen/verwijderen, toetsenbord, dagbediening en bewaren/herstellen. De preview doet geen netwerkverzoeken.
+- De workflow `visual-review.yml` maakt desktop-, tablet- en mobiele screenshots en controleert de interactieve bronwebsite en zelfstandige preview. De complete 33 screenshots staan bij de workflow-artifacts; representatieve beelden en het controlerapport staan ook blijvend in [docs/visual-review](docs/visual-review/README.md). Zie de actuele releasenotities voor de resultaatstatus en grenzen.
 
 ## Projectstructuur
 
