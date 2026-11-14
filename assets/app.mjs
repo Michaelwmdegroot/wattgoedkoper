@@ -462,5 +462,10 @@ function showContentEntry(){
   else if(entry.kind==='plan')openPlan();
 }
 window.addEventListener('hashchange',showContentEntry);
+window.addEventListener('wg:content-entry',event=>{
+  const entry=resolveContextEntry(event.detail);
+  if(entry?.kind==='upgrade')openUpgrade(entry.id);
+  else if(entry?.kind==='plan')openPlan();
+});
 if(location.hash==='#advies')openAdvice();
 else showContentEntry();
