@@ -13,7 +13,7 @@ Dutch consumer energy planning tool and lead generation for NIVO Groep Holland a
 
 ## Architecture
 - Plain HTML/CSS/ES modules at the repository root for direct PHP/static Hostinger Git deployment.
-- PHP 8.2+ / PDO SQLite backend, persistent private storage outside web root.
+- PHP 8.2+ backend, PDO MySQL on new Hostinger production database or legacy PDO SQLite; private config and keys always outside web root.
 - Node built-in tests for calculation engine. PHP integration tests for lead storage and access control. Browser smoke test for desktop/mobile, keyboard and interactive house flow.
 - Main is the intended deployment branch. No force pushes. Avoid editing another contributor's files.
 
