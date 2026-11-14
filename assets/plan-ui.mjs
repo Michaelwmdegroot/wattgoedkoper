@@ -70,7 +70,7 @@ export function renderPlanDashboard({r, personalized, labelFor, icon, money, num
           '<ul>' + warnings + '</ul><a href="/rekenmodel.html">Lees de rekenmethode en bronnen ↗</a>',
         '</div></details>',
       '<form id="report-email-form" class="plan-mail-bar">',
-        '<div class="plan-mail-copy"><strong>Ontvang jouw energieplan in je inbox</strong><span>Alleen voor dit rapport. Geen adviesaanvraag of marketingtoestemming.</span></div>',
+        '<div class="plan-mail-copy"><strong>Ontvang je energieplan</strong><span>Alleen voor dit rapport. Geen adviesaanvraag of marketingtoestemming.</span></div>',
         '<div class="plan-mail-fields"><label class="sr-only" for="report-email">E-mailadres voor rapportbezorging</label>',
           '<input id="report-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="jouw@email.nl">',
           '<button id="report-send" type="submit" class="button button-yellow">Mail mijn energieplan ' + icon('arrow') + '</button></div>',
