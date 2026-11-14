@@ -61,6 +61,37 @@ async function loadToolStatus(){
     const mail=await api('admin_mail_status');
     $('#tools-mail').textContent=mail.configured===true?'Geconfigureerd · bezorging niet geverifieerd':'Niet geconfigureerd';
   }catch{$('#tools-mail').textContent='Niet te controleren';}
+  try{
+    const ops=await api('admin_operations');
+    const cron=ops.cron||{};
+    const status=cron.status||'unknown';
+    $('#tools-cron').textContent=status==='fresh'?
+      'Laatste geslaagde tick: '+date(cron.lastSuccessAt):
+      status==='stale'?'Onderhoud te lang niet uitgevoerd':'Nog geen geslaagde cronrun gemeten';
+    $('#overview-maintenance-state').textContent=status==='fresh'?
+      'Onderhoud recent · back-up onbekend':
+      status==='stale'?'Cron te oud · controle nodig':'Geen gecontroleerde cronrun';
+    $('#tools-backup').textContent='Niet onafhankelijk geverifieerd';
+    const editorial=ops.editorial||{};
+    $('#tools-source').textContent=editorial.status==='review_due'?
+      'Broncontrole verlopen sinds '+editorial.checkedOn:
+      editorial.status==='recently_checked'?'Bronnen laatst nagekeken op '+editorial.checkedOn:
+      'Broncontrole niet te verifiëren';
+    const warningNames={
+      CRON_MISSING_OR_STALE:'Onderhoud niet recent',
+      NIVO_DELIVERY_FAILED:'Afleverfouten NIVO',
+      SOURCE_REVIEW_DUE:'Bronnen opnieuw controleren',
+      SEO_PUBLICATION_FILES_MISSING:'Publicatiebestanden ontbreken'
+    };
+    const codes=Array.isArray(ops.warnings)?ops.warnings:[];
+    $('#tools-ops-warnings').textContent=codes.length?
+      codes.map(code=>warningNames[code]||'Technische melding').join(' · '):'Geen gemeten afwijking in deze controles';
+  }catch{
+    $('#tools-cron').textContent='Nog niet gecontroleerd · operations-API niet beschikbaar';
+    $('#tools-source').textContent='Niet te verifiëren';
+    $('#tools-ops-warnings').textContent='Controle niet beschikbaar';
+    $('#overview-maintenance-state').textContent='Cron en back-up niet geverifieerd';
+  }
 }
 function statCard(label, value, note) { const card=el('div','stat-card');card.append(el('div','stat-label',label),el('div','stat-value',value),el('div','stat-note',note));return card; }
 
