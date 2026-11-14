@@ -3,6 +3,7 @@ declare(strict_types=1);
 // CI-only integration test. Uses an ephemeral, empty MySQL service, never Hostinger production.
 require dirname(__DIR__).'/lib/bootstrap.php';
 require dirname(__DIR__).'/lib/delivery.php';
+require dirname(__DIR__).'/lib/operations.php';
 function check(bool $ok,string $what): void {
     if (!$ok) { throw new RuntimeException('MySQL backend test failed: '.$what); }
 }
@@ -76,4 +77,9 @@ check(!wg_delivery_retry($db,'WG-CI-DELIVERY'),'delivered MySQL lead cannot be r
 $db->prepare("DELETE FROM leads WHERE id='WG-CI-DELIVERY'")->execute();
 check((int)$db->query("SELECT COUNT(*) FROM delivery_outbox WHERE lead_id='WG-CI-DELIVERY'")->fetchColumn()===0,
     'deleting MySQL lead cascades transport metadata');
-echo "MySQL backend and delivery outbox integration: passed\n";
+wg_ops_upsert($db,'ops_last_success_at',gmdate('Y-m-d\\TH:i:s\\Z'));
+$ops=wg_ops_status($db,$cfg);
+check($ops['cron']['status']==='fresh','MySQL private cron heartbeat can be read');
+check($ops['backup']['status']==='not_verified','Hostinger restore not assumed from MySQL');
+check(!in_array('NIVO_DELIVERY_FAILED',$ops['warnings'],true),'no spurious NIVO failed alert');
+echo "MySQL backend, outbox and operations metadata: passed\n";
