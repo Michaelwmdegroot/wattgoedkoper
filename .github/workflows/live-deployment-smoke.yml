@@ -1,0 +1,35 @@
+name: External live deployment and security smoke
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: wattgoedkoper-live-smoke
+  cancel-in-progress: true
+jobs:
+  verify-live:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Validate source-only fingerprint without network
+        run: node scripts/live-deployment-smoke.mjs --self-test
+      - name: Verify Hostinger frontend/backend parity, health, SEO and private paths
+        env:
+          WG_LIVE_ORIGIN: https://wattgoedkoper.nl
+        run: node scripts/live-deployment-smoke.mjs
+      - name: Store redacted live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-deployment-smoke
+          retention-days: 14
+          if-no-files-found: warn
+          path: visual-review-output/live-deployment-smoke.json

@@ -35,6 +35,8 @@ try{
     opsCheck(file_put_contents($configFile,'<?php return '.var_export($config,true).';')!==false,'write private fixture config');
     chmod($configFile,0600);
     $db=wg_db($config);
+    opsCheck(preg_match('/^[a-f0-9]{64}$/D',wg_release_fingerprint())===1,'source-only release fingerprint');
+    $checks++;
     $initial=wg_ops_status($db,$config);
     opsCheck($initial['cron']['status']==='unknown'&&in_array('CRON_MISSING_OR_STALE',$initial['warnings'],true),
         'unrun cron is unknown and flagged when monitoring required');

@@ -32,6 +32,19 @@ WG_PRIVATE_DIR=/ABSOLUTE/PRIVATE/MAP /ABSOLUTE/PHP-CLI /ABSOLUTE/WEBSITE/scripts
 - Back-upstatus is bewust `not_verified` totdat daadwerkelijk Hostinger-backup én restore getest zijn. De software kan Hostinger-backupjobs niet uit de applicatie afleiden.
 - Beperk meldingen tot relevante codes: `CRON_MISSING_OR_STALE`, `CRON_LAST_RUN_FAILED`, `NIVO_DELIVERY_FAILED`, `SOURCE_REVIEW_DUE`, `SEO_PUBLICATION_FILES_MISSING`. Er is **geen goedgekeurde externe alertontvanger**, dus de eerste levering is alleen een duidelijke dashboardstatus. Geen fictieve alertbevestiging.
 
+## Onafhankelijke, read-only Hostinger-deploycontrole
+
+De GitHub Actions-workflow `.github/workflows/live-deployment-smoke.yml` draait bij `main`-push, dagelijks en optioneel handmatig. Hij controleert uitsluitend publieke HTTP GET-paden:
+
+- `/`, `/privacy.html`, `/admin/`, kennisroutes, `/sitemap.xml` en `/robots.txt` op HTTP 200.
+- `/assets/app.mjs` op dezelfde SHA-256 als de lokale checkout. 
+- `GET /api/index.php?action=health` op databasebereikbaarheid, no-store/nosniff en `releaseFingerprint`: een SHA-256 over alléén de zes publieke/deploybare PHP-bronbestanden. Dit is **codepariteit, geen exact Git-commit-SHA** en geen Hostinger cron- of databaseherstelbewijs.
+- `/lib/bootstrap.php`, `/scripts/operations.php`, `/docs/NIVO-DELIVERY-CONTRACT-V1.md` en `/.git/config` moeten 403/404 retourneren.
+
+De taak registreert alleen controlelabels, HTTP-statuscodes en de broncode-fingerprint in een 14 dagen bewaard GitHub Actions-artifact; geen cookies, klantgegevens, adminlogins, e-mailtransport of secrets. Een verschil betekent **niet bewezen live-release** en veroorzaakt een GitHub workflow-fout. Hostinger kan achterlopen bij een push; de taak geeft een beperkt aantal pogingen. Dagelijkse GitHub-checks zijn aanvullende externe beschikbaarheidscontrole, geen garantie van realtime monitoring of een extern alarmkanaal.
+
+Controleer bij een falende workflow eerst of Hostinger de nieuwste merge heeft uitgerold en of DNS/TLS/Apache bereikbaar zijn, voordat je de database of private config aanraakt. Voor daadwerkelijke cron-, mail-, back-up-/restore-acceptatie blijven de afzonderlijke stappen bovenaan dit document gelden.
+
 ## Storingen en herstel
 
 | Signaal | Verificatie en eerste veilige actie |

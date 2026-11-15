@@ -4,6 +4,21 @@ declare(strict_types=1);
  * Read-only operational status + minimal private heartbeat metadata.
  * No PII, IP, keys or serialized exceptions in observability records.
  */
+/**
+ * Public, non-secret fingerprint of deployable code only. Excludes private
+ * configuration, customer data and files outside the repository.
+ */
+function wg_release_fingerprint(): string {
+    $root=dirname(__DIR__);
+    $paths=['api/index.php','lib/bootstrap.php','lib/delivery.php','lib/operations.php','lib/mail.php','lib/report.php'];
+    $hashes=[];
+    foreach($paths as $file){
+        $digest=hash_file('sha256',$root.'/'.$file);
+        if(!is_string($digest)){throw new RuntimeException('Release file unreadable');}
+        $hashes[]=$digest;
+    }
+    return hash('sha256',implode("\n",$hashes));
+}
 function wg_ops_upsert(PDO $db,string $key,string $value): void {
     if(!preg_match('/^ops_[a-z_]{1,48}$/D',$key)){throw new InvalidArgumentException('Invalid monitoring key');}
     $sql=wg_is_mysql($db)
