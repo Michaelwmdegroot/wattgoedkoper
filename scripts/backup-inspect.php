@@ -14,7 +14,7 @@ try {
         if (!is_string($extract) || !isset($options['confirm-isolated'])) {
             throw new RuntimeException('Uitpakken vereist --extract-dir en --confirm-isolated.');
         }
-        if (is_file(wg_private_dir() . '/config.php')) {
+        if (wg_backup_installed_here(dirname(__DIR__), wg_private_dir())) {
             throw new RuntimeException('Uitpakken op een geïnstalleerde WattGoedkoper-server is verboden.');
         }
         $destination = wg_backup_safe_directory($extract, dirname(__DIR__));
