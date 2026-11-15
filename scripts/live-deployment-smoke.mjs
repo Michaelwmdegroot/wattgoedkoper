@@ -66,7 +66,8 @@ async function liveCheck(origin,expected){
       throw new Error('Backend fingerprint differs from current main; Hostinger backend release not proven');
     if(typeof health.version!=='string')throw new Error('Backend lacks version field');
   });
-  for(const path of ['/lib/bootstrap.php','/scripts/operations.php','/docs/NIVO-DELIVERY-CONTRACT-V1.md','/.git/config']){
+  for(const path of ['/lib/bootstrap.php','/scripts/operations.php','/docs/NIVO-DELIVERY-CONTRACT-V1.md','/.git/config',
+    '/wg-denied-test.wgbk','/wg-denied-test.cnf']){
     await check('private-denied '+path,path,[403,404]);
   }
   const redirects=await request('http://www.wattgoedkoper.nl/').catch(()=>null);
