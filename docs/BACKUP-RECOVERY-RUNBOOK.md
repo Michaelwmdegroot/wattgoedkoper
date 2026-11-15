@@ -10,6 +10,12 @@
 - Het exportscript versleutelt tijdens het lezen: XChaCha20-Poly1305 secretstream met Argon2id-afgeleide sleutel, authenticatie per blok en eindmarkering. De dump gaat **niet** als onversleuteld SQL-bestand naar schijf. Een tijdelijk `0600` MySQL-clientprofiel staat in de bestaande privémappenstructuur; dit wordt in het normale uitvoerpad opgeruimd.
 - De ongewijzigde `config.php` (incl. originele AES- en HMAC-sleutel, DB-inloggegevens) en, indien aanwezig, `mail-config.php` zitten in hetzelfde **versleutelde** herstelarchief. Verlies van de aparte wachtzin betekent dat dit archief niet bruikbaar is.
 
+## Onafhankelijk CI-herstelbewijs (fictieve data)
+
+Op PR #37 is behalve de cryptografische integriteitstest ook een **volledige MySQL-herstelketen op een tijdelijke GitHub Actions MySQL 8-testservice** geslaagd: een fictieve versleutelde lead → echte `mysqldump` → direct versleuteld `.wgbk`-archief → authenticatie → uitpakken buiten de applicatie → import in **een aparte nieuwe testdatabase** → volledige teruglezing met de oorspronkelijke ongewijzigde AES-sleutel. Geen productieverbinding, persoonsgegevens of private Hostinger-config gebruikt. Zie [CI-uitvoering](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43753633161) en `tests/backup_mysql_roundtrip_test.php`.
+
+Dit bewijst de programmeerbare roundtrip **in CI**, maar bewijst nadrukkelijk **niet** dat de bestaande Hostinger-productiedatabase is geback-upt, dat de Hostinger CLI alle vereiste programma's aanbiedt, dat off-site bewaring werkt of dat herstel van echte productiegegevens is gelukt. De vier externe gates onderaan blijven open.
+
 ## 1. Eén beveiligde productie-export
 
 Controleer via de bestaande Hostinger SSH-terminal eerst **zonder klantdata af te drukken**:
