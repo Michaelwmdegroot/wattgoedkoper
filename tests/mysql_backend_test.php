@@ -65,6 +65,10 @@ $insert->execute(['WG-CI-DELIVERY',str_repeat('g',64),str_repeat('h',64),$now,$n
 wg_delivery_enqueue($db,'WG-CI-DELIVERY',$now);
 $db->commit();
 check(wg_delivery_summary($db)['pending']===1,'transactionally created MySQL outbox');
+$cohortMysql=wg_ops_cohort($db,7);
+check($cohortMysql['nivoOutbox']===1&&$cohortMysql['pending']===1
+    &&$cohortMysql['adviceAccepted']===2&&$cohortMysql['attribution']==='unknown',
+    'MySQL 7d cohort: new NIVO outbox only, include older-partner accepted leads without attribution');
 $inactive=wg_delivery_process($db,$cfg);
 check($inactive['disabled']&&$inactive['attempted']===0,'MySQL transport default disabled');
 $synthetic=wg_delivery_process($db,$cfg,1,static fn(array $envelope):array=>

@@ -65,8 +65,9 @@ async function loadToolStatus(){
     const ops=await api('admin_operations');
     const cron=ops.cron||{};
     const status=cron.status||'unknown';
+    const twoTicks=Number(cron.observedDistinctRuns)>=2&&cron.previousSuccessAt;
     $('#tools-cron').textContent=status==='fresh'?
-      'Laatste geslaagde tick: '+date(cron.lastSuccessAt):
+      'Laatste: '+date(cron.lastSuccessAt)+(twoTicks?' · vorige: '+date(cron.previousSuccessAt):' · tweede tick nog niet vastgelegd'):
       status==='stale'?'Onderhoud te lang niet uitgevoerd':'Nog geen geslaagde cronrun gemeten';
     $('#overview-maintenance-state').textContent=status==='fresh'?
       'Onderhoud recent · back-up onbekend':
@@ -132,13 +133,17 @@ function renderOperationalStats(data) {
 
 function renderStats(data) {
   const t=data.totals;
+  const cohort7=data.cohorts?.last7Days;
+  const cohort30=data.cohorts?.last30Days;
   const newLeads=(data.statuses||[]).find(item=>item.status==='new')?.count||0;
   $('#stats-grid').replaceChildren(
-    statCard('Adviesaanvragen · 30 dagen',count(data.leadCount),'Servergeaccepteerd, ongeacht meettoestemming'),
+    statCard('Adviesaanvragen · 30 dagen',count(cohort30?.adviceAccepted??data.leadCount),
+      cohort7?'7 dagen: '+count(cohort7.adviceAccepted)+' · servergeaccepteerd, geen herkomstclaim':'Servergeaccepteerd, ongeacht meettoestemming'),
     statCard('Nieuwe aanvragen',count(newLeads),'Nog nieuw · volledige bewaartermijn'),
     statCard('Voltooide scans · 30 dagen',count(t.scan_complete),'Opt-in gebeurtenissen, geen personen'),
-    statCard('NIVO-overdracht',data.delivery?count(data.delivery.acknowledged)+' API · '+count(data.delivery.smtp_accepted)+' mail':'—',
-      data.delivery?'API: ACK · mail: SMTP-acceptatie':'NIVO-outbox nog niet aangesloten'));
+    statCard('NIVO-overdracht · 30 dagen',
+      cohort30?count(cohort30.smtp_accepted)+' SMTP · '+count(cohort30.acknowledged)+' API':'—',
+      cohort30?'Van '+count(cohort30.nivoOutbox)+' nieuwe outboxregels · SMTP is geen inboxbewijs':'Cohortmeting nog niet beschikbaar'));
   const d=data.delivery;
   if(d&&typeof d==='object'){
     const waiting=Number(d.pending||0)+Number(d.processing||0);
@@ -147,8 +152,8 @@ function renderStats(data) {
       data.deliveryConfigured===true?count(ack)+' API bevestigd · '+count(mail)+' mail aangenomen':count(waiting)+' in wachtrij · uit';
     $('#tools-delivery').textContent=
       (data.deliveryConfigured===true?'Transport geconfigureerd':'Transport uitgeschakeld')+
-      ' · '+count(waiting)+' wachtend · '+count(ack)+' API bevestigd · '+count(mail)+' mail aangenomen · '+count(failed)+' fout';
-    $('#delivery-summary').textContent=count(waiting)+' in wachtrij · '+count(ack)+' API-ACK · '+count(mail)+' SMTP-acceptatie · '+count(failed)+' fout. SMTP-acceptatie bewijst geen inboxbezorging.';
+      ' · totaal: '+count(waiting)+' wachtend · '+count(ack)+' API bevestigd · '+count(mail)+' mail aangenomen · '+count(failed)+' fout';
+    $('#delivery-summary').textContent='Alle outboxregels: '+count(waiting)+' in wachtrij · '+count(ack)+' API-ACK · '+count(mail)+' SMTP-acceptatie · '+count(failed)+' fout. SMTP-acceptatie bewijst geen inboxbezorging.';
   }else{
     $('#overview-delivery-state').textContent='Nog geen afleverstatus beschikbaar';
     $('#tools-delivery').textContent='Outbox niet beschikbaar; NIVO-ontvangst niet bewezen';

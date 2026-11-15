@@ -14,7 +14,11 @@ const lead={
 };
 const stats={ok:true,leadCount:1,retentionDays:90,conversion:null,events:[],
   totals:{page_view:0,scan_start:1,scan_complete:1,advice_open:1,lead_accepted:0},
-  statuses:[{status:'new',count:1}],partners:[{partner:'nivo',count:1}],overdueNew:0,delivery:{pending:1,processing:0,acknowledged:0,failed:0},deliveryConfigured:false};
+  statuses:[{status:'new',count:1}],partners:[{partner:'nivo',count:1}],overdueNew:0,delivery:{pending:1,processing:0,smtp_accepted:0,acknowledged:0,failed:0},deliveryConfigured:false,
+  cohorts:{
+    last7Days:{periodDays:7,adviceAccepted:1,nivoOutbox:1,pending:1,processing:0,smtp_accepted:0,acknowledged:0,failed:0,attribution:'unknown'},
+    last30Days:{periodDays:30,adviceAccepted:1,nivoOutbox:1,pending:1,processing:0,smtp_accepted:0,acknowledged:0,failed:0,attribution:'unknown'}
+  }};
 let server,browser;
 const report={screenshots:[],checks:[],errors:[]};
 function check(name,condition){assert.ok(condition,name);report.checks.push(name);}
@@ -36,7 +40,9 @@ function responseFor(action){
   if(action==='admin_stats')return stats;
   if(action==='admin_leads')return {ok:true,leads:[lead],total:1,offset:0,limit:50};
   if(action==='admin_operations')return {ok:true,
-    cron:{monitorEnabled:true,status:'fresh',lastSuccessAt:'2026-11-14T22:00:00Z',lastStartAt:'2026-11-14T22:00:00Z',ageSeconds:120,maxAgeSeconds:1800},
+    cron:{monitorEnabled:true,status:'fresh',lastSuccessAt:'2026-11-14T22:00:00Z',
+      previousSuccessAt:'2026-11-14T21:55:00Z',observedDistinctRuns:2,secondsBetweenLastTwo:300,
+      lastStartAt:'2026-11-14T22:00:00Z',ageSeconds:120,maxAgeSeconds:1800},
     delivery:{pending:1,processing:0,acknowledged:0,failed:0},transportConfigured:false,
     editorial:{status:'recently_checked',checkedOn:'2026-11-14',ageDays:1},
     seo:{sitemapOnDisk:true,robotsOnDisk:true},backup:{status:'not_verified',lastVerifiedAt:null},warnings:[]};
@@ -63,6 +69,9 @@ async function mockApi(page){
     const nav=await page.locator('[data-admin-tab]').allTextContents();
     check(vp.width+' four navigation views',nav.length===4&&nav.join(' ').includes('Tools'));
     check(vp.width+' dashboard privacy',!(await page.locator('#stats-grid').innerText()).includes('100%'));
+    check(vp.width+' 30d NIVO cohort is not confused with historical outbox or inbox acceptance',
+      (await page.locator('#stats-grid').innerText()).includes('Van 1 nieuwe outboxregels') &&
+      (await page.locator('#stats-grid').innerText()).includes('SMTP is geen inboxbewijs'));
     check(vp.width+' default overview',await page.locator('#overview-api-state').isVisible());
     check(vp.width+' delivery queue pending is not falsely acknowledged',
       (await page.locator('#overview-delivery-state').innerText()).includes('in wachtrij') &&
@@ -86,7 +95,10 @@ async function mockApi(page){
     await page.locator('#tools-api').filter({hasText:'Database bereikbaar'}).waitFor();
     check(vp.width+' no unverified delivery promise',(await page.locator('#tools-delivery').innerText()).includes('Transport uitgeschakeld'));
     check(vp.width+' stored delivery states are correctly reconciled',(await page.locator('#tools-delivery').innerText()).includes('1 wachtend'));
-    await page.locator('#tools-cron').filter({hasText:'Laatste geslaagde tick'}).waitFor();
+    await page.locator('#tools-cron').filter({hasText:'vorige:'}).waitFor();
+    check(vp.width+' two distinct heartbeat timestamps shown without invented 24/7 claim',
+      (await page.locator('#tools-cron').innerText()).includes('Laatste:') &&
+      !(await page.locator('#tools-cron').innerText()).includes('24/7'));
     check(vp.width+' no invented backup success',(await page.locator('#tools-backup').innerText()).includes('Niet onafhankelijk geverifieerd'));
     check(vp.width+' real content check date shown',(await page.locator('#tools-source').innerText()).includes('2026-11-14'));
     await screenshot(page,'wg2-tools-'+vp.width);

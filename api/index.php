@@ -115,7 +115,7 @@ try {
         $overdue=$db->prepare("SELECT COUNT(*) FROM leads WHERE status='new' AND created_at < ?");
         $overdue->execute([gmdate('Y-m-d\TH:i:s\Z',time()-86400)]);
         $overdueNew=(int)$overdue->fetchColumn();
-        wg_json(['ok'=>true,'days'=>30,'since'=>$since,'events'=>$events,'totals'=>$totals,'leadCount'=>$leadCount,'statuses'=>$statuses,'partners'=>$byPartner,'overdueNew'=>$overdueNew,'retentionDays'=>$config['retention_days'],'conversion'=>$totals['scan_complete']>0?round($totals['lead_accepted']/$totals['scan_complete']*100,1):null, 'delivery'=>wg_delivery_summary($db), 'deliveryConfigured'=>wg_delivery_settings($config)!==null]);
+        wg_json(['ok'=>true,'days'=>30,'since'=>$since,'events'=>$events,'totals'=>$totals,'leadCount'=>$leadCount,'statuses'=>$statuses,'partners'=>$byPartner,'overdueNew'=>$overdueNew,'retentionDays'=>$config['retention_days'],'conversion'=>$totals['scan_complete']>0?round($totals['lead_accepted']/$totals['scan_complete']*100,1):null, 'cohorts'=>['last7Days'=>wg_ops_cohort($db,7),'last30Days'=>wg_ops_cohort($db,30)], 'delivery'=>wg_delivery_summary($db), 'deliveryConfigured'=>wg_delivery_settings($config)!==null]);
     }
     if ($action === 'admin_leads') {
         wg_method('GET');$status=(string)($_GET['status']??'');$offset=max(0,min(100000,(int)($_GET['offset']??0)));
