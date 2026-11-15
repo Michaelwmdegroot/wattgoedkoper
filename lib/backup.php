@@ -122,3 +122,19 @@ function wg_backup_safe_directory(string $directory, string $webroot): string {
     }
     return $real;
 }
+
+/**
+ * Avoid accidental extraction on this host while a production installation
+ * exists. Inspect the standard sibling private directory even when an
+ * arbitrary WG_PRIVATE_DIR environment override was supplied.
+ */
+function wg_backup_installed_here(string $siteRoot, string $configuredPrivate): bool {
+    $candidatePaths=[
+        rtrim($configuredPrivate, '/') . '/config.php',
+        rtrim(dirname($siteRoot), '/') . '/wattgoedkoper-private/config.php'
+    ];
+    foreach (array_unique($candidatePaths) as $path) {
+        if (is_file($path)) return true;
+    }
+    return false;
+}
