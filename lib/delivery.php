@@ -94,6 +94,21 @@ function wg_delivery_claim(PDO $db): ?array {
         throw $error;
     }
 }
+/**
+ * SMTP does not have an idempotent receiver acknowledgement. A worker killed
+ * between SMTP DATA/250 and the database commit may have sent the message.
+ * Expired processing leases therefore become review-required failures rather
+ * than automatic resends. Only after a mailbox check may an admin retry.
+ */
+function wg_delivery_quarantine_expired_smtp(PDO $db): int {
+    $now=gmdate('Y-m-d\\TH:i:s\\Z');
+    $q=$db->prepare("UPDATE delivery_outbox
+       SET status='failed',last_error='SMTP_UNCERTAIN',
+           lease_until=NULL,updated_at=?
+       WHERE status='processing' AND lease_until IS NOT NULL AND lease_until<=?");
+    $q->execute([$now,$now]);
+    return $q->rowCount();
+}
 function wg_delivery_envelope(string $id, array $row, array $payload): array {
     if($row['partner']!=='nivo'||$row['consent_version']!==WG_CONSENT_VERSION
         ||($payload['consent']??false)!==true||($payload['consentVersion']??'')!==WG_CONSENT_VERSION
@@ -164,7 +179,7 @@ function wg_delivery_mail_text(array $envelope): string {
       'De plannen zijn door de consument opgegeven indicaties; controleer vóór een offerte.'
     ]);
 }
-function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?callable $sender=null): array {
+function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?callable $sender=null,bool $testMode=false): array {
     if(($settings['channel']??null)!=='smtp'
        ||($settings['recipient']??null)!==WG_NIVO_MAIL_RECIPIENT){
         return ['kind'=>'fail','error'=>'SMTP_REJECTED'];
@@ -173,7 +188,7 @@ function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?ca
     if(!preg_match('/^WG-[A-F0-9]{12}$/D',$id)){
         return ['kind'=>'fail','error'=>'SMTP_REJECTED'];
     }
-    $subject='NIVO adviesaanvraag WattGoedkoper · '.$id;
+    $subject=($testMode?'[TEST - GEEN KLANT] ':'').'NIVO adviesaanvraag WattGoedkoper · '.$id;
     $body=wg_delivery_mail_text($envelope);
     try{
         if($sender!==null){$sender($config,WG_NIVO_MAIL_RECIPIENT,$subject,$body);}
@@ -268,6 +283,10 @@ function wg_delivery_process(PDO $db,array $config,int $limit=10,?callable $synt
     $summary=['attempted'=>0,'acknowledged'=>0,'smtp_accepted'=>0,'pending'=>0,'failed'=>0,'stale'=>0,'disabled'=>false];
     $settings=$syntheticSender!==null?[]:wg_delivery_settings($config);
     if($settings===null){$summary['disabled']=true;return $summary;}
+    if($syntheticSender===null&&($settings['channel']??'https')==='smtp'){
+        // No ambiguous SMTP lease can be picked up as a new automatic send.
+        wg_delivery_quarantine_expired_smtp($db);
+    }
     $limit=max(1,min(50,$limit));
     for($i=0;$i<$limit;$i++){
         $claim=wg_delivery_claim($db);

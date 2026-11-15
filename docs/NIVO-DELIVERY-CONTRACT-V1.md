@@ -30,7 +30,7 @@ Er worden geen volledige ruwe huisinputs, cookies, sessietokens, IP-adressen of 
 
 De ontvanger moet met hetzelfde `requestId` / HTTP-header `Idempotency-Key` verzoeken exact één keer registreren, ook wanneer een eerdere HTTP-respons verloren gaat. Alleen HTTP 2xx met strikt JSON `{"acknowledged":true,"receiptId":"NIVO-REF-123"}` telt als technisch bevestigd; een idempotente 409 met dezelfde geldige ontvangstbewijsstructuur kan eveneens tellen. Niet bevestigd is niet bezorgd. Bewaar `receiptId` uitsluitend als technische externe referentie. Geen bron-PII in foutcodes of logging.
 
-## E-mailtransport voor de door eigenaar goedgekeurde NIVO-inbox
+> **Status 15 november 2026:** De eigenaar heeft de handmatige end-to-end ontvangst van het bericht `TEST – WattGoedkoper SMTP` bij NIVO Portal met een screenshot bevestigd. De automatische outbox-worker is nog niet bewezen op Hostinger en blijft standaard uitgeschakeld. Zie [NIVO SMTP-productieactivatie](NIVO-SMTP-PRODUCTION-RUNBOOK.md) voor het nieuwe niet-destructieve CLI-commando `php scripts/nivo-smtp-pilot.php --check` en de expliciete `--send-test`-pilot. SMTP-transport vereist aparte private activatie en één goedgekeurde cron. Bij verlopen SMTP-leases na een procescrash volgt voortaan `SMTP_UNCERTAIN` / beheerderscontrole; nooit stilzwijgende automatische duplicatie.\n\n## E-mailtransport voor de door eigenaar goedgekeurde NIVO-inbox
 
 **Eigenaarsbesluit 15 november 2026:** nieuwe, vrijwillige WattGoedkoper-adviesaanvragen moeten naar **`portal@nivogroepholland.nl`**. Dit adres is de enige toegestane bestemming voor het e-mailkanaal. De consumentenrapportmail blijft een apart proces naar het door de consument ingevulde e-mailadres.
 

@@ -210,6 +210,35 @@ try{
     deliveryCheck(wg_delivery_summary($db)['smtp_accepted']===1,
       'mail submission has separate source-backed dashboard counter');
     $checks++;
+    // SMTP sender uses production code but synthetic pilot must be labelled TEST.
+    $pilot=[];
+    $pilotAccepted=wg_delivery_send_smtp($sent[0],$smtpConfig,$settings,
+      static function(array $config,string $to,string $subject,string $body)use(&$pilot):void{
+          $pilot=['to'=>$to,'subject'=>$subject,'body'=>$body];
+      },true);
+    deliveryCheck($pilotAccepted['kind']==='smtp_accepted'
+      &&$pilot['to']===WG_NIVO_MAIL_RECIPIENT
+      &&str_starts_with($pilot['subject'],'[TEST - GEEN KLANT] ')
+      &&str_contains($pilot['body'],WG_CONSENT_VERSION),
+      'pilot uses exact production SMTP path but clearly marks synthetic mail');
+    $checks++;
+
+    // A process crash after SMTP DATA could have sent the message.
+    // Expired SMTP leases must require an explicit mailbox check, never auto-resend.
+    $enroll('WG-000000000007');
+    $db->prepare("UPDATE delivery_outbox SET status='processing',attempts=1,lease_until=? WHERE lead_id=?")
+       ->execute(['2020-01-01T00:00:00Z','WG-000000000007']);
+    deliveryCheck(wg_delivery_quarantine_expired_smtp($db)===1,'only one expired SMTP lease quarantined');
+    $quarantined=deliveryRow($db,'WG-000000000007');
+    deliveryCheck($quarantined['status']==='failed'&&$quarantined['last_error']==='SMTP_UNCERTAIN'
+      &&$quarantined['lease_until']===null,
+      'unknown SMTP crash becomes failed, not an automatic duplicate');
+    deliveryCheck(wg_delivery_quarantine_expired_smtp($db)===0,'quarantine is idempotent');
+    deliveryCheck(!wg_delivery_retry($db,'WG-000000000007'),
+      'SMTP crash cannot be retried without NIVO mailbox inspection');
+    deliveryCheck(wg_delivery_retry($db,'WG-000000000007',true),
+      'owner may retry after confirming mailbox not received');
+    $checks+=5;
     @unlink($private.'/mail-config.php');
     echo "NIVO outbox: $checks offline regression checks passed\n";
 }finally{

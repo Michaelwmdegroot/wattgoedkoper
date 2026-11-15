@@ -116,6 +116,20 @@ try {
     @unlink($private.'/config.php');
     @rmdir($private);
 }
+// A crashed SMTP attempt may already have sent mail: quarantine the expired
+// MySQL lease instead of automatically resending to the approved inbox.
+$insert->execute(['WG-CI-SMTP-LEASE',str_repeat('i',64),str_repeat('j',64),$now,$now,
+  'new','nivo',$encrypted,WG_CONSENT_VERSION]);
+wg_delivery_enqueue($db,'WG-CI-SMTP-LEASE',$now);
+$db->prepare("UPDATE delivery_outbox SET status='processing',attempts=1,lease_until=? WHERE lead_id=?")
+  ->execute(['2020-01-01T00:00:00Z','WG-CI-SMTP-LEASE']);
+check(wg_delivery_quarantine_expired_smtp($db)===1,'MySQL expired SMTP lease isolated');
+$q=$db->query("SELECT status,last_error FROM delivery_outbox WHERE lead_id='WG-CI-SMTP-LEASE'")->fetch();
+check($q['status']==='failed'&&$q['last_error']==='SMTP_UNCERTAIN',
+    'MySQL uncertain SMTP is not automatically redelivered');
+check(!wg_delivery_retry($db,'WG-CI-SMTP-LEASE'),'MySQL retry requires manual mailbox verification');
+check(wg_delivery_retry($db,'WG-CI-SMTP-LEASE',true),'MySQL manually approved SMTP retry is possible');
+$db->prepare("DELETE FROM leads WHERE id='WG-CI-SMTP-LEASE'")->execute();
 wg_ops_upsert($db,'ops_last_success_at',gmdate('Y-m-d\\TH:i:s\\Z'));
 $ops=wg_ops_status($db,$cfg);
 check($ops['cron']['status']==='fresh','MySQL private cron heartbeat can be read');
