@@ -36,6 +36,8 @@ jobs:
           coverage: none
       - run: npm test
       - run: npm run check
+      - name: Verify live smoke fingerprint locally without external requests
+        run: node --check scripts/live-deployment-smoke.mjs && node scripts/live-deployment-smoke.mjs --self-test
       - name: Build and validate SEO publication
         run: |
           python3 scripts/build-content.py
