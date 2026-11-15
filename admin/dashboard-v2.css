@@ -63,3 +63,5 @@
 .wg2-delivery-detail{display:flex;gap:7px;align-items:flex-start;flex-direction:column;margin:12px 0;border:1px solid #e5e9dd;border-radius:11px;background:#f6f7ee;padding:12px;font-size:11px;line-height:1.5}
 .wg2-delivery-detail strong{color:#163b42}
 .wg2-delivery-detail span{color:#647a73;overflow-wrap:anywhere}
+
+.wg2-delivery-status.smtp_accepted{background:#e8eefc;color:#244c7b}

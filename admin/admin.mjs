@@ -2,7 +2,7 @@ const $ = (s, root = document) => root.querySelector(s);
 const apiBase = '/api/index.php?action=';
 const state = {csrf:null, leads:[], total:0, offset:0, status:'', search:'', current:null};
 const statusNames = {new:'Nieuw',contacted:'Benaderd',qualified:'In gesprek',closed:'Afgerond'};
-const deliveryNames = {pending:'In wachtrij',processing:'Aflevering bezig',acknowledged:'Bevestigd',failed:'Afleverfout'};
+const deliveryNames = {pending:'In wachtrij',processing:'Aflevering bezig',smtp_accepted:'Aangenomen door mailserver',acknowledged:'Ontvangst bevestigd',failed:'Afleverfout'};
 function deliveryName(delivery) { return delivery?.status?(deliveryNames[delivery.status]||'Onbekend'):'Historisch / onbekend'; }
 const partners = {nivo:'NIVO Groep Holland',tbt:'Thuisbatterij Team',either:'NIVO + Thuisbatterij Team'};
 const interests = {solar:'Zonnepanelen',battery:'Thuisbatterij',heatpump:'Warmtepomp',insulation:'Isolatie',contract:'Energiecontract',planning:'Energieplan'};
@@ -137,18 +137,18 @@ function renderStats(data) {
     statCard('Adviesaanvragen · 30 dagen',count(data.leadCount),'Servergeaccepteerd, ongeacht meettoestemming'),
     statCard('Nieuwe aanvragen',count(newLeads),'Nog nieuw · volledige bewaartermijn'),
     statCard('Voltooide scans · 30 dagen',count(t.scan_complete),'Opt-in gebeurtenissen, geen personen'),
-    statCard('Technisch afgeleverd',data.delivery?count(data.delivery.acknowledged):'—',
-      data.delivery?'Met geldig technisch ontvangstbewijs':'NIVO-outbox nog niet aangesloten'));
+    statCard('NIVO-overdracht',data.delivery?count(data.delivery.acknowledged)+' API · '+count(data.delivery.smtp_accepted)+' mail':'—',
+      data.delivery?'API: ACK · mail: SMTP-acceptatie':'NIVO-outbox nog niet aangesloten'));
   const d=data.delivery;
   if(d&&typeof d==='object'){
     const waiting=Number(d.pending||0)+Number(d.processing||0);
-    const failed=Number(d.failed||0),ack=Number(d.acknowledged||0);
+    const failed=Number(d.failed||0),ack=Number(d.acknowledged||0),mail=Number(d.smtp_accepted||0);
     $('#overview-delivery-state').textContent=failed?count(failed)+' afleverfout'+(failed===1?'':'en'):
-      data.deliveryConfigured===true?count(ack)+' bevestigd · '+count(waiting)+' in wachtrij':count(waiting)+' in wachtrij · uit';
+      data.deliveryConfigured===true?count(ack)+' API bevestigd · '+count(mail)+' mail aangenomen':count(waiting)+' in wachtrij · uit';
     $('#tools-delivery').textContent=
       (data.deliveryConfigured===true?'Transport geconfigureerd':'Transport uitgeschakeld')+
-      ' · '+count(waiting)+' wachtend · '+count(ack)+' bevestigd · '+count(failed)+' fout';
-    $('#delivery-summary').textContent=count(waiting)+' in wachtrij · '+count(ack)+' technisch bevestigd · '+count(failed)+' fout. Alleen bevestigde ontvangsten tellen als afgeleverd.';
+      ' · '+count(waiting)+' wachtend · '+count(ack)+' API bevestigd · '+count(mail)+' mail aangenomen · '+count(failed)+' fout';
+    $('#delivery-summary').textContent=count(waiting)+' in wachtrij · '+count(ack)+' API-ACK · '+count(mail)+' SMTP-acceptatie · '+count(failed)+' fout. SMTP-acceptatie bewijst geen inboxbezorging.';
   }else{
     $('#overview-delivery-state').textContent='Nog geen afleverstatus beschikbaar';
     $('#tools-delivery').textContent='Outbox niet beschikbaar; NIVO-ontvangst niet bewezen';
@@ -249,7 +249,8 @@ function showDetail(lead) {
     const deliveryCard=el('section','wg2-delivery-detail');
     deliveryCard.append(el('strong','','NIVO-aflevering: '+deliveryName(lead.delivery)));
     const note=lead.delivery.status==='acknowledged'?
-      'Ontvangstbewijs: '+(lead.delivery.reference||'Niet beschikbaar'):
+      'NIVO-ontvangstbewijs: '+(lead.delivery.reference||'Niet beschikbaar'):
+      lead.delivery.status==='smtp_accepted'?'Geaccepteerd door SMTP-relay; bezorging in NIVO-mailbox nog niet bevestigd.':
       'Pogingen: '+count(lead.delivery.attempts)+' · Laatste foutcode: '+(lead.delivery.errorCode||'geen');
     deliveryCard.append(el('span','',note));
     root.append(deliveryCard);
@@ -277,9 +278,11 @@ function showDetail(lead) {
     const retry=el('button','outline-button','Aflevering opnieuw proberen');
     retry.type='button';
     retry.addEventListener('click',async()=>{
+      const uncertain=lead.delivery.errorCode==='SMTP_UNCERTAIN';
+      if(uncertain&&!window.confirm('Controleer eerst de mailbox portal@nivogroepholland.nl op deze aanvraagcode. Alleen opnieuw proberen als deze mail NIET is ontvangen. Heb je dit gecontroleerd?'))return;
       retry.disabled=true;
       try{
-        await api('admin_delivery_retry',{id:lead.id});
+        await api('admin_delivery_retry',{id:lead.id,confirmMailboxChecked:uncertain});
         $('#lead-dialog').close();
         await refresh();
         message('Mislukte levering opnieuw ingepland. Dit bevestigt nog geen ontvangst.',true);

@@ -109,6 +109,16 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
               operations['backup']['status']=='not_verified' and operations['delivery']['pending']==2,
             'admin status reports unknown heartbeat and unverified backups without inventions')
         check(request('admin_delivery_retry',{'id':lead_id},csrf)[0]==409,'unfailed lead cannot be manually retried')
+        with sqlite3.connect(private/'wattgoedkoper.sqlite') as db:
+            db.execute("UPDATE delivery_outbox SET status='failed',last_error='SMTP_UNCERTAIN' WHERE lead_id=?", (lead_id,))
+        check(request('admin_delivery_retry',{'id':lead_id},csrf)[0]==409,
+              'uncertain SMTP delivery rejects blind admin retry')
+        check(request('admin_delivery_retry',{'id':lead_id,'confirmMailboxChecked':True},csrf)[0]==200,
+              'explicit mailbox verification allows owner to requeue uncertain SMTP')
+        with sqlite3.connect(private/'wattgoedkoper.sqlite') as db:
+            check(db.execute('SELECT status,last_error FROM delivery_outbox WHERE lead_id=?',(lead_id,)).fetchone()==('pending',None),
+                  'confirmed retry schedules queue without sending from API')
+
         source=(ROOT/'admin/admin.mjs').read_text();check('innerHTML' not in source and 'textContent' in source,'admin renders untrusted fields as text')
         check(request('events',{'event':'scan_complete','consent':False},csrf)[0]==422,'analytics denied without consent')
         check(request('events',{'event':'lead_accepted','consent':True},csrf)[0]==422,'client cannot forge accepted-lead counter')

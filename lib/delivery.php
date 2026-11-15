@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/mail.php';
+const WG_NIVO_MAIL_RECIPIENT = 'portal@nivogroepholland.nl';
 
 /*
  * NIVO-only transport. It is deliberately inactive unless private configuration
@@ -13,7 +15,7 @@ function wg_delivery_enqueue(PDO $db, string $leadId, string $createdAt): void {
     $q->execute([$leadId,$createdAt,$createdAt,$createdAt]);
 }
 function wg_delivery_summary(PDO $db): array {
-    $counts=array_fill_keys(['pending','processing','acknowledged','failed'],0);
+    $counts=array_fill_keys(['pending','processing','smtp_accepted','acknowledged','failed'],0);
     foreach ($db->query('SELECT status,COUNT(*) AS total FROM delivery_outbox GROUP BY status') as $row) {
         if(array_key_exists((string)$row['status'],$counts)){$counts[$row['status']]=(int)$row['total'];}
     }
@@ -30,17 +32,28 @@ function wg_delivery_public(array $row): ?array {
         'errorCode'=>$row['delivery_last_error']
     ];
 }
-function wg_delivery_retry(PDO $db, string $id): bool {
+function wg_delivery_retry(PDO $db, string $id, bool $mailboxChecked=false): bool {
     // Only a failed item can be manually retried. ACKs are immutable.
     $now=gmdate('Y-m-d\\TH:i:s\\Z');
+    // PDO execute() can bind booleans as strings, so never rely on ?=1 in SQLite.
+    // Uncertain SMTP delivery requires a conscious mailbox check before retry.
+    $restriction=$mailboxChecked?'':" AND (last_error IS NULL OR last_error<>'SMTP_UNCERTAIN')";
     $q=$db->prepare("UPDATE delivery_outbox SET status='pending',attempts=0,
       next_attempt_at=?,lease_until=NULL,last_error=NULL,updated_at=?
-      WHERE lead_id=? AND status='failed'");
+      WHERE lead_id=? AND status='failed'".$restriction);
     $q->execute([$now,$now,$id]);
     return $q->rowCount()===1;
 }
 function wg_delivery_settings(array $config): ?array {
     if(($config['nivo_delivery_enabled']??false)!==true){return null;}
+    $channel=$config['nivo_delivery_channel']??'https';
+    if($channel==='smtp'){
+        // The destination is exact, owner-approved and cannot be supplied by a public request.
+        if(($config['nivo_delivery_recipient']??null)!==WG_NIVO_MAIL_RECIPIENT
+            ||wg_mail_settings($config)===null){return null;}
+        return ['channel'=>'smtp','recipient'=>WG_NIVO_MAIL_RECIPIENT];
+    }
+    if($channel!=='https'){return null;}
     $url=$config['nivo_delivery_endpoint']??null;
     $token=$config['nivo_delivery_token']??null;
     $hosts=$config['nivo_delivery_allowed_hosts']??null;
@@ -54,7 +67,7 @@ function wg_delivery_settings(array $config): ?array {
     // An exact, owner-approved hostname is required; no wildcard or IP destination.
     if(filter_var($host,FILTER_VALIDATE_IP)||!preg_match('/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/D',$host)
         ||!in_array($host,$hosts,true)){return null;}
-    return ['url'=>$url,'token'=>$token];
+    return ['channel'=>'https','url'=>$url,'token'=>$token];
 }
 function wg_delivery_claim(PDO $db): ?array {
     $now=gmdate('Y-m-d\\TH:i:s\\Z');
@@ -116,6 +129,66 @@ function wg_delivery_envelope(string $id, array $row, array $payload): array {
       ]
     ];
 }
+function wg_delivery_mail_text(array $envelope): string {
+    // Stable request ID in subject/body supports mailbox-side duplicate detection.
+    // User strings are only message body, never an email address or header.
+    $clean=static fn(mixed $value):string=>trim(preg_replace('/[\\r\\n\\x00-\\x1F\\x7F]+/u',' ',(string)($value??''))??'');
+    $contact=$envelope['contact']??[];
+    $plan=$envelope['plan']??[];
+    $consent=$envelope['consent']??[];
+    return implode("\n",[
+      'Nieuwe vrijwillige adviesaanvraag via WattGoedkoper',
+      'Aanvraagcode: '.$clean($envelope['requestId']??''),
+      'Ontvangen (UTC): '.$clean($envelope['createdAt']??''),
+      '',
+      'Contact',
+      'Naam: '.$clean($contact['name']??''),
+      'E-mail: '.$clean($contact['email']??''),
+      'Telefoon: '.$clean($contact['phone']??''),
+      'Postcode: '.$clean($contact['postcode']??''),
+      '',
+      'Interesses: '.implode(', ',array_map($clean,(array)($envelope['interests']??[]))),
+      'Maatregelen: '.implode(', ',array_map($clean,(array)($plan['selectedIds']??[]))),
+      'Rekenjaar: '.$clean($plan['year']??''),
+      'Indicatieve jaarlijkse besparing (laag/hoog): '.$clean($plan['annualSavingsLow']??'').' / '.$clean($plan['annualSavingsHigh']??''),
+      'Rekenmodel: '.$clean($plan['modelVersion']??''),
+      'Toelichting: '.trim((string)($envelope['note']??'')),
+      '',
+      'Bewijs van afzonderlijke NIVO-adviesaanvraag',
+      'Toestemmingsversie: '.$clean($consent['version']??''),
+      'Tijdstip (UTC): '.$clean($consent['acceptedAt']??''),
+      'Bestemming: NIVO Groep Holland',
+      'Toestemmingstekst: '.trim((string)($consent['text']??'')),
+      '',
+      'Automatisch gegenereerd adviesverzoek, geen commerciële mailing.',
+      'De plannen zijn door de consument opgegeven indicaties; controleer vóór een offerte.'
+    ]);
+}
+function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?callable $sender=null): array {
+    if(($settings['channel']??null)!=='smtp'
+       ||($settings['recipient']??null)!==WG_NIVO_MAIL_RECIPIENT){
+        return ['kind'=>'fail','error'=>'SMTP_REJECTED'];
+    }
+    $id=(string)($envelope['requestId']??'');
+    if(!preg_match('/^WG-[A-F0-9]{12}$/D',$id)){
+        return ['kind'=>'fail','error'=>'SMTP_REJECTED'];
+    }
+    $subject='NIVO adviesaanvraag WattGoedkoper · '.$id;
+    $body=wg_delivery_mail_text($envelope);
+    try{
+        if($sender!==null){$sender($config,WG_NIVO_MAIL_RECIPIENT,$subject,$body);}
+        else{wg_mail_send($config,WG_NIVO_MAIL_RECIPIENT,$subject,$body);}
+        // This is an SMTP 250 after DATA, not proof that NIVO has the message.
+        return ['kind'=>'smtp_accepted'];
+    }catch(WgHttpError $error){
+        // Socket connection failed BEFORE DATA: retry is safe.
+        if($error->errorCode==='MAIL_UNAVAILABLE'){return ['kind'=>'retry','error'=>'SMTP_UNAVAILABLE'];}
+        // After DATA a timeout is ambiguous: do NOT automatically retry.
+        return ['kind'=>'fail','error'=>'SMTP_UNCERTAIN'];
+    }catch(Throwable){
+        return ['kind'=>'fail','error'=>'SMTP_UNCERTAIN'];
+    }
+}
 function wg_delivery_transport(array $envelope,array $settings): array {
     $body=json_encode($envelope,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
     $answer='';
@@ -171,11 +244,18 @@ function wg_delivery_finish(PDO $db,array $claim,array $outcome): string {
         $q->execute([$reference,$now,$now,$claim['id'],$claim['lease']]);
         return $q->rowCount()===1?'acknowledged':'stale';
     }
+    if($kind==='smtp_accepted'){
+        $q=$db->prepare("UPDATE delivery_outbox SET status='smtp_accepted',
+          ack_reference=NULL,acknowledged_at=NULL,lease_until=NULL,last_error=NULL,updated_at=?
+          WHERE lead_id=? AND status='processing' AND lease_until=?");
+        $q->execute([$now,$claim['id'],$claim['lease']]);
+        return $q->rowCount()===1?'smtp_accepted':'stale';
+    }
     $permanent=$kind==='fail'||$claim['attempts']>=5;
     $state=$permanent?'failed':'pending';
     $delay=min(3600,60*(2**min(4,max(0,$claim['attempts']-1))));
     $next=gmdate('Y-m-d\\TH:i:s\\Z',time()+$delay);
-    $allowed=['NETWORK_UNCERTAIN','TRANSPORT_UNAVAILABLE','ACK_MISSING','HTTP_RETRYABLE','HTTP_REDIRECT','HTTP_REJECTED','INVALID_CONSENT'];
+    $allowed=['NETWORK_UNCERTAIN','TRANSPORT_UNAVAILABLE','ACK_MISSING','HTTP_RETRYABLE','HTTP_REDIRECT','HTTP_REJECTED','INVALID_CONSENT','SMTP_REJECTED','SMTP_UNAVAILABLE','SMTP_UNCERTAIN'];
     $error=$outcome['error']??'NETWORK_UNCERTAIN';
     if(!in_array($error,$allowed,true)){$error='NETWORK_UNCERTAIN';}
     $q=$db->prepare("UPDATE delivery_outbox SET status=?,next_attempt_at=?,
@@ -185,7 +265,7 @@ function wg_delivery_finish(PDO $db,array $claim,array $outcome): string {
     return $q->rowCount()===1?$state:'stale';
 }
 function wg_delivery_process(PDO $db,array $config,int $limit=10,?callable $syntheticSender=null): array {
-    $summary=['attempted'=>0,'acknowledged'=>0,'pending'=>0,'failed'=>0,'stale'=>0,'disabled'=>false];
+    $summary=['attempted'=>0,'acknowledged'=>0,'smtp_accepted'=>0,'pending'=>0,'failed'=>0,'stale'=>0,'disabled'=>false];
     $settings=$syntheticSender!==null?[]:wg_delivery_settings($config);
     if($settings===null){$summary['disabled']=true;return $summary;}
     $limit=max(1,min(50,$limit));
@@ -204,7 +284,10 @@ function wg_delivery_process(PDO $db,array $config,int $limit=10,?callable $synt
         }catch(Throwable){$outcome=['kind'=>'fail','error'=>'INVALID_CONSENT'];}
         if(isset($envelope)&&is_array($envelope)){
             try{
-                $outcome=$syntheticSender!==null?$syntheticSender($envelope,$config):wg_delivery_transport($envelope,$settings);
+                $outcome=$syntheticSender!==null?$syntheticSender($envelope,$config):
+                  (($settings['channel']??'https')==='smtp'?
+                    wg_delivery_send_smtp($envelope,$config,$settings):
+                    wg_delivery_transport($envelope,$settings));
             }catch(Throwable){$outcome=['kind'=>'retry','error'=>'NETWORK_UNCERTAIN'];}
             unset($envelope);
         }
