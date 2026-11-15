@@ -65,5 +65,18 @@ jobs:
           WG_TEST_MYSQL_USER: wattgoedkoper_ci
           WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
         run: php tests/mysql_backend_test.php
+      - name: Ensure MySQL client CLI is available for isolated restore simulation
+        run: |
+          if ! command -v mysqldump >/dev/null 2>&1 || ! command -v mysql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq default-mysql-client
+          fi
+      - name: Verify real MySQL export to encrypted bundle and isolated import using CI-only data
+        env:
+          WG_TEST_MYSQL_NAME: wattgoedkoper_ci
+          WG_TEST_MYSQL_USER: wattgoedkoper_ci
+          WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
+          WG_TEST_MYSQL_ROOT_PASSWORD: local-ci-root
+        run: php tests/backup_mysql_roundtrip_test.php
       - name: Check PHP syntax
         run: find api lib scripts -name '*.php' -print0 | xargs -0 -n1 php -l
