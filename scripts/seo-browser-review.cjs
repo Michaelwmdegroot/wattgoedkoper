@@ -28,7 +28,7 @@ function serverStart(){return new Promise(resolve=>{
  for(const viewport of [{width:1366,height:768},{width:390,height:844},{width:320,height:700}]){
    const page=await browser.newPage({viewport,deviceScaleFactor:1});
    const name=String(viewport.width);
-   for(const route of ['/kennis/','/kennis/zonnepanelen/zelfverbruik/','/kennis/thuisbatterij/wanneer-zinvol/','/kennis/zonnepanelen-met-thuisbatterij/']){
+   for(const route of ['/kennis/','/kennis/zonnepanelen/zelfverbruik/','/kennis/thuisbatterij/wanneer-zinvol/','/kennis/zonnepanelen-met-thuisbatterij/','/kennis/isolatie-of-hybride-warmtepomp/','/kennis/hybride-warmtepomp/geschiktheid/','/kennis/energiecontract/met-zonnepanelen/']){
     await open(page,base,route);
     await check(name+' '+route+' content and width',async()=>{
        assert.ok((await page.locator('#article-title').innerText()).length>8);
@@ -36,6 +36,9 @@ function serverStart(){return new Promise(resolve=>{
        assert.ok(d.document<=d.width+2,JSON.stringify({route,...d}));
     });
     if(route==='/kennis/')await screenshot(page,'seo-hub-'+name);
+    if(route==='/kennis/isolatie-of-hybride-warmtepomp/')await screenshot(page,'seo-isolatie-eerst-'+name);
+    if(route==='/kennis/hybride-warmtepomp/geschiktheid/')await screenshot(page,'seo-hybride-geschikt-'+name);
+    if(route==='/kennis/energiecontract/met-zonnepanelen/')await screenshot(page,'seo-contract-zonnepanelen-'+name);
     if(route==='/kennis/zonnepanelen-met-thuisbatterij/'){
       await page.locator('.example-result').first().waitFor();
       await check(name+' comparison recalculation',async()=>{
@@ -49,6 +52,12 @@ function serverStart(){return new Promise(resolve=>{
       await screenshot(page,'seo-compare-'+name);
     }
    }
+   await open(page,base,'/kennis/hybride-warmtepomp/geschiktheid/');
+   await page.locator('.article-body .guide-primary-action').click();
+   await check(name+' hybrid context entry is explanatory only',async()=>{
+     await page.locator('#tool-dialog[open]').waitFor();
+     assert.equal(await page.locator('#upgrade-dock [data-upgrade="heatpump"]').getAttribute('aria-pressed'),'false');
+   });
    await open(page,base,'/kennis/zonnepanelen/');
    await page.locator('.article-body .guide-primary-action').click();
    await check(name+' content entry explains without selecting',async()=>{
