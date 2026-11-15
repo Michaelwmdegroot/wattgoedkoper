@@ -56,6 +56,16 @@ Het dashboard toont de 30-daagse uitkomst voor NIVO, met **dezelfde** outbox-aan
 
 **Huidige stand:** property eigendom, sitemapontvangst, GSC-impressies/klikken/queries en organische leadattributie zijn **niet door deze PR geverifieerd**. De code koppelt de database niet aan een Google-account.
 
+## Verifieerbare redactionele broncontrole — 15 november 2026
+
+Tijdens deze uitvoeringsfase zijn de feitelijke bepalingen over zonnepanelen en 2027 rechtstreeks opnieuw vergeleken met [Rijksoverheid — salderingsregeling](https://www.rijksoverheid.nl/themas/klimaat-milieu-en-natuur/energie-thuis/salderingsregeling) en [ACM ConsuWijzer — salderen en terugleveren](https://consument.acm.nl/elektriciteit-en-gas/duurzame-energie/wat-is-salderen).
+
+- **Wettelijke regeling:** stopt op **1 januari 2027**. Eigen zonnestroom direct gebruiken blijft onderscheiden van netafname en teruglevering.
+- **Terugleververgoeding:** tot 2030 wettelijk minimaal 50% van het *kale* leveringstarief; zonder belastingen. Losse terugleverkosten kunnen blijven bestaan.
+- **Bijzondere contractafspraken:** volgens ACM kan een doorlopend contract na 2026 nog specifieke rechten op verrekening bevatten; dat verandert de wettelijke einddatum niet. Vanaf 2027 gelden wel andere belastingregels. Daarom zijn algemene besparingsclaims zonder contractgegevens onjuist.
+- De bestaande bronpagina's `kennis/zonnepanelen/salderen-2027/index.html` en `kennis/energiecontract/met-zonnepanelen/index.html` (auteursbron `docs/seo-cluster-v08.json`) maken het wettelijke en mogelijke contractuele onderscheid reeds; er is in deze PR **geen ongeverifieerde tekstwijziging** of nieuwe financiële claim gepubliceerd.
+- Een bibliografische/inhoudelijke vergelijking bewijst nog geen Google-indexatie, CTR, impressies of conversie. Die laatste metingen blijven open totdat een gratis Search Console-property daadwerkelijk wordt gecontroleerd.
+
 ## Overige onafhankelijke acceptatiepunten
 
 - **Rapportmail:** bestaande `report_email`-route en aparte `report_mail_enabled` fail-closed schakelaar blijven intact. Een geautoriseerde self-addressed test moet inboxontvangst aantonen **zonder** nieuwe `leads`-, `delivery_outbox`- of analyticsregistratie; de rapportbody bevat alleen een vrijwillige NIVO-advies-CTA.
