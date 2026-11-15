@@ -8,8 +8,7 @@
     "kennis/zonnepanelen/index.html": "2026-11-14",
     "kennis/thuisbatterij/index.html": "2026-11-14",
     "kennis/energiecontract/index.html": "2026-11-15",
-    "kennis/isolatie-warmtepomp/index.html": "2026-11-15",
-    "kennis/index.html": "2026-11-15"
+    "kennis/isolatie-warmtepomp/index.html": "2026-11-15"
   },
   "enhancements": {
     "kennis/zonnepanelen/index.html": "<h2>Verder kijken dan het paneelaantal</h2><p>De juiste afweging gaat niet alleen over opgewekte kWh. Kijk ook naar <a href=\"/kennis/zonnepanelen/zelfverbruik/\">het directe zelfverbruik</a>, <a href=\"/kennis/zonnepanelen/salderen-2027/\">salderen vanaf 2027</a> en <a href=\"/kennis/zonnepanelen-met-thuisbatterij/\">de combinatie met opslag</a>. Een groter systeem kan meer terugleveren zonder evenredig extra voordeel.</p><div class=\"guide-quick-choice\"><span class=\"article-eyebrow\">PROBEER HET OP JOUW HUIS</span><strong>Bekijk de invloed op jouw dak.</strong><p>Een artikelinstap opent alleen de zonnepanelenuitleg en verandert je plan niet zonder jouw keuze.</p><a class=\"guide-primary-action\" href=\"/#verken-zonnepanelen\">Probeer zonnepanelen →</a></div>",
@@ -28,7 +27,7 @@
       "art": "smart-use-card.webp",
       "artAlt": "Slim omgaan met energie in een woning",
       "cta": "#verken-energieplan",
-      "lastmod": "2026-11-14",
+      "lastmod": "2026-11-15",
       "related": [
         "kennis/zonnepanelen/index.html",
         "kennis/thuisbatterij/index.html",
