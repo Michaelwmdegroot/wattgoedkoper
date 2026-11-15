@@ -57,7 +57,7 @@ php -l ../wattgoedkoper-private/config.php
 php scripts/nivo-smtp-pilot.php --check
 ```
 
-Verwacht `No syntax errors`, `Productie NIVO-transport actief: ja` en het exacte goedgekeurde ontvangstadres. Bij een fout: geen worker uitvoeren; herstel uitsluitend die config vanuit de afgeschermde kopie en controleer opnieuw.
+Verwacht `No syntax errors`, `Productie NIVO-SMTP actief: ja (huidig kanaal: smtp)` en het exacte goedgekeurde ontvangstadres. Bij een fout: geen worker uitvoeren; herstel uitsluitend die config vanuit de afgeschermde kopie en controleer opnieuw.
 
 **Let op:** een volgende run van `scripts/operations.php` kan nu alle `pending`-aanvragen (maximaal tien per run) naar NIVO verzenden. Kijk daarom eerst naar het wachtrij-aantal en het dashboard; voer de eerste run pas uit als de bestaande werkvoorraad bekend is.
 
