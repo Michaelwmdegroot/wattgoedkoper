@@ -142,7 +142,7 @@ try {
         if(!preg_match('/^WG-[A-F0-9]{12}$/D',$id)){
             wg_fail(422,'VALIDATION','De aanvraagcode is ongeldig.');
         }
-        if(!wg_delivery_retry($db,$id)){
+        if(!wg_delivery_retry($db,$id,($data['confirmMailboxChecked']??false)===true)){
             wg_fail(409,'DELIVERY_NOT_RETRYABLE','Alleen mislukte afleveringen kunnen opnieuw worden ingepland.');
         }
         // Only schedules a retry; no network request from an admin browser action.
