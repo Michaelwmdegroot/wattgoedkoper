@@ -136,6 +136,81 @@ try{
     deliveryCheck($counts['acknowledged']===2&&$counts['failed']===1
       &&$counts['pending']===0,'dashboard aggregates proven delivery states');
     $checks++;
+    // Owner-approved SMTP handoff: only portal@, never pretend SMTP 250 equals NIVO ACK.
+    $smtpConfig=$config;
+    $smtpConfig['nivo_delivery_enabled']=true;
+    $smtpConfig['nivo_delivery_channel']='smtp';
+    $smtpConfig['nivo_delivery_recipient']=WG_NIVO_MAIL_RECIPIENT;
+    deliveryCheck(wg_delivery_settings($smtpConfig)===null,'SMTP delivery fails closed without private mailbox config');
+    $checks++;
+    file_put_contents($private.'/mail-config.php','<?php return '.var_export([
+      'username'=>'info@wattgoedkoper.nl','password'=>'offline-test-password'
+    ],true).';');
+    chmod($private.'/mail-config.php',0600);
+    $settings=wg_delivery_settings($smtpConfig);
+    deliveryCheck(($settings['channel']??null)==='smtp'
+      &&($settings['recipient']??null)==='portal@nivogroepholland.nl',
+      'mail route requires exact approved recipient and private info mailbox');
+    $checks++;
+    $evil=$smtpConfig;
+    $evil['nivo_delivery_recipient']='other@nivogroepholland.nl';
+    deliveryCheck(wg_delivery_settings($evil)===null,'cannot redirect customer contact data to another mailbox');
+    $checks++;
+    $mail=[];
+    $accepted=wg_delivery_send_smtp($sent[0],$smtpConfig,$settings,
+      static function(array $config,string $recipient,string $subject,string $text)use(&$mail):void{
+        $mail=[$recipient,$subject,$text];
+      });
+    deliveryCheck($accepted['kind']==='smtp_accepted','SMTP 250 is a separate terminal state');
+    deliveryCheck($mail[0]===WG_NIVO_MAIL_RECIPIENT
+      &&str_contains($mail[1],$sent[0]['requestId'])
+      &&str_contains($mail[2],WG_CONSENT_VERSION)
+      &&str_contains($mail[2],'synthetic@example.test')
+      &&!str_contains($mail[2],'electricityUse'),
+      'SMTP message contains exact recipient, evidence and minimal plan, without raw home inputs');
+    $checks+=2;
+    $offline=wg_delivery_send_smtp($sent[0],$smtpConfig,$settings,
+      static function():void{throw new WgHttpError(503,'MAIL_UNAVAILABLE','Fake pre-connection failure');});
+    deliveryCheck($offline['kind']==='retry'&&$offline['error']==='SMTP_UNAVAILABLE',
+      'pre-DATA SMTP unavailability may safely back off and retry');
+    $checks++;
+    $ambiguous=wg_delivery_send_smtp($sent[0],$smtpConfig,$settings,
+      static function():void{throw new WgHttpError(503,'MAIL_SEND_FAILED','Synthetic post-DATA timeout');});
+    deliveryCheck($ambiguous['kind']==='fail'&&$ambiguous['error']==='SMTP_UNCERTAIN',
+      'ambiguous post-DATA SMTP result cannot be blindly retried');
+    $checks++;
+    $blockedDestination=wg_delivery_send_smtp($sent[0],$smtpConfig,
+      ['channel'=>'smtp','recipient'=>'other@example.test'],
+      static function():void{throw new RuntimeException('Not called');});
+    deliveryCheck($blockedDestination['kind']==='fail','mail sender validates destination again');
+    $checks++;
+    $enroll('WG-000000000005');
+    $fakeMail=wg_delivery_process($db,$smtpConfig,1,static fn():array=>['kind'=>'smtp_accepted']);
+    $mailRow=deliveryRow($db,'WG-000000000005');
+    deliveryCheck($fakeMail['smtp_accepted']===1&&$mailRow['status']==='smtp_accepted'
+      &&$mailRow['ack_reference']===null&&$mailRow['acknowledged_at']===null,
+      'SMTP accepted is recorded but never treated as NIVO inbox acknowledgement');
+    deliveryCheck(wg_delivery_process($db,$smtpConfig,1,static fn()=>['kind'=>'fail'])['attempted']===0,
+      'already SMTP accepted lead never receives an automatic duplicate');
+    deliveryCheck(!wg_delivery_retry($db,'WG-000000000005'),
+      'mail accepted is not eligible for a manual duplicate');
+    $checks+=3;
+    $enroll('WG-000000000006');
+    $uncertain=wg_delivery_process($db,$smtpConfig,1,
+      static fn():array=>['kind'=>'fail','error'=>'SMTP_UNCERTAIN']);
+    deliveryCheck($uncertain['failed']===1
+      &&deliveryRow($db,'WG-000000000006')['last_error']==='SMTP_UNCERTAIN',
+      'ambiguous SMTP attempt remains visible as failed');
+    deliveryCheck(!wg_delivery_retry($db,'WG-000000000006'),
+      'unknown delivery requires explicit mailbox verification');
+    deliveryCheck(wg_delivery_retry($db,'WG-000000000006',true)
+      &&deliveryRow($db,'WG-000000000006')['status']==='pending',
+      'owner may retry only after acknowledging NIVO mailbox check');
+    $checks+=3;
+    deliveryCheck(wg_delivery_summary($db)['smtp_accepted']===1,
+      'mail submission has separate source-backed dashboard counter');
+    $checks++;
+    @unlink($private.'/mail-config.php');
     echo "NIVO outbox: $checks offline regression checks passed\n";
 }finally{
     $db=null;
