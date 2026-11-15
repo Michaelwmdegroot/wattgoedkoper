@@ -2,7 +2,7 @@
 
 **Status 15 november 2026:** concept voor eigenaarreview, onderdeel van P0 issue #25. Dit runbook is een implementatiebijlage van een **gestapelde PR op #30**. Het is nog geen productie- of restorebewijs.
 
-## Productie activeringsgate
+> **Eigenaarbesluit 15 november 2026:** NIVO-adviesmails moeten naar `portal@nivogroepholland.nl`. De eigenaar heeft de merges van #28–#32 goedgekeurd. Dit autoriseert geen ongeteste SMTP-route: de toepasselijke afleveradapter, privésleutels en een echte synthetische NIVO-ontvangsttest moeten nog worden ingericht. Een geaccepteerd SMTP-bericht is niet hetzelfde als een bewezen gelezen of in de mailbox afgeleverd bericht. Rapportmails aan consumenten blijven gescheiden.\n\n## Productie activeringsgate
 
 1. Controleer dat alle goedgekeurde PR's (#28, #30 en deze operations-PR; plus #29 voor dashboard) daadwerkelijk in `main` zitten en dat Hostinger de bijbehorende live build draait. **Geen zelfstandige merge**.
 2. Laat de bestaande MySQL-database volledig intact. Geen `setup-mysql.php`, reset, massa-import, encryptiesleutelrotatie of databasecreatie buiten de bestaande `wg_db`-schema-compatibiliteitscontrole. Maak en **test** eerst een veilige back-up + herstel op afgeschermde omgeving met hetzelfde private sleutelbestand.
