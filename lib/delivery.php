@@ -179,7 +179,7 @@ function wg_delivery_mail_text(array $envelope): string {
       'De plannen zijn door de consument opgegeven indicaties; controleer vóór een offerte.'
     ]);
 }
-function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?callable $sender=null): array {
+function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?callable $sender=null,bool $testMode=false): array {
     if(($settings['channel']??null)!=='smtp'
        ||($settings['recipient']??null)!==WG_NIVO_MAIL_RECIPIENT){
         return ['kind'=>'fail','error'=>'SMTP_REJECTED'];
@@ -188,7 +188,7 @@ function wg_delivery_send_smtp(array $envelope,array $config,array $settings,?ca
     if(!preg_match('/^WG-[A-F0-9]{12}$/D',$id)){
         return ['kind'=>'fail','error'=>'SMTP_REJECTED'];
     }
-    $subject='NIVO adviesaanvraag WattGoedkoper · '.$id;
+    $subject=($testMode?'[TEST - GEEN KLANT] ':'').'NIVO adviesaanvraag WattGoedkoper · '.$id;
     $body=wg_delivery_mail_text($envelope);
     try{
         if($sender!==null){$sender($config,WG_NIVO_MAIL_RECIPIENT,$subject,$body);}
