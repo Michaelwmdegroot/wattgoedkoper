@@ -50,9 +50,12 @@ function wg_ops_source_review(string $path,int $now): array {
 function wg_ops_status(PDO $db,array $config,?int $now=null): array {
     $now??=time();
     $last=wg_ops_read($db,'ops_last_success_at');
+    $previous=wg_ops_read($db,'ops_previous_success_at');
     $started=wg_ops_read($db,'ops_last_start_at');
     $lastError=wg_ops_read($db,'ops_last_error_code');
     $lastTime=$last?strtotime($last):false;
+    $previousTime=$previous?strtotime($previous):false;
+    $distinct=$lastTime!==false&&$previousTime!==false&&$previousTime<$lastTime;
     $age=$lastTime!==false?max(0,$now-$lastTime):null;
     $maxAge=max(300,min(86400,(int)($config['operations_max_age_seconds']??1800)));
     $required=($config['operations_monitor_enabled']??false)===true;
@@ -73,7 +76,10 @@ function wg_ops_status(PDO $db,array $config,?int $now=null): array {
       'ok'=>true,
       'cron'=>[
          'monitorEnabled'=>$required,'status'=>$cronStatus,
-         'lastSuccessAt'=>$last,'lastStartAt'=>$started,'lastErrorCode'=>$lastError,'ageSeconds'=>$age,
+         'lastSuccessAt'=>$last,'previousSuccessAt'=>$distinct?$previous:null,
+         'observedDistinctRuns'=>$distinct?2:($lastTime!==false?1:0),
+         'secondsBetweenLastTwo'=>$distinct?$lastTime-$previousTime:null,
+         'lastStartAt'=>$started,'lastErrorCode'=>$lastError,'ageSeconds'=>$age,
          'maxAgeSeconds'=>$maxAge
       ],
       'delivery'=>$delivery,
@@ -83,5 +89,40 @@ function wg_ops_status(PDO $db,array $config,?int $now=null): array {
       // Hostinger backup presence/restore cannot be inferred from application files.
       'backup'=>['status'=>'not_verified','lastVerifiedAt'=>null],
       'warnings'=>$warnings
+    ];
+}
+
+/**
+ * Privacy-minimal lead cohorts: calendar-day counts, not unique visitors or
+ * search attribution. Outbox rows use their CURRENT state within the same
+ * lead-created cohort. SMTP acceptance is not proof of inbox arrival.
+ */
+function wg_ops_cohort(PDO $db, int $days, ?int $now = null): array {
+    if (!in_array($days, [7, 30], true)) {
+        throw new InvalidArgumentException('Unsupported cohort period');
+    }
+    $now ??= time();
+    $since = gmdate('Y-m-d', $now - ($days - 1) * 86400);
+    $q = $db->prepare('SELECT COUNT(*) FROM leads WHERE created_at >= ?');
+    $q->execute([$since]);
+    $accepted = (int)$q->fetchColumn();
+    $counts = array_fill_keys(['pending','processing','smtp_accepted','acknowledged','failed'], 0);
+    $q = $db->prepare("SELECT d.status, COUNT(*) AS count
+        FROM delivery_outbox d INNER JOIN leads l ON l.id=d.lead_id
+        WHERE l.created_at >= ? AND l.partner='nivo' AND l.consent_version=?
+        GROUP BY d.status");
+    $q->execute([$since, WG_CONSENT_VERSION]);
+    foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        if (array_key_exists($row['status'], $counts)) {
+            $counts[$row['status']] = (int)$row['count'];
+        }
+    }
+    return [
+        'periodDays'=>$days,
+        'since'=>$since,
+        'adviceAccepted'=>$accepted,
+        'nivoOutbox'=>array_sum($counts),
+        ...$counts,
+        'attribution'=>'unknown'
     ];
 }
