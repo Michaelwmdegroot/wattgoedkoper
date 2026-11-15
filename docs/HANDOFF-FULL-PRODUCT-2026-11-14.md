@@ -1,5 +1,7 @@
 # Projectoverdracht WattGoedkoper — v0.7 afgesloten → compleet product
 
+> **HISTORISCHE OVERDRACHT (14 november 2026) — NIET DE ACTUELE PROJECTSTATUS.** De v0.7-fase, deze oorspronkelijke GPT-6 Pro-opdracht en de daaropvolgende SEO/NIVO-implementatie zijn inmiddels verder uitgevoerd. De werkende NIVO SMTP-keten via Hostinger, echte testadviesaanvraag en actuele resterende P0/P1 staan in **[de nieuwe productieoverdracht van 15 november](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md)** en **[de nieuwe roadmap](ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md)**. Oude aanwijzingen over niet-gekoppelde SMTP, nog niet uitgerolde PR's, initiële MySQL-setup en “geen automatische NIVO-mail” zijn **vervallen**. Onderstaand document is alleen historische architectuur- en besluitcontext; het bevat geen opdracht om oudere toestanden opnieuw in te voeren.\n\n
+
 **Datum overdracht:** 14 november 2026 (Europe/Amsterdam)  
 **Repository:** https://github.com/Michaelwmdegroot/wattgoedkoper  
 **Website:** https://wattgoedkoper.nl  
