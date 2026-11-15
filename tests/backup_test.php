@@ -58,6 +58,17 @@ try {
     [$code] = runBackupInspect($path, $pass, $dest);
     checkBackup($code !== 0, 'nonempty extraction destination rejected');
     deniedBackup(fn()=>wg_backup_safe_directory(dirname(__DIR__), dirname(__DIR__)), 'webroot prohibited');
+    $mockSite=$dir.'/mock-site'; $mockWebroot=$mockSite.'/public_html';
+    $mockPrivate=$mockSite.'/wattgoedkoper-private';
+    mkdir($mockSite,0700); mkdir($mockWebroot,0700); mkdir($mockPrivate,0700);
+    checkBackup(!wg_backup_installed_here($mockWebroot,$dir.'/environment-override'),
+        'absent installation is not falsely detected');
+    file_put_contents($mockPrivate.'/config.php',$mockConfig);
+    checkBackup(wg_backup_installed_here($mockWebroot,$dir.'/environment-override'),
+        'production sibling config still blocks extraction with manipulated WG_PRIVATE_DIR');
+    @unlink($mockPrivate.'/config.php');
+    checkBackup(!wg_backup_installed_here($mockWebroot,$dir.'/environment-override'),
+        'isolation marker removed after fixture test');
     $copy = $dir . '/corrupt.wgbk';
     $bytes = file_get_contents($path); $bytes[65] = chr(ord($bytes[65]) ^ 0x01); file_put_contents($copy, $bytes);
     deniedBackup(fn()=>wg_backup_read($copy, $pass, static function () {}), 'tampered encrypted frame rejected');
@@ -69,5 +80,8 @@ try {
 } finally {
     foreach (['config.php','mail-config.php','database.sql'] as $file) @unlink($dir . '/isolated/' . $file);
     @rmdir($dir . '/isolated');
+    @unlink($dir.'/mock-site/wattgoedkoper-private/config.php');
+    @rmdir($dir.'/mock-site/wattgoedkoper-private');
+    @rmdir($dir.'/mock-site/public_html'); @rmdir($dir.'/mock-site');
     @unlink($dir . '/corrupt.wgbk'); @unlink($path); @rmdir($dir);
 }
