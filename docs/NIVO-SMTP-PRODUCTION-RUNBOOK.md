@@ -1,103 +1,55 @@
-# WattGoedkoper — NIVO SMTP-productieactivatie (15 november 2026)
+# WattGoedkoper — NIVO SMTP-productierunbook (actief kanaal)
 
-**Besluit eigenaar:** automatische NIVO-adviesaanvragen hebben uitsluitend als ontvanger `portal@nivogroepholland.nl`. Bestaande klantgegevens en de aparte rapportmail blijven gescheiden.
+**Status 15 november 2026: NIVO SMTP is ingericht, expliciet actief en voor één reguliere testadviesaanvraag end-to-end bewezen.** De oude instructie “eerst activeren na pilot” is niet meer de actuele situatie.  
+**Afzender:** `info@wattgoedkoper.nl`; **enige NIVO-ontvanger:** `portal@nivogroepholland.nl`.  
+**Leidende status:** [productieoverdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md) · [actuele bezorgcontracten](NIVO-DELIVERY-CONTRACT-V1.md).
 
-## Bewijs dat al binnen is
+## 1. Bewijs en huidige instelling
 
-De eigenaar heeft in de Hostinger-terminal, vanuit `/home/u886757484/domains/wattgoedkoper.nl/public_html`, met `bash scripts/setup-mail.sh` de private `info@wattgoedkoper.nl`-mailconfig ingericht. Daarna heeft de eigenaar via het WattGoedkoper-dashboard een **handmatig, niet-persoonsgebonden testbericht** verzonden. De screenshot in de projectchat toont het onderwerp `TEST – WattGoedkoper SMTP` aangekomen bij NIVO Portal. **Dat bewijst de handmatige SMTP-route, niet de automatische NIVO-outbox-worker.** De screenshot wordt niet in de publieke repository geplaatst.
+- Private `mail-config.php` buiten documentroot is door eigenaar via `bash scripts/setup-mail.sh` aangemaakt; handmatig testbericht is in NIVO-inbox ontvangen.
+- Dezelfde SMTP-sender is getest met `php scripts/nivo-smtp-pilot.php --send-test`, fictieve code `WG-08DF36756B7E`; de mail met **[TEST - GEEN KLANT]** is in de daadwerkelijke NIVO-inbox aangekomen.
+- De eigenaar controleerde `php -l ../wattgoedkoper-private/config.php` en `php scripts/nivo-smtp-pilot.php --check`; de gate meldde **`Productie NIVO-SMTP actief: ja (huidig kanaal: smtp)`**, exacte ontvanger en toen een lege wachtrij.
+- Hostinger hPanel-cron is ingesteld op `*/5 * * * *` met `/usr/bin/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php`; Hostinger heeft een geslaagde cronuitvoer met transport actief getoond.
+- Een *gewone* vrijwillige testadviesaanvraag `WG-5510214770E3` ging van dashboard (rond 19:02) naar de echte NIVO-inbox (rond 19:05), met dezelfde code. De volledige keten is daarmee functioneel bewezen.
+- Bestaande productiedata en private keys zijn bij deze tests niet gereset; de `--send-test` pilot zelf heeft geen productielead of outboxrecord gemaakt. Het laatste reguliere E2E-testrecord moet nog gericht worden opgeschoond na afleverstatuscontrole.
 
-De onafhankelijke [live-codecontrole van 15 november](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43659161202) heeft destijds de toenmalige frontend/backend-codepariteit en beveiligingspaden bevestigd. Bij elke nieuwe merge moeten deze checks opnieuw slagen.
+## 2. Actuele controle zonder e-mail of datamutatie
 
-## 1. Inzicht in bestaande wachtrij: geen mail, geen klantmutatie
-
-Verbind via geautoriseerde SSH-terminal met WattGoedkoper:
-
-```sh
-cd /home/u886757484/domains/wattgoedkoper.nl/public_html
-php scripts/nivo-smtp-pilot.php --check
-```
-
-De uitvoer vermeldt alléén technische aantallen: `pending`, `processing`, `smtp_accepted`, `api_acknowledged`, `failed`, de exact toegestane NIVO-bestemming en of de transport-toggle echt actief is. Het script toont geen klantnamen, e-mails, contactdata, wachtwoorden of encryptiesleutels. De configuratie wordt **alleen in het werkgeheugen** gesimuleerd; er wordt niets ingeschakeld.
-
-Inspecteer bestaande `pending`-aanvragen in het beveiligde dashboard vóór een eerste bulkverwerking. Alle items zijn alleen nieuwe `2026-11-v2` NIVO-adviesaanvragen; historische leads worden niet terugwerkend aangemeld. Verwijder testaanvragen alleen als je hebt vastgesteld dat het daadwerkelijk fictieve testrecords zijn, niet echte consumenten.
-
-## 2. Synthetische pilottest met de echte e-mailadapter
-
-```sh
-php scripts/nivo-smtp-pilot.php --send-test
-```
-
-Dit verstuurt exact één synthetische testmail via **dezelfde `wg_delivery_send_smtp()`-functie** die de cronworker gebruikt, uitsluitend naar `portal@nivogroepholland.nl`. Het onderwerp begint met **`[TEST - GEEN KLANT]`**, de contactdata zijn duidelijk fictief en het bericht bevat een verse `WG-...`-aanvraagcode en de aparte NIVO-toestemmingsversie. **Er wordt géén lead of outboxrecord in de productiedatabase aangemaakt of verwijderd.** `--send-test` verandert geen enkele private productie-toggle.
-
-Controleer in NIVO Portal (incl. spam) het onderwerp en de unieke aanvraagcode; behandel dit nooit als een verkooplead. De server geeft alleen **SMTP-acceptatie**, de visuele inboxcontrole moet door de eigenaar gebeuren. Is de uitkomst onzeker? Niet blind opnieuw versturen: controleer eerst op dezelfde code in de inbox.
-
-## 3. Uitgeschakeld houden totdat de pilottest echt is aangekomen
-
-Na bevestigde ontvangst: maak op de Hostinger-host eerst een afgeschermd herstelpunt van de bestaande private config. De sleutels en database mogen niet worden gewijzigd, hergebruikt, gelekt of opnieuw geïnstalleerd.
+Vanuit geautoriseerde Hostinger SSH-terminal:
 
 ```sh
 cd /home/u886757484/domains/wattgoedkoper.nl/public_html
-umask 077
-cp -p ../wattgoedkoper-private/config.php ../wattgoedkoper-private/config.php.pre-nivo
-nano ../wattgoedkoper-private/config.php
-```
-
-**Voeg binnen de bestaande top-level PHP `return array(...)` of `return [...]` maar één keer deze instellingen toe. Verwijder of herschrijf de bestaande velden niet:**
-
-```php
-'nivo_delivery_enabled' => true,
-'nivo_delivery_channel' => 'smtp',
-'nivo_delivery_recipient' => 'portal@nivogroepholland.nl',
-```
-
-Voordat je enige worker start:
-
-```sh
-php -l ../wattgoedkoper-private/config.php
 php scripts/nivo-smtp-pilot.php --check
 ```
 
-Verwacht `No syntax errors`, `Productie NIVO-SMTP actief: ja (huidig kanaal: smtp)` en het exacte goedgekeurde ontvangstadres. Bij een fout: geen worker uitvoeren; herstel uitsluitend die config vanuit de afgeschermde kopie en controleer opnieuw.
+De output toont exact gekozen ontvangende NIVO-mailbox, of SMTP private config **beschikbaar** is, of de productieve SMTP-toggle actief is en de **geaggregeerde** queue-tellingen `pending`, `processing`, `smtp_accepted`, `api_acknowledged` en `failed`. Deze opdracht verstuurt geen mail en wijzigt geen klantdata. Deel **geen** `config.php`-inhoud of privé-credentials.
 
-**Let op:** een volgende run van `scripts/operations.php` kan nu alle `pending`-aanvragen (maximaal tien per run) naar NIVO verzenden. Kijk daarom eerst naar het wachtrij-aantal en het dashboard; voer de eerste run pas uit als de bestaande werkvoorraad bekend is.
+In de bestaande `/admin/`-beheeromgeving: open de specifieke testcode `WG-5510214770E3`, controleer of de bezorgstatus **`smtp_accepted`** is en dat er geen foutcode is. Als status onbekend of onverwacht is: geen nieuwe testlead versturen, eerst read-only onderzoeken en de aanwezige inboxmail als bewijs behouden.
 
-## 4. Eén onderhoudsrunner: handmatig aantonen en daarna cron
+## 3. Hostinger-cron en monitor
 
-Verifieer eerst de PHP-CLI en de werkelijke geplande taken:
+De enige bedoelde job is al ingesteld:
 
-```sh
-command -v php
-php -v
-crontab -l
+```text
+Interval: */5 * * * *
+Command:  /usr/bin/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php
 ```
 
-Sommige Hostinger-accounts beheren cronjobs uitsluitend via hPanel; controleer daar ook de lijst. **Zorg dat er maar één onderhoudsjob bestaat.** Vervang oude `scripts/maintenance.php`- of `scripts/deliver-leads.php`-jobs, laat ze niet parallel bestaan.
+**Geen tweede cron** met `maintenance.php` of `deliver-leads.php`. Voor zelfstandigheidsacceptatie moeten minimaal twee verschillende, automatische cron-heartbeatmomenten in `/admin/` → Tools & status zichtbaar zijn (`ops_last_success_at`, `ageSeconds`). Pas na die verificatie kan de eigenaar veilig `'operations_monitor_enabled'=>true` in de **bestaande** private config toevoegen, indien nog niet aanwezig; geen andere keys wijzigen.
 
-Na back-upcontrole en expliciete toestemming om de huidige wachtende aanvragen te verwerken:
+Een onverwachte `failed`/stale status betekent eerst incidentonderzoek, niet automatisch klantdata of mail opnieuw versturen.
 
-```sh
-php scripts/operations.php
-php scripts/nivo-smtp-pilot.php --check
-```
+## 4. Verzendbewijs, dubbele pogingen en menselijke opvolging
 
-Verwacht `WattGoedkoper onderhoud uitgevoerd`. Controleer daarna onder het ingelogde dashboard **Overzicht / Tools & status** dat de cron-heartbeat actueel is en de wachtende/SMTP-geaccepteerde/mislukte aantallen kloppen. `smtp_accepted` betekent nog niet dat elke mail in NIVO Portal is afgeleverd; controleer van de eerste echte, expliciet toestemmende NIVO-aanvraag de overeenkomstige `WG-`-code in de NIVO-inbox.
+- `smtp_accepted`: SMTP-server heeft DATA aanvaard. Het is een technische eindstatus; niet gelijk aan geautomatiseerde inbox- of API-ACK. Voor test `WG-5510214770E3` is daadwerkelijke inboxontvangst **apart** vastgesteld.
+- `processing` die een lease verliest na mogelijk verzonden SMTP wordt `failed / SMTP_UNCERTAIN`. Controleer bij NIVO op de `WG-`-code vóór handmatige herpoging.
+- Admin-retry is uitsluitend toegestaan voor mislukte items, met extra expliciete mailboxcontrole bij `SMTP_UNCERTAIN`. Een al `smtp_accepted` record wordt niet door de standaardworker opnieuw aangeboden.
+- Geen customer report-mail, marketing of NIVO-CRM/API-actie impliceren. NIVO-medewerkers handelen ontvangen leads buiten WattGoedkoper af.
 
-Pas na de eerste geslaagde Hostinger-run mag `'operations_monitor_enabled' => true` in dezelfde private config worden gezet. Daarmee waarschuwt het admin-dashboard als de cron te oud wordt.
+## 5. Alleen bij incident: verantwoord pauzeren of herstellen
 
-Stel in **Hostinger hPanel → Advanced → Cron Jobs** vervolgens één job in met interval **5 minuten** (`*/5 * * * *`). Gebruik het **werkelijke absolute PHP-binary-pad** van `command -v php` plus de absolute scriptlocatie:
+Als een bewezen afleverincident een pauze vereist, laat de bevoegde eigenaar de bestaande private `config.php` buiten webroot controleren, beveiligd back-uppen en desnoods `nivo_delivery_enabled=false` zetten. Houd MySQL- en outboxdata intact. Er is geen automatische goedkeuring om bij een nieuwe agentstart de flag weer op false te zetten; momenteel werkt de route.
 
-```sh
-/ABSOLUUT/PAD/NAAR/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php
-```
+**NOOIT** `bash scripts/setup-mail.sh` herhalen wanneer `mail-config.php` bestaat; geen MySQL-installatiescripts herhalen en geen private keys of wachtwoorden in GitHub. Controleer eerst status, correcte cron, SMTP-inbox en foutcode. Voer alleen een nieuwe fictieve `--send-test` uit als dat een concreet incidentonderzoek vereist.
 
-Bovenstaand `/ABSOLUUT/PAD/NAAR/php` is een placeholder, **geen letterlijk uitvoerbaar commando**. De private config ligt op de verwachte plek direct boven `public_html`; `WG_PRIVATE_DIR` is hier standaard niet nodig. Geen publieke HTTP/URL-cron, geen tweede losse leadworker, geen geheime waarden in de crontab. Monitor na minstens twee intervallen de actuele heartbeat, plus de privacy- en retentielimieten.
-
-## 5. Foutafhandeling
-
-- **`pending` blijft staan:** schakel geen tweede cron in; controleer eenmaal jobstatus, PHP-binary, private config en outboxstatus.
-- **`SMTP_UNCERTAIN` / verlopen `processing`:** de nieuwe veiligheidsgate zet de onzekere SMTP-lease na een crash op `failed` in plaats van hem automatisch opnieuw te verzenden. Controleer eerst `portal@nivogroepholland.nl` op de `WG-`-code. Een beheerder kan daarna pas de retry bevestigen; de beheeractie stuurt zelf geen mail.
-- **`smtp_accepted`:** relay heeft `250` na DATA teruggegeven; geen officiële NIVO-inbox-ACK. Dubbele verzending vanuit het dashboard is niet mogelijk zolang deze status bestaat.
-- **Hostinger-PHP of database fout:** stop de cron of zet uitsluitend `nivo_delivery_enabled` op `false`; behoud de bestaande MySQL-tabel, private encryptiesleutel en originele aanvragen.
-- **Backup en restore:** maak een werkelijke databasebackup én beschermde private config-/keybackup, herstel afgeschermd en verifieer de sleutel/recordtoegang. GitHub CI en de externe HTTP-smoke bewijzen dit niet.
-
-**Niet activeren door dit project:** rapportmail naar consumenten (`report_mail_enabled`) is een aparte functie en blijft standaard uit. Ook deze CLI doet geen betaalde DNS- of maildienstaanpassingen. De eigenaar moet NIVO-inboxontvangst én de cron-heartbeat afzonderlijk bewijzen voordat issues #23/#25/#26 als operationeel voltooid mogen worden beschouwd.
+Een backup is pas bewezen na **MySQL + bijbehorende private sleutel/config + afgeschermde restore-oefening**. Dit is nog open. De aparte consumentenrapportmail blijft eveneens een afzonderlijke acceptatie-/privacybeslissing, zie [roadmap](ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md).
