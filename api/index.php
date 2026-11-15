@@ -18,7 +18,7 @@ try {
             catch (Throwable $ignored) { $databaseReady=false; }
             unset($db);
         }
-        wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null && $databaseReady, 'databaseReady'=>$databaseReady, 'version'=>'1.2.0']);
+        wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null && $databaseReady, 'databaseReady'=>$databaseReady, 'version'=>'1.2.0', 'releaseFingerprint'=>wg_release_fingerprint()]);
     }
     if ($action === 'session' && !$config) { wg_method('GET'); wg_json(['ok'=>true,'configured'=>false,'csrf'=>null,'createdAt'=>null,'authenticated'=>false,'reportMailEnabled'=>false]); }
     $config = wg_require_config($config);
