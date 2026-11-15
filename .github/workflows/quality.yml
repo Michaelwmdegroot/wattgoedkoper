@@ -61,5 +61,11 @@ jobs:
           WG_TEST_MYSQL_USER: wattgoedkoper_ci
           WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
         run: php tests/mysql_backend_test.php
+      - name: Verify SELECT-only production observer using isolated CI MySQL
+        env:
+          WG_TEST_MYSQL_NAME: wattgoedkoper_ci
+          WG_TEST_MYSQL_USER: wattgoedkoper_ci
+          WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
+        run: php tests/ops_readonly_test.php
       - name: Check PHP syntax
         run: find api lib scripts -name '*.php' -print0 | xargs -0 -n1 php -l
