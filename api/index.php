@@ -4,6 +4,7 @@ require dirname(__DIR__) . '/lib/bootstrap.php';
 require dirname(__DIR__) . '/lib/mail.php';
 require dirname(__DIR__) . '/lib/report.php';
 require dirname(__DIR__) . '/lib/delivery.php';
+require dirname(__DIR__) . '/lib/operations.php';
 wg_headers();
 ini_set('display_errors', '0');
 try {
@@ -98,6 +99,10 @@ try {
     if (str_starts_with($action,'admin_')) { wg_auth($config); }
     if ($action === 'admin_logout') {
         wg_input($config); $_SESSION=[]; session_regenerate_id(true); $_SESSION['csrf']=bin2hex(random_bytes(32)); $_SESSION['created_at']=time(); wg_json(['ok'=>true]);
+    }
+    if ($action === 'admin_operations') {
+        wg_method('GET');
+        wg_json(wg_ops_status($db,$config));
     }
     if ($action === 'admin_stats') {
         wg_method('GET');
