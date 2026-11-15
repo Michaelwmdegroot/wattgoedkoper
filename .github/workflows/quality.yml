@@ -43,6 +43,8 @@ jobs:
       - run: python3 tests/backend_test.py --php php
       - run: php tests/mail_safety_test.php
       - run: php tests/report_mail_test.php
+      - name: Verify NIVO delivery outbox, receipts, retry and consent without network
+        run: php tests/delivery_test.php
       - name: Verify Hostinger installer without PHP system function
         env:
           WG_TEST_MYSQL_NAME: wattgoedkoper_ci

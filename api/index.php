@@ -3,6 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/lib/bootstrap.php';
 require dirname(__DIR__) . '/lib/mail.php';
 require dirname(__DIR__) . '/lib/report.php';
+require dirname(__DIR__) . '/lib/delivery.php';
 wg_headers();
 ini_set('display_errors', '0');
 try {
@@ -44,6 +45,7 @@ try {
         $id='WG-' . strtoupper(bin2hex(random_bytes(6))); $now=gmdate('Y-m-d\TH:i:s\Z'); $lead['acceptedAt']=$now;
         $q=$db->prepare('INSERT INTO leads(id,idempotency_hash,request_hash,created_at,updated_at,status,partner,payload,consent_version) VALUES(?,?,?,?,?,?,?,?,?)');
         $q->execute([$id,$idempotency,$requestHash,$now,$now,'new',$lead['partner'],wg_encrypt($lead,$config),WG_CONSENT_VERSION]);
+        wg_delivery_enqueue($db,$id,$now);
         if ($lead['analyticsConsent']) { wg_event($db,'lead_accepted'); }
         $db->commit();
         wg_json(['ok'=>true,'id'=>$id,'status'=>'new','replayed'=>false],201);
@@ -108,14 +110,24 @@ try {
         $overdue=$db->prepare("SELECT COUNT(*) FROM leads WHERE status='new' AND created_at < ?");
         $overdue->execute([gmdate('Y-m-d\TH:i:s\Z',time()-86400)]);
         $overdueNew=(int)$overdue->fetchColumn();
-        wg_json(['ok'=>true,'days'=>30,'since'=>$since,'events'=>$events,'totals'=>$totals,'leadCount'=>$leadCount,'statuses'=>$statuses,'partners'=>$byPartner,'overdueNew'=>$overdueNew,'retentionDays'=>$config['retention_days'],'conversion'=>$totals['scan_complete']>0?round($totals['lead_accepted']/$totals['scan_complete']*100,1):null]);
+        wg_json(['ok'=>true,'days'=>30,'since'=>$since,'events'=>$events,'totals'=>$totals,'leadCount'=>$leadCount,'statuses'=>$statuses,'partners'=>$byPartner,'overdueNew'=>$overdueNew,'retentionDays'=>$config['retention_days'],'conversion'=>$totals['scan_complete']>0?round($totals['lead_accepted']/$totals['scan_complete']*100,1):null, 'delivery'=>wg_delivery_summary($db), 'deliveryConfigured'=>wg_delivery_settings($config)!==null]);
     }
     if ($action === 'admin_leads') {
         wg_method('GET');$status=(string)($_GET['status']??'');$offset=max(0,min(100000,(int)($_GET['offset']??0)));
         if($status!==''&&!in_array($status,['new','contacted','qualified','closed'],true)){wg_fail(422,'VALIDATION','Onbekende status.');}
-        $where=$status!==''?' WHERE status=?':'';$q=$db->prepare('SELECT COUNT(*) FROM leads'.$where);$q->execute($status!==''?[$status]:[]);$total=(int)$q->fetchColumn();
-        $q=$db->prepare('SELECT * FROM leads'.$where.' ORDER BY created_at DESC LIMIT 50 OFFSET '. $offset);$q->execute($status!==''?[$status]:[]);
-        $rows=[];foreach($q->fetchAll() as $row){$rows[]=wg_lead_public($row,$config);}
+        $where=$status!==''?' WHERE leads.status=?':'';$q=$db->prepare('SELECT COUNT(*) FROM leads'.$where);$q->execute($status!==''?[$status]:[]);$total=(int)$q->fetchColumn();
+        $q=$db->prepare('SELECT leads.*,d.status AS delivery_status,
+          d.attempts AS delivery_attempts,d.next_attempt_at AS delivery_next_attempt,
+          d.acknowledged_at AS delivery_acknowledged_at,d.ack_reference AS delivery_ack_reference,
+          d.last_error AS delivery_last_error
+          FROM leads LEFT JOIN delivery_outbox d ON d.lead_id=leads.id'
+          .$where.' ORDER BY leads.created_at DESC LIMIT 50 OFFSET '. $offset);
+        $q->execute($status!==''?[$status]:[]);
+        $rows=[];foreach($q->fetchAll() as $row){
+            $public=wg_lead_public($row,$config);
+            $public['delivery']=wg_delivery_public($row);
+            $rows[]=$public;
+        }
         wg_json(['ok'=>true,'leads'=>$rows,'total'=>$total,'offset'=>$offset,'limit'=>50]);
     }
     if ($action === 'admin_status') {
@@ -123,6 +135,18 @@ try {
         if(!in_array($status,['new','contacted','qualified','closed'],true)){wg_fail(422,'VALIDATION','Onbekende status.');}
         $q=$db->prepare('UPDATE leads SET status=?,updated_at=? WHERE id=?');$q->execute([$status,gmdate('Y-m-d\TH:i:s\Z'),$id]);
         if(!$q->rowCount()){wg_fail(404,'NOT_FOUND','Aanvraag niet gevonden.');}wg_json(['ok'=>true]);
+    }
+    if ($action === 'admin_delivery_retry') {
+        $data=wg_input($config);
+        $id=wg_text($data['id']??'','aanvraagcode',40,true);
+        if(!preg_match('/^WG-[A-F0-9]{12}$/D',$id)){
+            wg_fail(422,'VALIDATION','De aanvraagcode is ongeldig.');
+        }
+        if(!wg_delivery_retry($db,$id)){
+            wg_fail(409,'DELIVERY_NOT_RETRYABLE','Alleen mislukte afleveringen kunnen opnieuw worden ingepland.');
+        }
+        // Only schedules a retry; no network request from an admin browser action.
+        wg_json(['ok'=>true,'status'=>'pending']);
     }
     if ($action === 'admin_delete') {
         $data=wg_input($config);$id=wg_text($data['id']??'','aanvraagcode',40,true);$q=$db->prepare('DELETE FROM leads WHERE id=?');$q->execute([$id]);

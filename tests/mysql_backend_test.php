@@ -2,6 +2,7 @@
 declare(strict_types=1);
 // CI-only integration test. Uses an ephemeral, empty MySQL service, never Hostinger production.
 require dirname(__DIR__).'/lib/bootstrap.php';
+require dirname(__DIR__).'/lib/delivery.php';
 function check(bool $ok,string $what): void {
     if (!$ok) { throw new RuntimeException('MySQL backend test failed: '.$what); }
 }
@@ -22,7 +23,7 @@ $db=wg_db($cfg);
 check(wg_is_mysql($db),'MySQL PDO selected');
 check($db->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql','driver name');
 $tables=$db->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
-foreach (['leads','daily_events','rate_limits','metadata'] as $table) { check(in_array($table,$tables,true),'table '.$table); }
+foreach (['leads','daily_events','rate_limits','metadata','delivery_outbox'] as $table) { check(in_array($table,$tables,true),'table '.$table); }
 $payload=['name'=>'CI Test','email'=>'test@example.invalid','consent'=>true,'consentVersion'=>WG_CONSENT_VERSION];
 $encrypted=wg_encrypt($payload,$cfg);
 check(!str_contains($encrypted,'CI Test'),'PII not plaintext in DB payload');
@@ -50,6 +51,31 @@ check(wg_housekeeping($db,$cfg,false)['leads']===0,'skip premature housekeeping'
 $update=$db->prepare("UPDATE leads SET status='contacted' WHERE id='WG-CI-FRESH'");
 $update->execute();
 check($update->rowCount()===1,'status update found-rows semantics');
+// Real MySQL outbox integration against ephemeral GitHub Actions MySQL.
+$db->beginTransaction();
+$insert->execute(['WG-CI-DELIVERY',str_repeat('g',64),str_repeat('h',64),$now,$now,'new','nivo',
+    wg_encrypt([
+       'name'=>'CI Fictief','email'=>'ci@example.test','phone'=>'','postcode'=>'',
+       'interests'=>['battery'],'note'=>'',
+       'partner'=>'nivo','consent'=>true,'consentVersion'=>WG_CONSENT_VERSION,
+       'consentText'=>WG_CONSENT_TEXT,'acceptedAt'=>$now,
+       'summary'=>['modelVersion'=>'test-v1','year'=>2027,'selectedIds'=>['battery']]
+    ],$cfg),WG_CONSENT_VERSION]);
+wg_delivery_enqueue($db,'WG-CI-DELIVERY',$now);
+$db->commit();
+check(wg_delivery_summary($db)['pending']===1,'transactionally created MySQL outbox');
+$inactive=wg_delivery_process($db,$cfg);
+check($inactive['disabled']&&$inactive['attempted']===0,'MySQL transport default disabled');
+$synthetic=wg_delivery_process($db,$cfg,1,static fn(array $envelope):array=>
+    ['kind'=>'ack','reference'=>'CI-RECEIPT']);
+check($synthetic['acknowledged']===1,'MySQL outbox synthetic ACK');
+check(wg_delivery_summary($db)['acknowledged']===1,'MySQL delivery receipt persisted');
+$fake=$db->query("SELECT ack_reference FROM delivery_outbox WHERE lead_id='WG-CI-DELIVERY'")->fetchColumn();
+check($fake==='CI-RECEIPT','MySQL receipt references saved lead');
+check(!wg_delivery_retry($db,'WG-CI-DELIVERY'),'delivered MySQL lead cannot be retried');
+$db->prepare("DELETE FROM leads WHERE id='WG-CI-DELIVERY'")->execute();
+check((int)$db->query("SELECT COUNT(*) FROM delivery_outbox WHERE lead_id='WG-CI-DELIVERY'")->fetchColumn()===0,
+    'deleting MySQL lead cascades transport metadata');
 // Execute the actual maintenance CLI with isolated CI-only MySQL configuration.
 // This catches SQLite-only statements accidentally invoked against PDO MySQL.
 $oldCron=gmdate('Y-m-d\\TH:i:s\\Z',time()-95*86400);
@@ -89,4 +115,4 @@ try {
     @unlink($private.'/config.php');
     @rmdir($private);
 }
-echo "MySQL backend integration and maintenance CLI: passed\n";
+echo "MySQL backend, delivery outbox and maintenance CLI: passed\n";

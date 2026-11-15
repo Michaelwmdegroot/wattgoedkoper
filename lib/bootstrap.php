@@ -104,12 +104,33 @@ function wg_db(array $config): PDO {
         $db->exec("CREATE TABLE IF NOT EXISTS metadata (
             `key` VARCHAR(64) NOT NULL PRIMARY KEY, `value` TEXT NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        // Additive outbox schema only: one delivery record per newly accepted NIVO lead.
+        // Foreign key ensures retention/deletion also removes transport metadata.
+        $db->exec("CREATE TABLE IF NOT EXISTS delivery_outbox (
+            lead_id VARCHAR(32) NOT NULL PRIMARY KEY,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            attempts INT UNSIGNED NOT NULL DEFAULT 0,
+            next_attempt_at CHAR(20) NOT NULL,
+            lease_until CHAR(20) NULL,
+            ack_reference VARCHAR(128) NULL,
+            acknowledged_at CHAR(20) NULL,
+            last_error VARCHAR(40) NULL,
+            created_at CHAR(20) NOT NULL,
+            updated_at CHAR(20) NOT NULL,
+            INDEX delivery_due (status,next_attempt_at),
+            CONSTRAINT fk_wg_delivery_lead FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         return $db;
     }
     $db = new PDO('sqlite:' . $config['private_dir'] . '/wattgoedkoper.sqlite', null, null, [
         PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC
     ]);
-    $db->exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON; PRAGMA secure_delete=ON;');
+    // Set each SQLite connection option explicitly. Some PDO drivers execute
+    // only the first statement when multiple PRAGMAs share an exec() call.
+    $db->exec('PRAGMA journal_mode=WAL');
+    $db->exec('PRAGMA busy_timeout=5000');
+    $db->exec('PRAGMA foreign_keys=ON');
+    $db->exec('PRAGMA secure_delete=ON');
     $db->exec("CREATE TABLE IF NOT EXISTS leads (
         id TEXT PRIMARY KEY, idempotency_hash TEXT NOT NULL UNIQUE, request_hash TEXT NOT NULL,
         created_at TEXT NOT NULL, updated_at TEXT NOT NULL, status TEXT NOT NULL,
@@ -117,7 +138,20 @@ function wg_db(array $config): PDO {
     ); CREATE INDEX IF NOT EXISTS leads_created ON leads(created_at);
     CREATE TABLE IF NOT EXISTS daily_events (`day` TEXT NOT NULL, `event` TEXT NOT NULL, `count` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`day`,`event`));
     CREATE TABLE IF NOT EXISTS rate_limits (bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, hits INTEGER NOT NULL);
-    CREATE TABLE IF NOT EXISTS metadata (`key` TEXT PRIMARY KEY, `value` TEXT NOT NULL);");
+    CREATE TABLE IF NOT EXISTS metadata (`key` TEXT PRIMARY KEY, `value` TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS delivery_outbox (
+      lead_id TEXT PRIMARY KEY REFERENCES leads(id) ON DELETE CASCADE,
+      status TEXT NOT NULL DEFAULT 'pending',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      next_attempt_at TEXT NOT NULL,
+      lease_until TEXT,
+      ack_reference TEXT,
+      acknowledged_at TEXT,
+      last_error TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS delivery_due ON delivery_outbox(status,next_attempt_at);");
     return $db;
 }
 function wg_session(array $config): void {
