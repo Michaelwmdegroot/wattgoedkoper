@@ -49,7 +49,7 @@ Voorbeeld van het **formaat**, niet van de echte productie-uitkomst:
 | Fail-closed config en private SMTP-gate | Nieuw `scripts/report-preflight.php` + test | Hostinger-booleans nog niet gelezen |
 | Eén gecontroleerde rapportmail bezorgd | **Geen** CI-stub kan externe inbox bewijzen | **Nog open** |
 | Rapport-only maakt geen NIVO lead / marketing/analytics consent | Codepad maakt alleen tijdelijke HMAC-counters | Nog live verifieren via beheer |
-| Juridische privacy/exploitant en SPF/DKIM/DMARC | [privacy.html](../privacy.html) + [privacyacceptatie](PRIVACY-SECURITY-ACCEPTANCE-2026-11-15.md) | **Nog open** |
+| Juridische privacy/exploitant en SPF/DKIM/DMARC | [privacy.html](../privacy.html) + [privacy- en securityacceptatie in PR #38](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/38) | **Nog open** |
 
 **Niet doen:** een tweede verzendworker/cron bouwen, `nivo_delivery_enabled` op false zetten, `mail-config.php` opnieuw aanmaken, testklanten opnieuw mailen of het rapport automatisch naar NIVO verzenden. De bestaande rapportmail is transactioneel, geen marketingtoestemming.
 
