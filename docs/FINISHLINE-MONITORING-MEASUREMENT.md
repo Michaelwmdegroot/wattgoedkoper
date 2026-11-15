@@ -11,6 +11,19 @@
 - `CRON_LAST_RUN_FAILED` en `NIVO_DELIVERY_FAILED` zijn afzonderlijke dashboardwaarschuwingen. Er is **nog geen bevestigd extern alertkanaal**, dus dashboardalarm is niet hetzelfde als e-mail-, sms- of bereikbaarheidsmonitoring.
 - Geen extra cron, parallelle worker of automatische retry toevoegen. `SMTP_UNCERTAIN` eerst met de unieke technische aanvraagcode in de NIVO-inbox onderzoeken.
 
+### Nieuwe privacyveilige Hostinger-statusinspectie
+
+Zodra deze PR is beoordeeld en veilig naar Hostinger is uitgerold, kan de bevoegde eigenaar één statusmeting uitvoeren via de **bestaande** SSH-terminal:
+
+```sh
+cd /home/u886757484/domains/wattgoedkoper.nl/public_html
+php scripts/ops-readonly.php
+```
+
+Dit commando gebruikt uitsluitend **SELECT-query's**, zonder `wg_db()`-schema-initialisatie, zonder nieuwe cronjob, zonder SMTP-verzending en zonder leadmutatie. De JSON bevat alleen tijdstempels/statussen en aggregaten: `cron.lastSuccessAt`, `cron.previousSuccessAt`, `observedDistinctRuns`, `ageSeconds`, `monitorEnabled`, aantallen `pending/processing/smtp_accepted/acknowledged/failed`, generieke waarschuwingen en `backupStatus:not_verified`. **Geen klantpayloads, leadcodes, sleutels, DB-naam of mailadressen.** Het geeft bij een fout uitsluitend een generieke melding.
+
+Een **live** statusmeting vanuit deze CLI is nog niet uitgevoerd en niet in de publieke GitHub-issue geplaatst. Voor de acceptatie zijn twee verschillende geregistreerde successen én bevestiging van de Hostinger hPanel-scheduler nodig. Dat de CLI `observedDistinctRuns:2` toont is op zichzelf geen bewijs dat beide uitvoeringen automatisch waren. Een versleutelde back-up is evenmin bewezen door deze statuscontrole.
+
 ### P0-productiecontrole (read-only)
 
 1. Controleer in het beveiligde `/admin/` → **Tools & status** na twee reguliere cronintervallen of beide datums verschillend en vers zijn; leg uitsluitend de tijdstippen en statuscodes vast, zonder klantgegevens.
