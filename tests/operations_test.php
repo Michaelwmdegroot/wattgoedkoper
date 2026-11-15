@@ -62,9 +62,17 @@ try{
     opsCheck(!in_array('CRON_MISSING_OR_STALE',$status['warnings'],true),
         'healthy heartbeat clears missing-cron warning');
     $checks+=2;
+    // Explicitly synthesize an earlier successful tick; this is not live cron proof.
+    $priorTick=gmdate('Y-m-d\TH:i:s\Z',time()-301);
+    wg_ops_upsert($db,'ops_last_success_at',$priorTick);
     [$exit,$stdout,$stderr]=runOperations($private);
     opsCheck($exit===0&&str_contains($stdout,'Retentie: 0'),'repeat maintenance idempotent');
-    $checks++;
+    $repeated=wg_ops_status($db,$config);
+    opsCheck($repeated['cron']['observedDistinctRuns']===2
+        && $repeated['cron']['previousSuccessAt']===$priorTick
+        && $repeated['cron']['secondsBetweenLastTwo']>=300,
+        'two DISTINCT successful executions recorded without new cron');
+    $checks+=2;
     $lock=fopen($private.'/operations.lock','c');
     opsCheck(is_resource($lock)&&flock($lock,LOCK_EX|LOCK_NB),'acquire test process lock');
     [$exit,$stdout,$stderr]=runOperations($private);
@@ -104,7 +112,15 @@ try{
     $failure=wg_ops_status($db,$config);
     opsCheck(in_array('NIVO_DELIVERY_FAILED',$failure['warnings'],true),'failed transport triggers admin warning');
     opsCheck(!str_contains(json_encode($failure),'synthetic@example.test'),'warning payload contains no PII');
-    $checks+=2;
+    $cohort=wg_ops_cohort($db,7);
+    opsCheck($cohort['adviceAccepted']===1&&$cohort['nivoOutbox']===1
+        &&$cohort['failed']===1&&$cohort['smtp_accepted']===0
+        &&$cohort['attribution']==='unknown',
+        '7d current cohort counts only current consenting leads and matching outbox');
+    $all=wg_ops_cohort($db,30);
+    opsCheck($all['adviceAccepted']===1&&$all['nivoOutbox']===1,
+        '30d cohort matches accepted lead and outbox without inferred attribution');
+    $checks+=4;
     echo "Operations runner: $checks offline checks passed\n";
 }finally{
     $db=null;
