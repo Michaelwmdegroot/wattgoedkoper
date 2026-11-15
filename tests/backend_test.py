@@ -120,7 +120,7 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
         check(request('admin_status',{'id':lead_id,'status':'contacted'},csrf)[0]==200,'valid admin status change works')
         with sqlite3.connect(private/'wattgoedkoper.sqlite') as db: db.execute("UPDATE leads SET created_at='2020-01-01T00:00:00Z' WHERE id=?",[accepted2['id']])
         maintenance=subprocess.run([args.php,'scripts/maintenance.php'],cwd=ROOT,env=env,capture_output=True,text=True)
-        check(maintenance.returncode==0 and request('admin_leads')[1]['total']==1,'retention maintenance removes expired personal data')
+        check(maintenance.returncode==0 and 'Verwijderde aanvragen: 1.' in maintenance.stdout and request('admin_leads')[1]['total']==1,'SQLite maintenance CLI checkpoints and removes expired personal data')
         check(request('admin_delete',{'id':lead_id},csrf)[0]==200 and request('admin_leads')[1]['total']==0,'explicit deletion removes lead')
         with sqlite3.connect(private/'wattgoedkoper.sqlite') as db:
             check(db.execute('SELECT COUNT(*) FROM delivery_outbox').fetchone()[0]==0,'retention and explicit deletion cascade outbox metadata')

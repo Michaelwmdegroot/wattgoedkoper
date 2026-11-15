@@ -77,9 +77,48 @@ check(!wg_delivery_retry($db,'WG-CI-DELIVERY'),'delivered MySQL lead cannot be r
 $db->prepare("DELETE FROM leads WHERE id='WG-CI-DELIVERY'")->execute();
 check((int)$db->query("SELECT COUNT(*) FROM delivery_outbox WHERE lead_id='WG-CI-DELIVERY'")->fetchColumn()===0,
     'deleting MySQL lead cascades transport metadata');
+// Execute the actual maintenance CLI with isolated CI-only MySQL configuration.
+// This catches SQLite-only statements accidentally invoked against PDO MySQL.
+$oldCron=gmdate('Y-m-d\\TH:i:s\\Z',time()-95*86400);
+$insert->execute(['WG-CI-CRON-OLD',str_repeat('e',64),str_repeat('f',64),$oldCron,$oldCron,'new','nivo',$encrypted,WG_CONSENT_VERSION]);
+$private=sys_get_temp_dir().'/wattgoedkoper-maintenance-ci-'.bin2hex(random_bytes(8));
+check(mkdir($private,0700),'create isolated maintenance test directory');
+try {
+    $cliConfig=$cfg;
+    unset($cliConfig['private_dir']);
+    $configFile=$private.'/config.php';
+    check(file_put_contents($configFile,'<?php return '.var_export($cliConfig,true).';')!==false,'write isolated CI configuration');
+    chmod($configFile,0600);
+    $runMaintenance=static function (string $dir): array {
+        $pipes=[];
+        $env=array_replace((array)getenv(),['WG_PRIVATE_DIR'=>$dir]);
+        $process=proc_open([PHP_BINARY,dirname(__DIR__).'/scripts/maintenance.php'],
+            [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes,dirname(__DIR__), $env);
+        if (!is_resource($process)) { throw new RuntimeException('Cannot start maintenance CLI'); }
+        fclose($pipes[0]);
+        $stdout=stream_get_contents($pipes[1]); fclose($pipes[1]);
+        $stderr=stream_get_contents($pipes[2]); fclose($pipes[2]);
+        return [proc_close($process),$stdout,$stderr];
+    };
+    [$exit,$stdout,$stderr]=$runMaintenance($private);
+    check($exit===0 && $stderr==='' && str_contains($stdout,'Verwijderde aanvragen: 1.'),
+        'MySQL maintenance CLI exits successfully and purges expired lead');
+    check((int)$db->query("SELECT COUNT(*) FROM leads WHERE id='WG-CI-CRON-OLD'")->fetchColumn()===0
+        && (int)$db->query("SELECT COUNT(*) FROM leads WHERE id='WG-CI-FRESH'")->fetchColumn()===1,
+        'MySQL maintenance preserves current and historical consented data within retention');
+    [$exit,$stdout,$stderr]=$runMaintenance($private);
+    check($exit===0 && $stderr==='' && str_contains($stdout,'Verwijderde aanvragen: 0.'),
+        'Repeated MySQL maintenance run is harmless');
+    [$exit,$stdout,$stderr]=$runMaintenance($private.'/missing');
+    check($exit===1 && str_contains($stderr,'Configuratie ontbreekt.')
+        && !str_contains($stderr,$pass),'Missing private config fails closed without leaking credentials');
+} finally {
+    @unlink($private.'/config.php');
+    @rmdir($private);
+}
 wg_ops_upsert($db,'ops_last_success_at',gmdate('Y-m-d\\TH:i:s\\Z'));
 $ops=wg_ops_status($db,$cfg);
 check($ops['cron']['status']==='fresh','MySQL private cron heartbeat can be read');
 check($ops['backup']['status']==='not_verified','Hostinger restore not assumed from MySQL');
 check(!in_array('NIVO_DELIVERY_FAILED',$ops['warnings'],true),'no spurious NIVO failed alert');
-echo "MySQL backend, outbox and operations metadata: passed\n";
+echo "MySQL backend, delivery, operations and maintenance CLI: passed\n";

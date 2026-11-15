@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Persoonlijk energieplan voor Nederlandse huishoudens",
   "scripts": {
-    "test": "node --test tests/model.test.mjs tests/playground.test.mjs tests/plan-studio.test.mjs tests/context-entry.test.mjs tests/guide-comparison.test.mjs",
+    "test": "node --test tests/model.test.mjs tests/playground.test.mjs tests/plan-studio.test.mjs tests/context-entry.test.mjs tests/guide-comparison.test.mjs tests/seo-p1-cluster.test.mjs",
     "check": "node --check assets/model.mjs && node --check assets/playground-model.mjs && node --check assets/house-scene.mjs && node --check assets/plan-ui.mjs && node --check assets/app.mjs && node --check admin/admin.mjs && node --check assets/context-entry.mjs && node --check assets/guide-comparison.mjs",
     "dev": "php -S 127.0.0.1:8080 scripts/router.php",
     "check:seo": "node scripts/seo-review.cjs"

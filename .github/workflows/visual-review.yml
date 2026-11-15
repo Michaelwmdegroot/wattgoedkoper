@@ -37,6 +37,8 @@ jobs:
         run: node scripts/visual-review-v05.cjs
       - name: Review interactive Plan Studio, clipping, variants and accessibility
         run: node scripts/plan-studio-review.cjs
+      - name: Review dashboard 2.0 navigation, status honesty and viewport screenshots
+        run: node scripts/admin-dashboard-review.cjs
       - name: Verify first-viewport energy home and five visible measures
         run: node scripts/home-cockpit-review.cjs
       - name: Verify brand assets, homepage guidance and responsive layout
