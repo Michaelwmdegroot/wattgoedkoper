@@ -36,11 +36,13 @@ try{
     fwrite(STDERR,"WattGoedkoper pilot: databasecontrole mislukt. Geen mail verstuurd.\n");
     exit(1);
 }
-$active=wg_delivery_settings($config)!==null;
+$liveSettings=wg_delivery_settings($config);
+$liveChannel=($liveSettings['channel']??'none');
+$active=$liveChannel==='smtp';
 fwrite(STDOUT,
   "NIVO-ontvanger: ".WG_NIVO_MAIL_RECIPIENT."\n".
   "Mailconfig: beschikbaar (SMTP-authenticatie wordt alleen bij verzenden getest)\n".
-  "Productie NIVO-transport actief: ".($active?'ja':'nee')."\n".
+  "Productie NIVO-SMTP actief: ".($active?'ja':'nee')." (huidig kanaal: ".$liveChannel.")\n".
   "Afleverwachtrij (geen persoonsgegevens): ".
   "pending=".$summary['pending'].", processing=".$summary['processing'].
   ", smtp_accepted=".$summary['smtp_accepted'].
