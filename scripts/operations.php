@@ -27,8 +27,15 @@ try {
         $db->exec('PRAGMA wal_checkpoint(TRUNCATE)');
     }
     $transport=wg_delivery_process($db,$config,10);
+    // Two distinct timestamps establish separate successful executions,
+    // not by themselves whether the invocations came from Hostinger cron.
+    $successAt=gmdate('Y-m-d\TH:i:s\Z');
+    $priorSuccess=wg_ops_read($db,'ops_last_success_at');
+    if($priorSuccess && strtotime($priorSuccess)!==false && $priorSuccess!==$successAt){
+        wg_ops_upsert($db,'ops_previous_success_at',$priorSuccess);
+    }
     wg_ops_upsert($db,'ops_last_error_code','NONE');
-    wg_ops_upsert($db,'ops_last_success_at',gmdate('Y-m-d\\TH:i:s\\Z'));
+    wg_ops_upsert($db,'ops_last_success_at',$successAt);
     // Only aggregate action counts; never leak a lead ID, PII or credentials in output.
     fwrite(STDOUT,"WattGoedkoper onderhoud uitgevoerd. Retentie: ".$retained['leads']
         .", bezorgpogingen: ".$transport['attempted']
