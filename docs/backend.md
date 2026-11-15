@@ -67,7 +67,7 @@ Dagelijkse opruiming loopt opportunistisch bij API-verzoeken. Voor gegarandeerd 
 php /absoluut/pad/naar/public_html/scripts/maintenance.php
 ```
 
-De onderhoudstaak verwijdert oude aanvragen en oude counters/rate-limitvensters en truncates de SQLite WAL. Het script print uitsluitend het aantal verwijderde aanvragen. Het maakt geen externe verbindingen.
+De onderhoudstaak verwijdert oude aanvragen en oude counters/rate-limitvensters. Alleen op SQLite wordt daarna de WAL gecheckpoint; op productie-MySQL wordt geen SQLite-PRAGMA uitgevoerd. Het script print uitsluitend het aantal verwijderde aanvragen en retourneert een foutcode bij ongeldige configuratie of een databasefout. Het maakt geen externe verbindingen. De onderhouds-CLI wordt op zowel SQLite als een geïsoleerde MySQL-testdatabase in CI gecontroleerd; een groene CI-test bewijst nog niet dat de Hostinger-cron is ingesteld of uitgevoerd.
 
 **Back-ups:** kopieer de MySQL-database én de private configuratie inclusief encryptiesleutel via een beveiligde backupstrategie buiten Git. Voor MySQL maak je een consistente database-export; voor bestaande SQLite-installaties verdient `.backup` of een snapshot na checkpoint de voorkeur boven losse kopieën van een actieve database. De bewaartermijn geldt ook voor back-ups. Een direct in het dashboard verwijderde aanvraag verdwijnt niet automatisch uit oudere back-ups; leg de backuprotatie en herstelprocedure vast.
 
