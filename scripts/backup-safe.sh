@@ -8,7 +8,12 @@ if [[ -z "$path" || "$path" != /* ]]; then
   exit 2
 fi
 case "$mode" in
-  create) arguments=(scripts/backup-create.php "--output=$path") ;;
+  create)
+    arguments=(scripts/backup-create.php "--output=$path")
+    if ! command -v mysqldump >/dev/null 2>&1 && command -v mariadb-dump >/dev/null 2>&1; then
+      arguments+=(--dump-binary=mariadb-dump)
+    fi
+    ;;
   inspect) arguments=(scripts/backup-inspect.php "--file=$path") ;;
   extract)
     if [[ -z "$destination" || "$destination" != /* ]]; then
