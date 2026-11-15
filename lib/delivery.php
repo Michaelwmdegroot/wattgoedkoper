@@ -35,10 +35,13 @@ function wg_delivery_public(array $row): ?array {
 function wg_delivery_retry(PDO $db, string $id, bool $mailboxChecked=false): bool {
     // Only a failed item can be manually retried. ACKs are immutable.
     $now=gmdate('Y-m-d\\TH:i:s\\Z');
+    // PDO execute() can bind booleans as strings, so never rely on ?=1 in SQLite.
+    // Uncertain SMTP delivery requires a conscious mailbox check before retry.
+    $restriction=$mailboxChecked?'':" AND (last_error IS NULL OR last_error<>'SMTP_UNCERTAIN')";
     $q=$db->prepare("UPDATE delivery_outbox SET status='pending',attempts=0,
       next_attempt_at=?,lease_until=NULL,last_error=NULL,updated_at=?
-      WHERE lead_id=? AND status='failed' AND (last_error IS NULL OR last_error<>'SMTP_UNCERTAIN' OR ?=1)");
-    $q->execute([$now,$now,$id,$mailboxChecked?1:0]);
+      WHERE lead_id=? AND status='failed'".$restriction);
+    $q->execute([$now,$now,$id]);
     return $q->rowCount()===1;
 }
 function wg_delivery_settings(array $config): ?array {
