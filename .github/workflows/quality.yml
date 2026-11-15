@@ -45,6 +45,8 @@ jobs:
       - run: python3 tests/backend_test.py --php php
       - run: php tests/mail_safety_test.php
       - run: php tests/report_mail_test.php
+      - name: Verify report-only readiness flag is private and does not send mail
+        run: php tests/report_preflight_test.php
       - name: Verify NIVO delivery outbox, receipts, retry and consent without network
         run: php tests/delivery_test.php
       - name: Verify authenticated recovery archive and isolated extraction with fictitious data
