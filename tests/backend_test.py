@@ -44,6 +44,7 @@ with tempfile.TemporaryDirectory(prefix='wg-backend-') as temporary:
             try: request('health');break
             except Exception: time.sleep(.05)
         code,data,_=request('health');check(code==200 and data['configured'] is False,'unconfigured health reports unavailable lead storage')
+        check(len(data.get('releaseFingerprint',''))==64,'unconfigured health reports non-secret code fingerprint')
         code,data,headers=request('session');check(code==200 and data['csrf'] is None and 'Set-Cookie' not in headers,'unconfigured session does not create a cookie')
         check(request('admin_stats')[0]==503,'unconfigured admin fails closed')
         password=secrets.token_urlsafe(24)
