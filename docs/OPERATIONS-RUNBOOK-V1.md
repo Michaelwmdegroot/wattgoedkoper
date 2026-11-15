@@ -1,65 +1,81 @@
-# WattGoedkoper — operationeel runbook v1
+# WattGoedkoper — operationeel runbook (actuele productie)
 
-**Status 15 november 2026:** concept voor eigenaarreview, onderdeel van P0 issue #25. Dit runbook is een implementatiebijlage van een **gestapelde PR op #30**. Het is nog geen productie- of restorebewijs.
+**Gecontroleerde situatie per 15 november 2026:** WattGoedkoper draait op Hostinger, met eigen PHP/MySQL-backend, SMTP naar **`portal@nivogroepholland.nl`**, één ingestelde vijfminuten-cron en een geslaagde echte automatische testadviesaanvraag. Dit document **vervangt** het eerdere “concept / cron nog niet geconfigureerd”-runbook; die geschiedenis is terug te vinden in Git.  
+**Actuele overdracht:** [HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md).  
+**Finish Line:** issues [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21), [#25](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/25), [#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/26).
 
-> **Eigenaarbesluit 15 november 2026:** NIVO-adviesmails moeten naar `portal@nivogroepholland.nl`. De eigenaar heeft de merges van #28–#32 goedgekeurd. Dit autoriseert geen ongeteste SMTP-route: de toepasselijke afleveradapter, privésleutels en een echte synthetische NIVO-ontvangsttest moeten nog worden ingericht. Een geaccepteerd SMTP-bericht is niet hetzelfde als een bewezen gelezen of in de mailbox afgeleverd bericht. Rapportmails aan consumenten blijven gescheiden.\n\n## Productie activeringsgate
+## 1. Live configuratie en geautoriseerde grenzen
 
-1. Controleer dat alle goedgekeurde PR's (#28, #30 en deze operations-PR; plus #29 voor dashboard) daadwerkelijk in `main` zitten en dat Hostinger de bijbehorende live build draait. **Geen zelfstandige merge**.
-2. Laat de bestaande MySQL-database volledig intact. Geen `setup-mysql.php`, reset, massa-import, encryptiesleutelrotatie of databasecreatie buiten de bestaande `wg_db`-schema-compatibiliteitscontrole. Maak en **test** eerst een veilige back-up + herstel op afgeschermde omgeving met hetzelfde private sleutelbestand.
-3. Verifieer de werkelijke Hostinger CLI-PHP-versie, `pdo_mysql`/`pdo_sqlite`, `openssl`, eventueel `curl` en rechten tot de bestaande buiten-webroot private map. `WG_PRIVATE_DIR` moet exact naar die map wijzen. Test vanaf Hostinger als geautoriseerde beheerder.
-4. Bevestig één bestaande onderhoudsregel óf vervang die op gecontroleerde wijze. **Nooit** gelijktijdig `scripts/maintenance.php`, `scripts/deliver-leads.php` én `scripts/operations.php` plannen. De canonieke taak is voortaan uitsluitend `scripts/operations.php`.
-5. Zet pas na een echte eerste geslaagde tick `operations_monitor_enabled => true` in de bestaande private configuratie. De optionele ouderdomsdrempel is `operations_max_age_seconds => 1800` (30 minuten, begrensd tot 5 min–24 uur). Hiermee wordt een gemiste cron als probleem aangemerkt; zonder monitor-opt-in is de staat wel zichtbaar, maar komt er geen actievere waarschuwing.
-6. Activeer `nivo_delivery_enabled` **niet** zonder een eigen veiligheids-/privacyreview, een exact allowlisted HTTPS-ontvanger en eigenaar-go. Zie `NIVO-DELIVERY-CONTRACT-V1.md`. Een cronrun met uitgeschakelde ontvanger verandert geen delivery-queue-items.
-7. Rapportmail blijft apart uit totdat `info@wattgoedkoper.nl`, SMTP, ontvanger en transactionele bezorging end-to-end zijn bewezen. Rapportmail verleent geen marketingtoestemming.
+| Eigenschap | Feitelijke productie |
+|---|---|
+| Website/CLI-directory | `/home/u886757484/domains/wattgoedkoper.nl/public_html` |
+| Private map | `/home/u886757484/domains/wattgoedkoper.nl/wattgoedkoper-private` (niet in webroot) |
+| PHP binary | `/usr/bin/php`; eigenaar controleerde CLI PHP 8.2.35 |
+| Database | Bestaande private WattGoedkoper MySQL, beveiligde payloads en outbox |
+| Hostinger hPanel-cron | `*/5 * * * *` |
+| Croncommand | `/usr/bin/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php` |
+| NIVO-advieskanaal | SMTP, via `info@wattgoedkoper.nl` naar `portal@nivogroepholland.nl`; private toggle staat op actief |
+| Rapportmail | Apart `report_email`-pad; echte status en aflevering nog apart controleren |
 
-### Eén Hostinger-cron — concept
+**NOOIT** `setup-mysql.sh` of `setup.php` opnieuw uitvoeren op de bestaande productieomgeving. Geen database-reset, sleutelrotatie, mailwachtwoorden in chat/repo of tweede cronjob. De werkende transportconfig niet blind aanpassen: de eigenaar heeft het pad en de ontvangende NIVO-inbox al bevestigd.
 
-Een enkele geplande taak met interval van **5 minuten**, na expliciete productiecontrole:
+## 2. Bewijs dat automatische verwerking functioneert
 
-```sh
-WG_PRIVATE_DIR=/ABSOLUTE/PRIVATE/MAP /ABSOLUTE/PHP-CLI /ABSOLUTE/WEBSITE/scripts/operations.php
+De eigenaar heeft de geplande Hostinger-hPanel-cron en een succesvolle uitvoer gedeeld:
+
+```text
+WattGoedkoper onderhoud uitgevoerd. Retentie: 0, bezorgpogingen: 0, bevestigd: 0, fouten: 0, transport actief: ja.
 ```
 
-*Alle paden hierboven zijn placeholders; bepaal ze via de werkelijke Hostinger-installatie. Niet letterlijk overnemen.* Geen `php -S`, geen publieke URL of HTTP-token gebruiken. Het bestand is CLI-only. De runner beschermt tegen overlap met `flock` in de private map. Exit 0 is afgerond, exit 1 is fout, exit 75 betekent dat er nog een uitvoering loopt. Onderzoek frequente 75-meldingen in plaats van extra cronregels toe te voegen.
+Een afzonderlijk vanuit de gewone consumentenwebsite aangemaakte en in het beheer opgeslagen **technische testadviesaanvraag `WG-5510214770E3`** was rond 19:02 zichtbaar in het dashboard. Dezelfde code kwam rond 19:05 automatisch binnen in de echte NIVO Portal-mailbox. Hiermee is de **functionele end-to-end route** aangetoond. Het exacte tijdsverschil past bij de cronfrequentie maar is geen zelfstandige meting van iedere geplande heartbeat. De testcontactgegevens en beelden staan alleen in de privéchat, niet in de publieke repo.
 
-### Bewijs van runtime
+GitHub-workflow [live-deployment-smoke](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43662312644) bevestigde 14/14 publieke frontend/backend-/securitychecks voor de codebaseline `f3c273d`. Dit bewijst **geen backup, mail-inbox of cronstatus** en vervangt bovenstaande eigenaarstest niet.
 
-- Lees zonder PII via de reeds bestaande login in `/admin/` de vier tabs, na de bijbehorende PR-review.
-- `GET /api/index.php?action=admin_operations` is **alleen na admin-auth** toegankelijk en toont status van cron, laatste succesvolle tick, ageSeconds, leveringsaantallen, optionele bronversheid, lokale sitemap/robots-aanwezigheid en actiecodes. Het toont bewust géén klantdata.
-- Controleer in de echte Hostinger CLI een tick (tijdsdatum, exitcode, geen errors) en controleer daarna dat de UI `cron=fresh` meldt. Een ontbrekende tick is `unknown`; na ouderdomsdrempel `stale`; **green op GitHub is geen bewijs van Hostinger-cron**.
-- De bronindicator leest alleen het bestaande `docs/seo-cluster-v08.json:checkedOn` indien dát bestand daadwerkelijk is mee uitgerold. Bij afwezigheid is status `unknown`, niet 'actueel'. Vanaf >45 dagen geldt `SOURCE_REVIEW_DUE`. Financiële, juridische, subsidie- en productclaims alleen na inhoudelijke menselijke review en PR publiceren.
-- `sitemapOnDisk` en `robotsOnDisk` testen uitsluitend **bestandsaanwezigheid**; apart live HTTP, canonical, indexatie en Search Console controleren.
-- Back-upstatus is bewust `not_verified` totdat daadwerkelijk Hostinger-backup én restore getest zijn. De software kan Hostinger-backupjobs niet uit de applicatie afleiden.
-- Beperk meldingen tot relevante codes: `CRON_MISSING_OR_STALE`, `CRON_LAST_RUN_FAILED`, `NIVO_DELIVERY_FAILED`, `SOURCE_REVIEW_DUE`, `SEO_PUBLICATION_FILES_MISSING`. Er is **geen goedgekeurde externe alertontvanger**, dus de eerste levering is alleen een duidelijke dashboardstatus. Geen fictieve alertbevestiging.
+## 3. Veilige read-only operationele controle
 
-## Onafhankelijke, read-only Hostinger-deploycontrole
+Vanuit de bestaande Hostinger-terminal:
 
-De GitHub Actions-workflow `.github/workflows/live-deployment-smoke.yml` draait bij `main`-push, dagelijks en optioneel handmatig. Hij controleert uitsluitend publieke HTTP GET-paden:
+```sh
+cd /home/u886757484/domains/wattgoedkoper.nl/public_html
+php scripts/nivo-smtp-pilot.php --check
+```
 
-- `/`, `/privacy.html`, `/admin/`, kennisroutes, `/sitemap.xml` en `/robots.txt` op HTTP 200.
-- `/assets/app.mjs` op dezelfde SHA-256 als de lokale checkout. 
-- `GET /api/index.php?action=health` op databasebereikbaarheid, no-store/nosniff en `releaseFingerprint`: een SHA-256 over alléén de zes publieke/deploybare PHP-bronbestanden. Dit is **codepariteit, geen exact Git-commit-SHA** en geen Hostinger cron- of databaseherstelbewijs.
-- `/lib/bootstrap.php`, `/scripts/operations.php`, `/docs/NIVO-DELIVERY-CONTRACT-V1.md` en `/.git/config` moeten 403/404 retourneren.
+De opdracht toont uitsluitend bestaande queue-aggregaten en configuratie-gates. Het `--send-test`-pad is al getest en hoeft niet periodiek opnieuw uit te gaan.
 
-De taak registreert alleen controlelabels, HTTP-statuscodes en de broncode-fingerprint in een 14 dagen bewaard GitHub Actions-artifact; geen cookies, klantgegevens, adminlogins, e-mailtransport of secrets. Een verschil betekent **niet bewezen live-release** en veroorzaakt een GitHub workflow-fout. Hostinger kan achterlopen bij een push; de taak geeft een beperkt aantal pogingen. Dagelijkse GitHub-checks zijn aanvullende externe beschikbaarheidscontrole, geen garantie van realtime monitoring of een extern alarmkanaal.
+Controleer daarnaast met **bestaande beheerderslogin** in `/admin/` → **Overzicht / Tools & status** de werkelijke `admin_operations` status: `cron.lastSuccessAt`, `cron.ageSeconds`, `cron.status`, `delivery.pending/processing/smtp_accepted/failed`, SEO-bestanden en waarschuwingen. Voor een test van continuïteit zijn **minstens twee verschillende geslaagde cron-heartbeatmomenten** nodig; één screenshot van de laatste uitvoer is onvoldoende om 24/7 te claimen.
 
-Controleer bij een falende workflow eerst of Hostinger de nieuwste merge heeft uitgerold en of DNS/TLS/Apache bereikbaar zijn, voordat je de database of private config aanraakt. Voor daadwerkelijke cron-, mail-, back-up-/restore-acceptatie blijven de afzonderlijke stappen bovenaan dit document gelden.
+Na bevestigde meerdere ticks kan eigenaar op de server **alleen** de bestaande private `config.php` aanvullen met `'operations_monitor_enabled' => true` (en eventueel `'operations_max_age_seconds' => 1800`, passend bij de 5-minutentaak) als deze velden nog ontbreken. Verifieer PHP-syntax. Dit activeert de **dashboardwaarschuwingen** voor stale cron; er bestaat niet automatisch een extern per-email-alertkanaal.
 
-## Storingen en herstel
+## 4. Back-up en restore — nog P0, niet als voltooid markeren
 
-| Signaal | Verificatie en eerste veilige actie |
+1. Identificeer het juiste, bestaande Hostinger-siteaccount en productie-MySQL; leg eigenaar, tijdstip, bewaartermijn en back-uplocatie buiten de webroot vast.
+2. Maak een **consistent MySQL-databasebackup met actuele leads/outbox**, plus afzonderlijk beschermd en versleuteld herstelmateriaal voor `wattgoedkoper-private/config.php` (inclusief dezelfde bestaande encryptiesleutel; wachtwoorden niet op publieke plaatsen delen). De private `mail-config.php` verdient aparte beveiligde hersteldocumentatie; roteer geen keys tijdens deze proef.
+3. **Test restore op afgeschermde, niet-productieomgeving** met gescheiden toegang; verifieer schema, benodigde tabel/leadstatus en leesbaarheid van uitsluitend geïnstrueerde testrecords met dezelfde sleutel. Bewijs van werkelijke restauratie: datum, resultaat, herstelduur/handelingen, geen klantdata in repo.
+4. Stop bij fouten en herstel niet ongevraagd een oude dump over actuele productieaanvragen. Leg incidenten en eigenaar-go eerst vast.
+
+De API meldt `backup: not_verified` totdat werkelijk bewijs is verstrekt. Een geconfigureerde Hostinger-backup of groen GitHub CI is geen bewezen restore.
+
+## 5. Afleverstoringen, alerts en veilige retry
+
+| Signaal | Eerste actie |
 |---|---|
-| Cron unknown/stale | Controleer werkelijk Hostinger-crontab, CLI-runtime, private config, laatste exit en lock. Start desnoods één handmatige CLI-tick na controleren dat geen tweede draait |
-| Cron exit 75 | Bestaande process lock bezet; controleer of er een gezonde lopende taak is, verwijder lock niet blind |
-| NIVO pending/failed | Controleer transportopt-in, serviceaccount en goedgekeurde ontvanger. Gebruik beheerder-retry alleen op `failed`. Ontvangende partij moet `Idempotency-Key` respecteren |
-| Database/crypto fout | Bevries wijzigingen, verifieer private sleutel/back-up, inspecteer codes zonder klantpayload, herstart niet herhaaldelijk met nieuwe sleutels |
-| Mailfout | Zet transactionele rapportmail terug uit; adviesaanvragen blijven lokaal bewaard. Geen automatische marketing/verzendcampagnes |
-| Ontbrekende sitemap | Controleer release-artifact, sitemap/robots HTTP en SEO-generator; geen claims over indexatie zonder Search Console |
-| Back-up niet bewezen | Controleer Hostinger-backup plus offline/staging restore met encryptiesleutel. Geen productiegegevens in issue of CI uploaden |
-| Vervuilde wettelijk/financiële bron | Geen automatische publicatie; maak redactioneel issue, broncheck, menselijke accordering en PR |
+| `pending` loopt op | Controleer recente heartbeat, private NIVO-toggle, Hostinger-cronoutput; start geen tweede worker |
+| `processing` blijft hangen | Beoordeel lease/status; bij SMTP wordt verlopen lease in `failed/SMTP_UNCERTAIN` gequarantined (mogelijk al verzonden) |
+| `SMTP_UNCERTAIN` | Zoek `WG-`-code in NIVO-mailbox, pas na bevestigde **niet-ontvangst** via admin expliciet herplannen; geen blinde duplicatie |
+| `smtp_accepted` | SMTP-server heeft bericht aanvaard; niet nogmaals versturen. Voor kritieke gevallen afzonderlijke inboxcontrole door eigenaar |
+| `CRON_MISSING_OR_STALE` | Controleer hPanel-job, laatste heartbeat/exit, CLI/binary, proceslock; nooit tweede cron toevoegen |
+| `NIVO_DELIVERY_FAILED` | Bekijk foutcodes zonder PII, check configuratie/transport; zet transport bij noodincident alleen met eigenaarprocedure uit |
+| `SOURCE_REVIEW_DUE` | Hercontroleer relevante RVO/ACM/Milieu Centraal-bronnen, bouw content PR, menselijke review |
+| Mail/rapportfout | Maak onderscheid tussen NIVO-leadtransport en `report_mail_enabled` consumentrapport; niet beide ineens uitzetten zonder incidentcontext |
+| Herstel mislukt | Bevries destruktieve acties, behoud de bestaande sleutel, herstelopzet en huidige live MySQL |
 
-Rollback: stop de nieuwe cron vóór code-rollback; schakel eventueel NIVO-transport en rapportmail via private toggles uit; zet alleen de laatst goedgekeurde applicatiecode terug. **Geen rollback door verwijderen van nieuwe outboxrecords of herstel van oudere DB-dump over actuele klantleads heen.** Stem schemawijzigingen en in-flight leveringen af vóór definitief herstel. Zorg dat de private encryptiesleutel ongewijzigd en veilig beschikbaar blijft.
+De Hostinger-cron heeft `flock`-procesbescherming; foutcode 75 betekent dat een andere run de lock heeft. Onderzoek dubbele jobs of lange uitvoering en verwijder lockbestanden niet blind. Het huidige dashboard toont beperkte technische waarschuwingscodes; **geen goedgekeurd extern alarmkanaal** is bewezen.
 
-## Testen vóór acceptatie #26
+## 6. Veilige rollback en acceptatie
 
-`tests/operations_test.php` test de CLI offline op fictieve gegevens: succesvolle run, retention, herhaalde uitvoering, lock-conflict, gemiste heartbeat, omschakeling monitor, bronversheid en mislukte deliveries zonder PII. `tests/mysql_backend_test.php` controleert ops-metadata op een geïsoleerde CI-MySQL-database. `tests/backend_test.py` verifieert dat uitsluitend ingelogde beheerders status kunnen opvragen. Volledig positief is pas na echte Hostinger-cron, externe alerting of andere overeengekomen opvolging, geteste backup/restore en NIVO-ACK.
+- Code: uitsluitend gecontroleerde eerdere release terugzetten met een plan voor bestaande outboxschema-/transactiestatus; **geen reset of oude databasekopie over nieuwe leads**.
+- Bij SMTP-incident: contactgegevens en queue niet verwijderen. Eigenaar kan bewust `nivo_delivery_enabled` uitschakelen in private config om nieuwe aflevering te pauzeren; pas na incidentonderzoek/ontvangstcontrole heractiveren. De rapportmail is een andere flag.
+- Ratelimits, bewaartermijn, consent, serverauth, bescherming van `lib/scripts/docs/tests/.git` en apart autorisatiebeleid blijven ongewijzigd.
+- Backups, herstel, privacy/exploitant, continue cronmonitor en uitvoerbare incidentinstructies zijn onderdeel van de [actuele roadmap](ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md). **Issue #25/#26 open laten** totdat deze externe voorwaarden zijn bewezen.
+
+Testpaden: `php tests/operations_test.php`, `php tests/delivery_test.php`, `python3 tests/backend_test.py --php php`, `php tests/mysql_backend_test.php` uitsluitend op geïsoleerde CI-MySQL, GitHub Actions live/browser. Bij het controleren van productie gaat een read-only statuscheck vóór handmatige jobs of testmails.

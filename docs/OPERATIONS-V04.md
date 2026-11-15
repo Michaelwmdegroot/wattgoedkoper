@@ -1,4 +1,4 @@
-# WattGoedkoper 0.4 — dashboard, inbox en leadmagnet
+> **HISTORISCH v0.4-BEHEERDOCUMENT.** De actuele productie gebruikt inmiddels Dashboard 2.0, NIVO-only outbox/SMTP naar `portal@nivogroepholland.nl` en de enkele Hostinger-`scripts/operations.php`-cron; de eigenaar bewees echte testleadontvangst op 15 november 2026. Oudere handmatige-only mailbox, multi-partner of ontbrekende cronstatussen in de tekst hieronder zijn vervallen. **Gebruik [actuele operationsrunbook](OPERATIONS-RUNBOOK-V1.md) en [nieuwe productieoverdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md).** Dit document blijft als gedateerde technische geschiedenis beschikbaar; voer geen eerste installatiestappen opnieuw uit.\n\n# WattGoedkoper 0.4 — dashboard, inbox en leadmagnet
 
 > **Historische documentatie (v0.4).** Voor de nu gebouwde v0.5-branch met NIVO-only advies, rapportmail en verbeterde modals: zie [RELEASE-V05.md](RELEASE-V05.md). De v0.4-roadmap voor partnerkeuze en PDF hieronder is ingehaald door de nieuwe productbesluiten.
 

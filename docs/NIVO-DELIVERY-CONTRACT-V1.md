@@ -1,88 +1,60 @@
-# NIVO-leadtransport v1 — contract en activeringsgrens
+# WattGoedkoper — actueel NIVO-aflevercontract (SMTP live, Portal API voorbereid)
 
-**Status:** voorbereid in featurebranch voor issue #23. **Niet geactiveerd.** Een GitHub-merge of groene CI activeert geen echte klantgegevensoverdracht. De eerstvolgende verplichte stap is goedkeuring door de eigenaar én NIVO van de concrete ontvangende HTTPS-service, authenticatie en privacygrondslag.
+**Actualisatie:** 15 november 2026. **Actieve productie:** SMTP via `info@wattgoedkoper.nl` naar uitsluitend `portal@nivogroepholland.nl`. De eigenaar heeft zowel de synthetische adapterproef als een reguliere testadviesaanvraag end-to-end in de daadwerkelijke NIVO-inbox bevestigd. **Niet actief:** toekomstige NIVO Portal HTTPS/REST-API.  
+**Overdracht:** [HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md) · **Ops:** [OPERATIONS-RUNBOOK-V1.md](OPERATIONS-RUNBOOK-V1.md). De vroegere tekst “nog niet geactiveerd” is vervallen; oorspronkelijke besluiten zijn in Gitgeschiedenis terug te vinden.
 
-## Consument blijft ongewijzigd
+## 1. Vrijwillige adviesconsent, alleen nieuwe aanvragen
 
-De bestaande `POST /api/index.php?action=leads` accepteert uitsluitend een NIVO-adviesaanvraag met expliciete `2026-11-v2` toestemming. In dezelfde databasetransactie als de versleutelde opslag verschijnt precies één `delivery_outbox`-regel voor **nieuwe** leads. Herhaalde idempotente requests maken geen dubbele wachtrijregel. Bestaande/historische leads worden niet retrospectief in de wachtrij gezet; hun partner en toestemming blijven intact. Rapportmail en opt-in analytics blijven afzonderlijk.
+`POST /api/index.php?action=leads` accepteert alleen een vrijwillige **NIVO**-adviesaanvraag met geldige expliciete `2026-11-v2` consent, correct versie- en partnerbewijs, minimale contactvelden en server-side validatie. Zonder vereiste consent is er **geen** uitgaande lead. Persoonlijke gegevens, relevante energie-informatie en bewijs van toestemming staan versleuteld in de bestaande MySQL-leadtabel; precies één technische `delivery_outbox`-regel wordt transactioneel aangemaakt. Replays van dezelfde aanvraag maken geen dubbele outbox.
 
-Op SQLite en MySQL ontstaat additief één tabel `delivery_outbox` met een FK naar `leads`; verwijdering/retentie verwijdert ook het transportrecord. Bestaande tabellen, sleutels en data worden niet gereset.
+Historische partner-, status- en consentrecords worden **niet** bij een codewijziging herverstuurd of hernoemd. `report_email` en opt-in statistieken staan volledig los van deze route.
 
-## Aflevercontract en ontvangstbewijs
+## 2. Huidig SMTP-kanaal
 
-De onafhankelijke worker `scripts/deliver-leads.php` mag alleen via private, expliciete configuratie zenden. JSON POST v1 (minimaal):
+- Exacte ontvangende mailbox: **`portal@nivogroepholland.nl`**. Geen extra partner, CC/BCC of door consument te bepalen transport-ontvanger.
+- Uitgaand account: `info@wattgoedkoper.nl`, veilige private `mail-config.php` buiten webroot en bestaande Hostinger SMTP over TLS.
+- De eigenaar zette in de private `config.php` `nivo_delivery_enabled=true`, `nivo_delivery_channel='smtp'`, `nivo_delivery_recipient='portal@nivogroepholland.nl'` en bevestigde dit met `php -l` en `php scripts/nivo-smtp-pilot.php --check`. **Dit is reeds actief: geen setup opnieuw draaien en geen secrets in Git.**
+- Preflight: `php scripts/nivo-smtp-pilot.php --check` toont alleen geaggregeerde delivery-aantallen. `--send-test` produceert één expliciet als fictief gemarkeerd bericht **zonder een productielead of outbox aan te maken**. Beide zijn al succesvol door de eigenaar uitgevoerd.
+- Eén Hostinger-cron `*/5 * * * *` start `/usr/bin/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php`. Een geslaagde hPanel cronuitvoer en een echte reguliere testadviesaanvraag → NIVO-inbox zijn aangetoond.
+
+**Functioneel E2E-bewijs:** testaanvraag `WG-5510214770E3` stond rond 19:02 in WattGoedkoper-dashboard en werd rond 19:05 als automatische adviesmail met dezelfde code in de NIVO Portal-inbox getoond. De eigenaar deelde de beelden privé; nooit met contactgegevens of mailbody aan GitHub toevoegen. De precieze per-lead `smtp_accepted` status is nog niet apart als dashboardbewijs vastgelegd.
+
+## 3. Transportstatussen en terugval
+
+| Status | Betekenis | Wat níet te claimen |
+|---|---|---|
+| `pending` | In de lokale outbox, nog niet aangeboden | Geen afgeleverd bericht |
+| `processing` | Worker heeft item met lease geclaimd | Geen gegarandeerde verzending |
+| `smtp_accepted` | SMTP-relay heeft bericht na DATA met 250 geaccepteerd; terminale staat | **Geen** formeel bewijs van inboxaflevering en geen API-ACK |
+| `acknowledged` | Alleen HTTPS-ontvanger heeft echte, geldig geverifieerde `receiptId` geretourneerd | Niet als SMTP-status gebruiken |
+| `failed` | Terminale fout, consent-/provider-rejectie of `SMTP_UNCERTAIN` | Niet verwijderen of blind herhalen |
+
+Een verbroken SMTP-verbinding vóór de DATA-fase kan veilig met begrensde backoff opnieuw worden geprobeerd. Een onduidelijke uitkomst (mogelijk reeds aanvaardde DATA, vastgelopen PHP-proces of verlopen SMTP-processing-lease) gaat naar `failed`/`SMTP_UNCERTAIN`. **Niet automatisch nogmaals aanbieden:** beheerder controleert de NIVO-mailbox op de unieke `WG-`-code en kan uitsluitend daarna via CSRF-beveiligde admin-retry opnieuw inplannen. Een eenmaal `smtp_accepted` of `acknowledged` item kan niet opnieuw worden verzonden via de standaard retry.
+
+`admin_stats` toont de statusaantallen, `admin_leads` toont per-aanvraag transportstatus, laatste veilige foutcode en eventuele HTTPS-referentie. Geen klantpayload, e-mailadres of secrets in technische foutmeldingen. Privacyretentie en handmatige verwijdering cascaderen naar de outbox.
+
+## 4. Toekomstige NIVO Portal HTTPS API (NIET actief)
+
+De e-mailinbox **NIVO Portal** is niet hetzelfde als een draaiende REST API van de toekomstige NIVO Portal. De HTTPS-adapter in `lib/delivery.php` is voorbereid op een afzonderlijk eigenaar-/NIVO-goedgekeurd endpoint, exacte HTTPS-hostallowlist, geheim server-token, `requestId` als idempotency-key en een valide ontvangstantwoord. Conceptueel:
 
 ```json
 {
   "schema": "wattgoedkoper.nivo.lead.v1",
   "requestId": "WG-A1B2C3D4E5F6",
-  "createdAt": "2026-11-15T10:00:00Z",
-  "recipient": "NIVO Groep Holland",
-  "contact": {"name": "Fictieve Consument", "email": "voorbeeld@example.test", "phone": "", "postcode": ""},
+  "contact": {"name": "Fictieve Consument", "email": "example@example.invalid"},
   "interests": ["battery"],
-  "plan": {"modelVersion": "v1", "year": 2027, "selectedIds": ["battery"], "annualSavingsLow": 100, "annualSavingsHigh": 250},
-  "note": "",
-  "consent": {"version": "2026-11-v2", "text": "De volledige server-side consenttekst", "acceptedAt": "2026-11-15T10:00:00Z", "recipient": "NIVO Groep Holland"}
+  "plan": {"selectedIds": ["battery"], "year": 2027},
+  "consent": {"version": "2026-11-v2", "acceptedAt": "2026-11-15T10:00:00Z"}
 }
 ```
 
-Er worden geen volledige ruwe huisinputs, cookies, sessietokens, IP-adressen of marketingtoestemmingen meegestuurd.
+Het servercontract vereist valide TLS, authorisatie, exact eenmaal verwerken van hetzelfde `requestId`, `acknowledged:true` + syntactisch correcte `receiptId`, veilige timeout/retry, dataminimalisatie en privacyafspraken. **Geen echte Portal-API-config invullen, geen HTTP-endpoint gokken en SMTP + HTTPS niet beide tegelijk voor één lead activeren.**
 
-De ontvanger moet met hetzelfde `requestId` / HTTP-header `Idempotency-Key` verzoeken exact één keer registreren, ook wanneer een eerdere HTTP-respons verloren gaat. Alleen HTTP 2xx met strikt JSON `{"acknowledged":true,"receiptId":"NIVO-REF-123"}` telt als technisch bevestigd; een idempotente 409 met dezelfde geldige ontvangstbewijsstructuur kan eveneens tellen. Niet bevestigd is niet bezorgd. Bewaar `receiptId` uitsluitend als technische externe referentie. Geen bron-PII in foutcodes of logging.
+## 5. Bewijs, testen en nog open
 
-> **Status 15 november 2026:** De eigenaar heeft de handmatige end-to-end ontvangst van het bericht `TEST – WattGoedkoper SMTP` bij NIVO Portal met een screenshot bevestigd. De automatische outbox-worker is nog niet bewezen op Hostinger en blijft standaard uitgeschakeld. Zie [NIVO SMTP-productieactivatie](NIVO-SMTP-PRODUCTION-RUNBOOK.md) voor het nieuwe niet-destructieve CLI-commando `php scripts/nivo-smtp-pilot.php --check` en de expliciete `--send-test`-pilot. SMTP-transport vereist aparte private activatie en één goedgekeurde cron. Bij verlopen SMTP-leases na een procescrash volgt voortaan `SMTP_UNCERTAIN` / beheerderscontrole; nooit stilzwijgende automatische duplicatie.\n\n## E-mailtransport voor de door eigenaar goedgekeurde NIVO-inbox
+- Synthetische tests zijn groen op baseline `f3c273dcffb03de05de13004fee410194ae659df`: `php tests/delivery_test.php`, `php tests/mysql_backend_test.php` op geïsoleerde CI MySQL, `python3 tests/backend_test.py --php php`, `php tests/operations_test.php`. Reële MySQL-productiedata zijn niet gebruikt voor GitHub CI.
+- Echte NIVO-inboxontvangst is op één handmatige, één synthetische pilot én één reguliere testadviesaanvraag door eigenaar vastgesteld.
+- Open: per-lead `smtp_accepted`/ops-heartbeat in dashboard en blijvende monitoring, privacy/securityverwerking bij NIVO, herstelde backup, alert-eigenaar en toekomstige API-ACK (alleen als API werkelijk bestaat).
+- Go-live voor **aparte consumentenrapportmail** is geen onderdeel van deze route; zie `lib/report.php` en de actuele [roadmap](ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md).
 
-**Eigenaarsbesluit 15 november 2026:** nieuwe, vrijwillige WattGoedkoper-adviesaanvragen moeten naar **`portal@nivogroepholland.nl`**. Dit adres is de enige toegestane bestemming voor het e-mailkanaal. De consumentenrapportmail blijft een apart proces naar het door de consument ingevulde e-mailadres.
-
-De bestaande en toekomstige NIVO Portal-HTTPS-adapter blijft beschikbaar. Totdat de NIVO Portal daadwerkelijk een ontvangende API heeft, kan de transport-onafhankelijke outbox met **`nivo_delivery_channel => 'smtp'`** via de bestaande, private **`info@wattgoedkoper.nl`**-SMTP-voorziening één transactionele adviesmail per nieuwe aanvraag aanbieden. Geen externe e-maildiensten, CC/BCC, extra ontvanger of massamail.
-
-Vereiste expliciete configuratie, uitsluitend in bestaande private `config.php` buiten webroot, **na bevestigde verzend- en ontvangsttest**:
-
-```php
-'nivo_delivery_enabled' => false,    // ALLEEN na echte pilottest op true zetten
-'nivo_delivery_channel' => 'smtp',
-'nivo_delivery_recipient' => 'portal@nivogroepholland.nl',
-```
-
-De bestaande private `mail-config.php` moet met de eigen `info@wattgoedkoper.nl`-SMTP-inlog werken en mag niet in Git staan. De applicatie weigert elke andere e-mailontvanger, een ontbrekende mailboxconfiguratie en een niet-expliciet ingeschakelde transportadapter. De frontend en API mogen de bestemming niet aanpassen.
-
-### Belangrijk: bewijsniveaus en retries
-
-- `pending`: opgeslagen en wachtend; **geen** bewijs dat er iets is verstuurd.
-- `smtp_accepted`: de bestaande Hostinger-SMTP-server heeft met **250 na DATA** een bericht aanvaard. De inboxbezorging bij NIVO is daarmee **niet bewezen**. Dit is een terminale status: dezelfde aanvraag wordt niet blind opnieuw verzonden. Het onderwerp en bericht bevatten dezelfde aanvraagcode voor deduplicatie bij NIVO.
-- `acknowledged`: uitsluitend de HTTPS-adapter heeft een echte, gevalideerde ontvangstbevestiging met referentie ontvangen.
-- `failed`: aflevering mislukt of onzeker; het dashboard toont alleen een technische foutcode. Een connectiefout vóór SMTP DATA (`SMTP_UNAVAILABLE`) mag automatisch worden herprobeerd met backoff. Een onduidelijke verzenduitkomst (`SMTP_UNCERTAIN`, bijvoorbeeld time-out rond SMTP DATA) **niet**: pas na expliciete controle van de NIVO-inbox kan de beheerder opnieuw inplannen.
-
-Bewaar geen mail-body, contactgegevens of afschriften in de outbox of in logs. De bestaande versleutelde lead blijft de enige bron; handmatige CSV-export en back-ups blijven beveiligingsgevoelig.
-
-**Echte activeringsproef:** controleer de juiste private mailbox en domeinauthenticatie (SPF/DKIM/DMARC), stuur met gecontroleerde fictieve consented gegevens via de Hostinger-worker één aanvraag, controleer dat **`portal@nivogroepholland.nl` de mail werkelijk heeft ontvangen**, en verifieer de eenmalige verzending plus `smtp_accepted` status in WattGoedkoper-dashboard. Pas daarna kan de eigenaar `nivo_delivery_enabled` activeren. Zonder eenduidige inboxbevestiging blijft de verzending uit.
-
-## Private configuratie: HTTPS-adapter, uitsluitend na ontvanger- en eigenaar-go
-
-```php
-// Voeg uitsluitend buiten webroot toe aan bestaande config.php; dit is een voorbeeld, geen toestemming tot activeren.
-'nivo_delivery_enabled' => false,
-'nivo_delivery_endpoint' => 'https://<GOEDGEKEURDE-ONTVANGER>/api/leads',
-'nivo_delivery_allowed_hosts' => ['<GOEDGEKEURDE-ONTVANGER>'],
-'nivo_delivery_token' => '<PRIVÉ SERVICE TOKEN VAN MINIMAAL 32 TEKENS>',
-```
-
-Gebruik nooit deze placeholders voor een werkelijke verzending. Controleer HTTPS/TLS, host-allowlist, serviceaccountrechten, retentie, verwerkersafspraken, de NIVO-ontvangstidentiteit en een synthetische end-to-end ACK vóór omschakeling naar `true`. Geen mailadres of Portal-endpoint is aangenomen. Geen nieuwe betaalde dienst.
-
-De worker geeft bij ontbrekende/geweigerd geconfigureerde bestemming netjes ‘uitgeschakeld’ terug en verandert dan geen wachtrijstatus. Na vrijgave hoort hij bij de **ene** goedgekeurde Hostinger-onderhoudscron van #25, zodat niet meerdere onafhankelijk draaiende cronjobs of parallelle workers ontstaan.
-
-## Retry en beheer
-
-- Outboxstatus: `pending` → `processing` → `acknowledged` of `failed`. Eventuele time-out/herstart wordt met een lease opnieuw aangeboden aan dezelfde idempotente ontvanger.
-- 5 pogingen met groeiende vertraging, daarna zichtbaar `failed`, zonder verwijdering of stille afleverclaim.
-- Beheer: `admin_stats` rapporteert de echte statusaantallen, `admin_leads` rapporteert status/ACK per aanvraag; `POST admin_delivery_retry` laat de ingelogde beheerder na CSRF+Origin-validatie uitsluitend een mislukte aanvraag herplannen. Deze adminactie verstuurt zelf niets.
-- Historische leadrecords zonder outbox hebben `delivery:null`; zij zijn niet als automatisch bezorgd te interpreteren.
-- Fouten zijn alleen vaste technische codes; contactgegevens blijven versleuteld in de bestaande leadtabel.
-- Back-ups en privacyretentie moeten ook de outbox omvatten. Verifieer herstel met passende sleutels op een afgeschermde kopie, zonder live-data in Git.
-
-## Verificatierapport
-
-- `php tests/delivery_test.php`: SQLite offline contract, uitgeschakelde transportgate, toestemming, ACK, herhaalde uitvoering, netwerkfout/backoff, 5 pogingen, herstel en cascade deletion.
-- `php tests/mysql_backend_test.php`: geïsoleerde MySQL in GitHub Actions, transactionele outbox, ACK en cascade.
-- `python3 tests/backend_test.py --php php`: echte API-acceptatie en admin-auth op fictieve SQLite-data.
-- **Niet bewezen door CI:** een daadwerkelijk geautoriseerde NIVO-ontvangst, Hostinger-cron, externe TLS-/DNS-review, productieback-up/restore of SMTP. Eindevaluatie pas bij #26.
+Voor configuratieverificatie en incidenten zie het actuele [SMTP-productierunbook](NIVO-SMTP-PRODUCTION-RUNBOOK.md). Geen productietoggles terugzetten op “uit” omdat een historisch document dat nog adviseerde.

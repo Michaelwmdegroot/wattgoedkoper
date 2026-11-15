@@ -2,7 +2,7 @@
 
 ## Wat werkt
 
-De consumentenscan rekent volledig in de browser. Daarvoor hoeft de bezoeker geen contactgegevens in te vullen en is de PHP-backend niet nodig. Een expliciete adviesaanvraag wordt pas bevestigd nadat PHP de gegevens duurzaam heeft opgeslagen. De aanvraag komt in `/admin/` terecht. **Er worden geen automatische e-mails verstuurd.** De optionele mailwerkplek in 0.4 leest de juiste Hostinger-mailbox en verstuurt uitsluitend na handmatige bevestiging; zie [operations](OPERATIONS-V04.md). Er is geen externe CRM-koppeling. De geselecteerde adviespartner is een routeringskeuze voor menselijke opvolging in dit dashboard.
+De consumentenscan rekent volledig in de browser. Daarvoor hoeft de bezoeker geen contactgegevens in te vullen en is de PHP-backend niet nodig. Een expliciete adviesaanvraag wordt pas bevestigd nadat PHP de gegevens duurzaam heeft opgeslagen. Nieuwe consented aanvragen worden tegelijk transactioneel in `delivery_outbox` geplaatst en door de bestaande Hostinger-cron automatisch via de **door eigenaar geautoriseerde SMTP-route** naar `portal@nivogroepholland.nl` gestuurd. De eigenaar heeft op 15 november een echte testaanvraag in het dashboard én enkele minuten later in de NIVO-inbox ontvangen. De zelfstandige consumentenrapportmail is een **ander, nog niet operationeel geverifieerd** pad. Er is geen directe NIVO Portal REST-/CRM-koppeling. Zie [de actuele productieoverdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md).
 
 Het dashboard bevat gemeten starts, voltooide scans, adviesinteresse, opgeslagen aanvragen, opt-in conversie, statusbeheer, CSV-export, definitieve verwijdering, operationele status-/partneraantallen, nieuwe aanvragen ouder dan 24 uur en optionele inbox. Het bevat geen fictieve voorbeeldleads.
 
@@ -15,31 +15,13 @@ Het dashboard bevat gemeten starts, voltooide scans, adviesinteresse, opgeslagen
 
 De code heeft geen Composer- of JavaScript-pakketten nodig voor de backend. De nieuwe WattGoedkoper Hostinger-website gebruikt **MySQL** via PDO. SQLite blijft ondersteund voor bestaande installaties en tests. Gebruikersrollen en MFA zijn aanvullende veiligheidsstappen zodra meerdere beheerders toegang krijgen.
 
-## Eerste serverinstallatie
+## Bestaande Hostinger-productie — geen nieuwe installatie
 
-Voor de nieuwe, aan wattgoedkoper.nl gekoppelde Hostinger MySQL-database is het juiste commando:
+**Installatie uitgevoerd en in gebruik.** Hostinger draait PHP 8.2.35 CLI op `/usr/bin/php`, de reeds ingerichte MySQL-database, private `../wattgoedkoper-private/config.php` en een beveiligd `/admin/`-dashboard. NIVO-advies en de bestaande cron werken functioneel; zie [de overdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md).
 
-```bash
-bash scripts/setup-mysql.sh
-```
+**NOOIT** de historische `scripts/setup-mysql.sh` of `scripts/setup.php` op deze productieomgeving herhalen. Die scripts zijn uitsluitend voor eerste, lege installaties. Geen encryptiesleutels/DB-credentials wijzigen, geen klantdata exporteren of oudere dump terugzetten over actuele leads. Raadpleeg het [archief van de originele installatie](HOSTINGER-MYSQL.md) uitsluitend voor achtergrond.
 
-Zie [de volledige MySQL-instructies](HOSTINGER-MYSQL.md). Het oude `scripts/setup.php` is uitsluitend voor SQLite-installaties; draai deze twee scripts niet allebei.
-
-Het script vraagt het wachtwoord via standaardinvoer. Gebruik een uniek wachtwoord van minstens 14 tekens. Zet het wachtwoord nooit in de commandoregel, GitHub, een issue of chat. In een terminal wordt de invoer verborgen. Er zijn geen standaardinloggegevens.
-
-De veilige Bash-wrapper vraagt de database- en gebruikersnaam en de twee wachtwoorden via een interactieve SSH-terminal. Hij gebruikt `read -s`, want Hostinger schakelt PHP `system()` standaard uit; de wachtwoorden gaan uitsluitend via een pipe naar PHP. Je hoeft `system()` niet aan te zetten. Standaard maakt het script `../wattgoedkoper-private/` buiten de documentroot. De configuratie bevat alleen de wachtwoordhash, twee willekeurige serversleutels, de canonieke origin en de bewaartermijn. PHP-sessies en de geheime configuratie staan in diezelfde private map; bij MySQL worden de applicatietabellen in de aparte Hostinger-database aangemaakt. De setup weigert bestaande configuratie te overschrijven of private bestanden onder de documentroot op te slaan.
-
-Een afwijkend pad kan via `--private-dir=/absoluut/privepad`. Stel dan dezelfde `WG_PRIVATE_DIR`-omgevingsvariabele in voor PHP-webverzoeken, de CLI en het onderhoud. Gebruik bij Hostinger bij voorkeur het standaardpad; dan is geen omgevingsvariabele nodig.
-
-Verifieer na inrichting:
-
-1. `/api/index.php?action=health` geeft `configured:true` én `databaseReady:true`.
-2. `/admin/` accepteert het ingestelde account.
-3. Dien één duidelijk herkenbare eigen testaanvraag in en controleer de ontvangst in het dashboard; verwijder die vervolgens.
-4. Verifieer dat `/.git/config`, `/lib/bootstrap.php`, `/scripts/setup.php`, `/docs/` en backup/configbestanden niet publiek bereikbaar zijn.
-5. Controleer op HTTPS dat de sessiecookie `Secure`, `HttpOnly` en `SameSite=Strict` heeft.
-
-Zonder geldige configuratie retourneert de health-check `configured:false`. De scan blijft beschikbaar, maar de lead-API geeft `503 SETUP_REQUIRED` en het dashboard blijft gesloten. Een ontbrekende backend mag de frontend nooit als een geslaagde aanvraag presenteren.
+`GET /api/index.php?action=health` moet `configured:true` en `databaseReady:true` tonen. Het dashboard vereist een geldige beheersessie; `lib/`, `docs/`, `scripts/`, `tests/` en dotfiles zijn publiek geblokkeerd. GitHub Actions controleert publieke codepariteit en HTTP-beveiliging, niet back-ups/cron-heartbeats.
 
 ## Wachtwoord wijzigen
 
@@ -145,10 +127,14 @@ Nieuwe leads zijn server-side NIVO-only en gebruiken toestemming `2026-11-v2`. E
 **Fail-closed:** de configuratie `'report_mail_enabled'=>true` moet expliciet *in de private configuratie buiten documentroot* bestaan, en het bestaande mailaccount moet correct ingesteld zijn. Anders: HTTP 503 `REPORT_MAIL_DISABLED`. De `session`-response bevat uitsluitend het boolean veld `reportMailEnabled`. SMTP-acceptatie is geen garantie op inboxbezorging. De client rekent lokaal; de verzonden snapshot is een ongeverifieerde indicatie, niet een serverberekende of getekende offerte. Zie `docs/RELEASE-V05.md`.
 
 
-## Stand van NIVO-leadoverdracht en monitoring — 15 november 2026
+## Productie-implementatie: NIVO, cron, consent en mailbox
 
-Nieuwe, expliciet toestemmende NIVO-adviesaanvragen slaan hun versleutelde payload én één outbox-item atomair op. De afzonderlijke `scripts/operations.php`-runner kan na een geautoriseerde croninstelling retentie, veilige wachtrijverwerking en heartbeat uitvoeren. `admin_stats` bevat echte `delivery`-aantallen, `admin_leads` heeft een afzonderlijk bezorgrecord; `admin_delivery_retry` is alleen met beheerlogin, Origin en CSRF toegankelijk. Bij een mogelijk eerder aanvaarde SMTP-mail (`SMTP_UNCERTAIN`) is de expliciete boolean `confirmMailboxChecked:true` vereist; anders wordt de retry geweigerd. De API verstuurt bij dit beheercommando nooit direct.
+- Live NIVO-transportroute: `nivo_delivery_enabled=true`, `nivo_delivery_channel=smtp`, exacte bestemming `portal@nivogroepholland.nl` (door eigenaar aangetoond met private `--check`; **dit zijn geen waarden om bij deploy te overschrijven**). SMTP-afzender `info@wattgoedkoper.nl` in private `mail-config.php`.
+- `POST leads`: gescheiden `2026-11-v2` consent, AES-256-GCM-lead + `delivery_outbox`, één idempotent item per nieuwe lead. Historische partner/consent onveranderd. `admin_stats` en `admin_leads` tonen technische aflevertellingen.
+- Eén Hostinger-runner `/usr/bin/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php` elke vijf minuten, via hPanel cron. Hij verwerkt de outbox en schrijft private `ops_last_success_at`. Eén cronoutput en echte post-cron inboxlevering zijn aangetoond; de herhaalde heartbeat/monitor-flag moet nog operationeel worden afgetekend.
+- `smtp_accepted` bevestigt alleen SMTP-serveracceptatie na DATA; `acknowledged` is gereserveerd voor een echte toekomstige HTTPS API-receipt. Voor één testlead `WG-5510214770E3` heeft de eigenaar **apart** de inboxontvangst bevestigd. Bij `SMTP_UNCERTAIN` na timeout/crash géén automatische duplicatie, pas retry na expliciete mailboxcontrole.
+- `admin_delivery_retry` vereist beheerlogin, CSRF/Origin en bij `SMTP_UNCERTAIN` `confirmMailboxChecked:true`; deze API verstuurt zelf nooit direct een mail.
+- `report_email` voor het consumentrapport is een **apart** pad achter `report_mail_enabled`. De private werkelijke status en E2E-ontvangst moeten nog worden geverifieerd; deze functie creëert geen NIVO-lead of consent.
+- `admin_operations` levert alleen beveiligde statusinformatie, cron age, SEO-bronversheid en eerlijke `backup:not_verified` totdat echt herstelbewijs bestaat. Een groene GitHub CI-test mag niet als restorebewijs worden gepresenteerd.
 
-NIVO-e-mailtransport heeft een **exact vaste bestemming `portal@nivogroepholland.nl`**, een private Hostinger `info@wattgoedkoper.nl` SMTP-config en een afzonderlijk, standaard uitgeschakeld `nivo_delivery_enabled`-flag. `smtp_accepted` is een terminale status na acceptatie door de mailserver, **zonder bewijs van inboxontvangst**; `acknowledged` betekent een geldige externe HTTP-ontvangstreferentie. Historische partnerrecords en mail-only rapporten worden niet naar NIVO doorgestuurd. De volledige private activering/test staat in `docs/NIVO-DELIVERY-CONTRACT-V1.md`.
-
-`GET admin_operations` vereist een beheerlogin en geeft cronstatus, afleveringstelling, bronversheid, SEO-bestandsstatus en expliciet niet-bewezen back-ups; geen persoonsgegevens. De externe, publieke API-health toont een SHA-256 `releaseFingerprint` over alleen gedeployde codebestanden, geen private configuratie. GitHub Actions vergelijkt vanaf PR #34 via read-only GET de frontend- en backendbroncode met de publieke Hostinger-deploy, maar bewijst geen geteste cron, SMTP-inboxontvangst of databaseherstel.
+Actuele contracten en handelingen: [NIVO-delivery](NIVO-DELIVERY-CONTRACT-V1.md), [NIVO SMTP-runbook](NIVO-SMTP-PRODUCTION-RUNBOOK.md), [operations](OPERATIONS-RUNBOOK-V1.md), [nieuwe roadmap](ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md).

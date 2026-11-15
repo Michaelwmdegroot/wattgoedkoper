@@ -1,79 +1,53 @@
-# WattGoedkoper — agentregels en projectstatus
+# WattGoedkoper — agentregels, actuele productie en leesvolgorde
 
-**Aanvullend productiebewijs (15 november 2026):** de eigenaar heeft de handmatig via het admin-dashboard verzonden fictieve SMTP-testmail **in de inbox van NIVO Portal ontvangen**. Het vast ingestelde mailadres voor nieuwe, expliciet consented adviesaanvragen is `portal@nivogroepholland.nl`. Dit bewijst de SMTP-mailboxkoppeling, **niet** automatisch werkende outbox/cron. Nieuwe featurebranch `feat/p0-23-smtp-worker-pilot-activation` voegt veilige `--check`-wachtrijinspectie, expliciete synthetische SMTP-pilot, een crash-lease anti-dubbelverzendbeveiliging en een Hostinger-activatierunbook toe. Release blijft standaard `nivo_delivery_enabled=false` totdat de eigenaar de synthetische pilot en werkelijke cron bevestigt. Zie `docs/NIVO-SMTP-PRODUCTION-RUNBOOK.md`.\n\n**Actuele release-overname (15 november 2026):** eigenaar-go is gegeven en PR's #28–#33 zijn gemerged (laatst voorafgaand aan de externe smoke: `593856f`). `main` bevat MySQL/SQLite onderhoud, Dashboard 2.0, NIVO-outbox, één operations-runner, SEO-cluster 2 en het **standaard uitgeschakelde** SMTP-adapterkanaal naar uitsluitend `portal@nivogroepholland.nl`. Losse rapportmail naar consumenten blijft ook standaard uit. PR #34 bereidt onafhankelijke GitHub Actions-live/pariteitschecks voor; **geen enkele GitHub-merge bewijst Hostinger-live-uitrol**. Back-up/restore, Hostinger-cron, SMTP-ontvangst in de NIVO-inbox en juridische/privacy-review moeten nog operationeel worden afgetekend. Deze actuele status heeft voorrang op historische 'PR open'-notities onderaan.\n\n**Huidige fase (14 november 2026):** v0.8 SEO-/productcluster **afgesloten en via PR #20 gemerged** op `main` (`5d5dac9`); rekenkern, Plan Studio, NIVO-only advies en eerste SEO-cluster blijven bewaard. Nieuwe opdracht: afronden tot een **zelfstandig werkend SEO- en NIVO-leadplatform**, met een compact eigen dashboard en een toekomstige gecontroleerde NIVO Portal-koppeling. **Uitvoeringsplan: `docs/FINISHLINE-AUTONOMOUS-PLATFORM-V09.md`, issues #21–#26, regie #14.**
+**Actuele mijlpaal (15 november 2026):** de premium consumentenwebsite, beveiligde MySQL/API, Dashboard 2.0, één Hostinger 5-minuten-cron en de **vrijwillige NIVO-adviesaflevering per SMTP** zijn functioneel live. De eigenaar bewees dit met een gewone testaanvraag `WG-5510214770E3`, zichtbaar in het admin-dashboard rond 19:02 en ontvangen rond 19:05 in de echte **`portal@nivogroepholland.nl`**-inbox. Code-`main` vóór de documentatieoverdracht: `f3c273dcffb03de05de13004fee410194ae659df` (PR #35); controleer altijd actuele HEAD. Alle PR's #28–#35 zijn gemerged. De **algemene Finish Line is nog niet afgerond**: back-up/restore, monitoring-acceptatie, individuele afleverstatus, aparte rapportmail, juridische/privacygegevens en echte GSC-cijfers blijven open.
 
-## Leesvolgorde vóór nieuwe werkzaamheden
+**Leidende overdracht:** [docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md](docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md).  
+**Nieuwe roadmap:** [docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md](docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md).  
+**Volgende agent:** [docs/START-PROMPT-NEXT-AGENT-LEADGEN-2026-11-15.md](docs/START-PROMPT-NEXT-AGENT-LEADGEN-2026-11-15.md).  
+**Regie:** [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14), [#21–#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21). De oudere overdracht, oude roadmaps en v0.5–v0.9 plannen zijn **historische ontwerp-/releasegeschiedenis**, niet de huidige productiestatus.
 
-1. `docs/FINISHLINE-AUTONOMOUS-PLATFORM-V09.md` — leidend afgerond uitvoeringsplan, P0/P1, operationele en NIVO-leveringsgates.
-2. `docs/HANDOFF-FULL-PRODUCT-2026-11-14.md` — eerdere basis, beslissingen, tests, operatierisico's.
-3. `docs/ROADMAP-SEO-PRODUCT-LEADGEN.md` — productsamenhang en gefaseerde nieuwe roadmap.
-4. `docs/START-PROMPT-NEXT-AGENT.md` — volledige overdrachtsopdracht.
-5. `docs/PLAN-STUDIO.md`, `docs/HOME-COCKPIT-V06.md`, `docs/BRAND-AND-HERO-V07.md`, `docs/RELEASE-V05.md`.
-6. `docs/frontend-contract.md`, `docs/backend.md` en daarna de actuele broncode.
+## Verplichte leesvolgorde
 
-**Geldigheid:** actuele eigenaarsbesluiten + werkelijk actuele `main` + nieuwste documenten hebben voorrang boven oudere v0.1–v0.4 documenten en de historische PDF's. Die PDF's beschrijven een oud WordPress- en drie-offerte-/€100-bonus-/multi-partnermodel. Bouw dat **niet** opnieuw zonder expliciet nieuw eigenaarsbesluit.
+1. Actuele GitHub-`main` en dit `AGENTS.md`.
+2. `docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md`.
+3. `docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md`.
+4. `docs/backend.md`, `docs/OPERATIONS-RUNBOOK-V1.md`, `docs/NIVO-DELIVERY-CONTRACT-V1.md` en `docs/NIVO-SMTP-PRODUCTION-RUNBOOK.md`.
+5. Issues #14, #21–#26 en de daadwerkelijke recente GitHub Actions-workflows; daarna de relevante broncode.
 
-## Productregels
+## Vaststaande productregels
 
-- De homepage is een **premium interactief energiehuis**; geen geforceerde meerstappenquiz of contactformulier als uitgangspunt.
-- Volledige bruikbare berekening en scenario's **gratis zonder account of verplicht contact**. Opslaan op eigen apparaat, undo, touch/keyboard en het gebruik zonder tracking blijven mogelijk.
-- De bezoeker kan vijf maatregelen selecteren: slim gebruik, isolatie, zonnepanelen, hybride warmtepomp en thuisbatterij. Bestaande installaties zijn **niet** hetzelfde als nieuw geselecteerde stappen.
-- De Plan Studio toont eerlijke combinaties en onzekerheidsbandbreedtes. De deterministische rekenkern telt geen marginale effecten op; 2026 en 2027 zijn afzonderlijke scenariojaren. Negatieve besparingen, budgetoverschrijdingen en ongeschikte maatregelen blijven zichtbaar.
-- Day/night is visueel, geen uurprognose. Variabele energiekosten zijn niet de hele factuur; tarieven en investeringen zijn voorbeelden, geen leveranciersoffertes.
-- Claim nooit onafhankelijkheid, gegarandeerde terugverdientijd, actuele prijzen, overheidserkenning, subsidie, fiscale voordelen, meterdata of bewezen installatieprestaties zonder controleerbaar actueel bewijs.
-- Nieuwe **adviesleads gaan uitsluitend naar NIVO Groep Holland**; geen NIVO/TBT/beide keuze. Consent `2026-11-v2` expliciet, ongevinkt, server-side afgedwongen. Historische records/toestemming blijven intact.
-- Alleen een **energieplan per e-mail** aanvragen is **geen commerciële consent**, marketingopt-in of advieslead. Statistiekentoestemming is afzonderlijk. Publieke `report_email` is **default OFF** totdat Hostinger `info@wattgoedkoper.nl` privé is geconfigureerd én echte zelfgeadresseerde bezorging is geverifieerd.
-- Alleen geaggregeerde app-events bij opt-in; deze zijn geen unieke bezoekers of complete user journeys. Geen ongeoorloofde externe tracking, scripts of verborgen gegevensoverdracht.
-- Geldende privacy- en reclameverplichtingen voor de exploitant moeten vóór nieuwe commerciële features en claims worden geverifieerd; tekst met ontwikkelvoorbehoud niet stilzwijgend als juridisch voldongen feit behandelen.
+- De homepage blijft een **premium interactief energiehuis** met woning, visuele maatregelen en Plan Studio, geen goedkoop formulier. De bezoeker kan gratis berekenen, vergelijken, bewaren op eigen apparaat en terugdraaien zonder account, e-mail, advies of tracking.
+- Vijf maatregelen: slim gebruik, isolatie, zonnepanelen, hybride warmtepomp en thuisbatterij. Bestaande installaties niet met nieuw gekozen maatregelen verwarren.
+- De deterministische jaarberekening kent aparte rekenjaren, variabele kosten, budget- en negatieve-uitkomstwaarschuwingen. Dag-/nachtweergave is illustratief, niet een uur- of opbrengstvoorspelling. Gebruik geen gegarandeerde besparing, rendement, subsidies of energietarieven.
+- **Alle nieuwe vrijwillige adviesaanvragen uitsluitend naar NIVO Groep Holland** met expliciete en server-side afgedwongen, standaard uitgevinkte `2026-11-v2` toestemming. Geen partnerkeuze, extra ontvangers of omzet-/sales-mailcampagne. Historische partners en consent ongemoeid.
+- De actuele, **door eigenaar ingeschakelde** SMTP-route loopt van `info@wattgoedkoper.nl` naar exact `portal@nivogroepholland.nl`; de onafhankelijke `report_email` is **geen** NIVO-lead of toestemming voor marketing/analytics en moet nog apart eind-tot-eind worden geverifieerd.
+- Privacysparende, geaggregeerde analysetellingen alleen na losse opt-in. Niet presenteren als unieke bezoekers, bewezen attributie of Google Search Console-metingen zonder werkelijke data.
+- Het oude WordPress-, drie-offertes-/partners- en €100-bonusconcept uit historische PDF's is nadrukkelijk **vervallen**; niet terugbrengen.
+- Geen nieuwe betaalde tool/hostingupgrade, ongecontroleerde AI-massapublicatie of te optimistische juridische/financiële claims zonder akkoord en bronreview.
 
-## Architectuur
+## Huidige technische architectuur
 
-- Direct deploybare statische HTML/CSS en ES modules; PHP 8.2+ backend met PDO MySQL, legacy/test SQLite.
-- Kern: `index.html`, `assets/app.mjs`, `assets/model.mjs`, `assets/playground-model.mjs`, `assets/plan-ui.mjs`, `assets/house-scene.mjs`, `assets/home-cockpit.css`, `assets/brand-refresh.css`.
-- Publicatiepagina's: `scripts/build-content.py`, `assets/content.css`, `kennis/`, `rekenmodel.html`, `privacy.html`, `robots.txt`, `sitemap.xml`.
-- API/beheer: `api/`, `lib/`, `admin/` en `scripts/maintenance.php`.
-- Designsysteem: de bestaande fotorealistische huisassets, `assets/brand-logo.svg`, `assets/brand-mark.svg`, lokale Manrope/DM Serif Display en bestaande iconen; bouw coherent verder.
-- `main` is gekoppeld aan Hostinger Git-deploy. Een **GitHub-merge is geen onafhankelijk bewijs van echte Hostinger-uitrol**.
+- Frontend: statische HTML, CSS, native ES-modules en lokale beelden/fonts; `assets/app.mjs`, `assets/model.mjs`, `assets/house-scene.mjs`, `assets/playground-model.mjs` en `assets/plan-ui.mjs`.
+- MySQL/PHP: `api/index.php`, `lib/bootstrap.php`, `lib/delivery.php`, `lib/mail.php`, `lib/report.php`, `lib/operations.php`; private config en AES-sleutels **buiten de webroot**; SQLite compatibiliteit alleen voor tests/oudere installaties.
+- Consentgebonden leaddatabase + transactionele `delivery_outbox` en uitsluitend **één** Hostinger-cron: `*/5 * * * *` → `/usr/bin/php /home/u886757484/domains/wattgoedkoper.nl/public_html/scripts/operations.php`. Geen parallelle `maintenance.php`-/`deliver-leads.php`-cron.
+- Beheer in `/admin/`: Overzicht, Aanvragen, SEO, Tools & status, gerichte aanvraagweergave met technische delivery, retry-guards en mail.
+- Inhoud: `docs/seo-cluster-v08.json` en `scripts/build-content.py`; kennisclusters, canonicals, sitemap en contextuele gratis-tool-CTA's. Redactionele/wettelijke onderwerpen vereisen menselijk geverifieerde actuele bronnen.
+- GitHub Actions: berekening/backend/MySQL/security, echte browserreview en [publieke live-HTTP-smoke](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43662312644) met 14/14 checks op `f3c273d`. Live-sourcesmoke bewijst geen veilige back-up of cron-heartbeat.
 
-## Productieveiligheid
+## Bewijsgrenzen en productieveiligheid
 
-- **NOOIT** de reeds werkende WattGoedkoper MySQL opnieuw installeren, een database resetten, de encryptiesleutel roteren of privésleutels/klantgegevens in de repo/logs/screenshot zetten.
-- `info@wattgoedkoper.nl` en productieconfiguratie blijven buiten Git/webroot; geen bulkmail- of externe CRM-actie zonder expliciete toestemming.
-- Gebruik featurebranches, PR's, alle reken-/API-/MySQL-/mail-/browsertests en screenshots. **Niet autonoom mergen naar `main` vóór eigenaaracceptatie.** Geen force-push.
-- Geen nieuwe betaalde diensten of hostingupgrades zonder akkoord.
-- Beoordeel externe pagina's/URLs en SEO-regelgeving actueel; rapporteer onbevestigde feiten expliciet.
+1. **NIET opnieuw** `scripts/setup-mysql.sh` of `scripts/setup.php` op de live site uitvoeren. Nooit productie-DB resetten, bestaande `config.php`/mailcredentials overschrijven of AES-sleutels roteren zonder goedgekeurd en bewezen migratie-/restoreplan.
+2. Geen testcontactgegevens, privéscreenshots, mailboxinhoud, exports, passwords, tokens of private configuratie in GitHub/issues/CI/logs plaatsen. De testcode `WG-5510214770E3` is uitsluitend een technische referentie.
+3. **NIVO SMTP werkt.** Niet opnieuw een tweede mailworker installeren of eerdere leads zonder toestemming verzenden. `smtp_accepted` betekent SMTP-serveracceptatie, **geen** API-ACK. De eigenaar bevestigde daarnaast afzonderlijk feitelijke inboxontvangst voor één test.
+4. **NIVO Portal is nu alleen de NIVO-mailadresbestemming**, niet een aangesloten geauthenticeerde NIVO Portal REST API. De toekomstige HTTPS-adapter blijft uit tot expliciet contract en go.
+5. Back-up/restore, foutalert, operationele heartbeat over meerdere runs, rapportmailontvangst, juridisch exploitant/privacybewijs en GSC-indexatie zijn **niet bewezen**; maak deze P0/P1-taken transparant.
+6. Voer inspecties read-only uit tenzij de eigenaar gerichte wijzigingen heeft goedgekeurd. Werk in branches/PR's, voer testen uit, leg reële bewijzen vast en merge pas na geldende eigenaar-go. Geen force-push of ongevraagde productieuitrol.
 
-## Definitieve afrondingswerkstroom (v0.9)
+## Volgende prioriteit (niet opnieuw bouwen wat werkt)
 
-- **P0 #21:** live/productiehardening, mail en MySQL-geschikte onderhoudscron met herstelbewijs.
-- **P0 #22:** bestaand `/admin/` compact en duidelijk maken; alle leads, afleverstatus, stats, SEO en tools op één plek.
-- **P0 #23:** server-to-server NIVO-afleveradapter met veilige outbox, idempotente ACK, retries en aparte Portal-activatiegate.
-- **P1 #24:** hoogwaardige SEO-content en optionele consumenten-CTA's verbeteren, geen AI-massapublicaties.
-- **P0 #25:** automatisch onderhoud, monitoren en alleen actiegerichte alerts.
-- **P0 #26:** eindacceptatie inclusief echte NIVO-ontvangst, herstel, a11y en privacyguards; NIVO-CRM opvolging buiten scope.
-- **Niet blokkeren met #3:** optionele consumentenaccounts vallen buiten de noodzakelijke finish line.
-- **Geen nieuwe externe NIVO-datastroom** voordat bestemming, privacy en beveiliging door eigenaar en NIVO zijn goedgekeurd.
+**P0:** herstelbare Hostinger MySQL + privatesleutel-back-up; herhaalde cron-heartbeat en waarschuwingen; individuele bezorgstatus van proefaanvraag bekijken en eventueel gericht opruimen; privacy/exploitant, gegevensoverdracht en toegangsbeveiliging verifiëren.  
+**P1:** afzonderlijke transactionele consumentenrapportmail testen; gratis GSC-property verbinden/echte SEO-baseline; hoogwaardige SEO-content en funnelcontext uit echte waarnemingen verbeteren.  
+**P2:** privacyvriendelijke KPI's, duurzame SEO-groei en later eventueel een apart geautoriseerde NIVO Portal API-ontvanger.
 
-## Eerdere bredere ontwikkelwerkstroom (historie)
-
-- #14 NEXT — compleet SEO- en leadgeneratieproduct.
-- #15 nulmeting/crawl/privacy/deploy-audit.
-- #16 SEO-informatiearchitectuur en kwaliteitsvolle content-engine.
-- #17 interactieve landingspagina's en een verbonden gebruikersreis.
-- #18 consentgescheiden leadfunnel en meetplan.
-- #2 legacy Hostinger/operations, niet opnieuw installeren; #3 lokaal langer bewaren, optioneel.
-
-**Eerste antwoord van nieuwe agent:** overdrachtsamenvatting met actuele repositoryfeiten, open/afgeronde afhankelijkheden en fasering. Daarna eerst een feitelijke audit en een samenhangende SEO-/productreleasesprint daadwerkelijk bouwen.
-
-## 15 november 2026 — P0-uitvoering in review (geen productie-release)
-
-- Laatst onafhankelijk gecontroleerde `main`: `521a0bd235624652c9e86c931c4a78a4528fb75c`. Geen van de volgende branches is door de agent gemerged.
-- **#21 → PR #28**: MySQL-/SQLite-maintenancecorrectie, regressie op echte onderhouds-CLI; beide GitHub Actions-workflows groen. Werkelijke Hostinger-cron/mail/back-up/restore nog niet geverifieerd.
-- **#22 → PR #29**: vier bestaande beheerschermen Overzicht/Aanvragen/SEO/Tools, eerlijke onbekend-statussen en synthetische browsertests/screenshots; beide workflows groen. Delivery-UI moet de outbox van #23 nog koppelen.
-- **#23 → PR #30**: consentgebonden outbox/worker en ontvangstbewijs, fail-closed zonder eigenaar-go; synthetische tests en MySQL-contract in CI. NIVO-ontvanger en echte ACK ontbreken nog.
-- **Geen klantdata buiten WattGoedkoper:** `nivo_delivery_enabled` staat standaard uit. Private Hostinger-configuratie, NIVO-overdracht en rapportmail worden niet door PR/merge automatisch geactiveerd.
-- **Vervolg:** eigenaarreview PR's, gecontroleerde merges, Hostinger-live smoke en één combinatie-PR voor dashboard-deliverystatus + #25. Afzonderlijke end-to-end NIVO-bezorgtest blijft noodzakelijk voor #26.
-
-### P0 operations-branchnotitie (15 november 2026)
-
-PR #31 is gestapeld op PR #30 en heeft daarom geen zelfstandige main-release. Voor de operationele check geldt één canonieke Hostinger-runner `scripts/operations.php` na owner-go, niet parallel met de oude maintenance- of delivery-CLI's. De status-API `admin_operations` geeft geen klantgegevens en beschouwt backup/restore expliciet als niet geverifieerd. Monitorwaarschuwingen staan los van externe mail/alerting en mogen niet als bezorgd worden geclaimd. Zie `docs/OPERATIONS-RUNBOOK-V1.md`.
+**De eerste reactie van een nieuwe agent** moet de actuele code- en operationele status verifiëren, geen oude afgeronde vragen herhalen en vervolgens daadwerkelijk de volgende resterende prioriteiten uitvoeren. Zie [de startprompt](docs/START-PROMPT-NEXT-AGENT-LEADGEN-2026-11-15.md).
