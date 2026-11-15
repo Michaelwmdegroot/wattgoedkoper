@@ -1,6 +1,6 @@
 # SEO-cluster 2 — bron- en kwaliteitsreview
 
-**Aangeboden ter eigenaarreview op 15 november 2026. Niet gepubliceerd of gemerged.**
+**Gepubliceerd via [PR #32](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/32) op 15 november 2026** (main-merge `cde1efd7a8e0f3cb5c1f375f4f6eaed3db3b624c`). De drie artikelen en hub-/sitemaplinks staan in de GitHub-publicatiebuild; de externe Hostinger-live-smoke controleerde de nieuwe kennisroute. Dit document is het **bron- en onderhoudsregister**, geen nog open merge-verzoek. Juridische, subsidie- en energieprijsclaims behoeven periodieke officiële hercontrole; indexatie en GSC-clicks zijn niet bewezen.
 
 ## Verifieerbare consumentenvragen
 
@@ -18,11 +18,11 @@ De huidige `docs/seo-cluster-v08.json` is de bewerkbare bron voor `scripts/build
 
 Alle artikel-CTA's openen de reeds bestaande gratis energiehuiscontext via publieke, niet-persoonlijke URL-fragmenten; geen auto-advies, persoonsgegevens in de URL of automatische maatregelkeuze. De RVO/ACM-links zijn informatiebronnen, geen commerciële partners. De financiële illustraties blijven scenario's van het bestaande rekenmodel.
 
-## Acceptatie vóór merge/publicatie
+## Periodieke inhouds- en techniekcontrole na publicatie
 
-- Laat redactioneel bevestigen dat de feitelijke passages over ISDE en wettelijke saldering overeenkomen met de actuele officiele bronnen.
-- Controleer `npm test`, `npm run check:seo` na `python3 scripts/build-content.py` en screenshotreeks voor 1366/390/320 breedte.
-- Controleer op de echte Hostinger-uitrol HTTP 200, canonical, sitemap, interne links, mobiele leesbaarheid en eventuele robotsregels, zonder een onterechte indexatiebelofte.
+- Hercontroleer vóór een volgende contentupdate bij officiële bronnen de feitelijke passages over ISDE en de wettelijke 2027-saldering; geen automatische claimactualisatie.
+- De publicatie-PR had groene tests en browserreview; bij **nieuwe wijzigingen** opnieuw `npm test`, `npm run check:seo` na `python3 scripts/build-content.py` en mobiele/desktop screenshots draaien.
+- Bewaak op Hostinger HTTP 200, canonical, sitemap, interne links, mobiel en robotsregels. De live smoke bewijst bereikbaarheid, **niet** daadwerkelijk door Google geïndexeerde pagina's.
 - Search Console-prestaties zijn **niet beschikbaar** via de bestaande GSC Wizard-integratie: de gekoppelde dienst meldde `payment_required`. **Geen betaald abonnement aanschaffen**. Eigenaar kan desgewenst rechtstreeks Google Search Console-toegang/verified property beschikbaar maken voor een toekomstige, kosteloze bron.
 
-Geen massageneratie, geen verzonnen GSC-metrics, geen stilzwijgende publicatie.
+Geen massageneratie, geen verzonnen GSC-metrics, geen volgende publicatie zonder inhoudelijke review.
