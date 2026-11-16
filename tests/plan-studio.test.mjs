@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULT_INPUT,MODEL_VERSION} from '../assets/model.mjs';
 import {simulateHome} from '../assets/playground-model.mjs';
-import {comparisonScale,planInsights,renderPlanDashboard,renderPlanWorkspace} from '../assets/plan-ui.mjs';
+import {comparisonScale,planInsights,renderPlanDashboard,renderPlanWorkspace,renderReportSuccess} from '../assets/plan-ui.mjs';
 const report=(patch={},ids=[])=>simulateHome({...DEFAULT_INPUT,...patch},ids);
 test('positive bars share a true zero and preserve proportions',()=>{
  const s=comparisonScale([2000,1000]);assert.equal(s.zero,0);assert.deepEqual(s.bars.map(x=>x.width),[100,50]);
@@ -56,4 +56,17 @@ test('report stays separate from advice, with no signup or download gate',()=>{
 test('evidence escapes untrusted labels instead of rendering markup',()=>{
  const r=report();r.assumptions=[{label:'<script>alert(1)</script>',value:'<img onerror=evil>'}];
  const html=renderPlanWorkspace({r,ui:{tab:'evidence'}});assert.ok(html.includes('&lt;script&gt;'));assert.doesNotMatch(html,/<script>|<img onerror/);
+});
+
+test('accepted report renders completed receipt instead of an active delivery form',()=>{
+ const html=renderReportSuccess('klant@example.test');
+ assert.match(html,/Je rapport is verstuurd/);
+ assert.match(html,/kl•••@example\.test/);
+ assert.match(html,/geen NIVO-adviesaanvraag of marketingtoestemming/);
+ assert.doesNotMatch(html,/id="report-email"|id="report-send"|name="email"/);
+ assert.match(html,/data-dialog="advice"/);
+});
+test('report receipt escapes untrusted email text',()=>{
+ const html=renderReportSuccess('<script>alert(1)</script>@example.test');
+ assert.doesNotMatch(html,/<script>/);
 });
