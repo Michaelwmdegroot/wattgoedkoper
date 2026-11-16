@@ -1,5 +1,7 @@
 # WattGoedkoper.nl
 
+**Nieuw consumentenbesluit — 16 november 2026:** nieuwsbriefaanmelding na de rapportmail wordt **één aparte vrijwillige klik**, zonder verificatiemail of bevestigingspagina. We bewaren de expliciete toestemmingsversie, exacte tekst, bron en datum versleuteld; de knop activeert niet automatisch vanuit een rapport. De bestaande privéfeatureflag blijft ongewijzigd. Oude dubbele bevestigingen kunnen nog verlopen. Zie [single-click-acceptatierunbook](docs/NEWSLETTER-OPTIN-RUNBOOK.md). De uiteindelijke commerciële GSC-/operations-/eigenaar-GO blijft apart open.
+
 **Actueel per 16 november 2026:** WattGoedkoper is volgens de eigenaar een initiatief van **NIVO Groep Holland B.V.** (KvK 95227768). De gratis tool en NIVO-only leadroute werken. De eigenaar heeft de aparte energieplanrapportmail daadwerkelijk op zijn eigen adres ontvangen. De duidelijke verzendbevestiging (PR #46) en de **standaard uitgeschakelde** vrijwillige nieuwsbriefopt-in (PR #47) zijn getest en live. De juridische/privacyinformatie wordt via de kleine actuele uitvoerings-PR bijgewerkt; GSC en laatste bedrijfsacceptatie blijven extern open. Eerdere statusmomenten hieronder zijn historische ontwikkelnotities.
 
 
