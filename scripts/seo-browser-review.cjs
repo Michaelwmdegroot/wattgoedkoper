@@ -66,6 +66,22 @@ function serverStart(){return new Promise(resolve=>{
      assert.ok((await page.locator('#dialog-content').innerText()).includes('Je gebruikt een deel direct'));
    });
    await screenshot(page,'seo-solar-entry-'+name);
+   // A report email links to /#advies; this must work both after a hash
+   // change in an existing tab and when opened on another device.
+   await page.goto(base+'/#verken-energieplan',{waitUntil:'load'});
+   await page.locator('#tool-dialog[open]').waitFor();
+   await page.evaluate(()=>{location.hash='#advies';});
+   await check(name+' report CTA opens opt-in on fragment change',async()=>{
+     await page.locator('#advice-form').waitFor();
+     assert.equal(await page.locator('#advice-form input[name="consent"]').isChecked(),false);
+     assert.ok((await page.locator('#tool-dialog .dialog-intro').innerText()).includes('niet automatisch'));
+   });
+   await screenshot(page,'seo-report-advice-'+name);
+   await page.goto(base+'/#advies',{waitUntil:'load'});
+   await check(name+' report CTA opens opt-in on fresh navigation',async()=>{
+     await page.locator('#advice-form').waitFor();
+     assert.equal(await page.locator('#advice-form input[name="consent"]').isChecked(),false);
+   });
    await page.close();
  }
  // A standalone offline preview must also show working interactive editorial content.

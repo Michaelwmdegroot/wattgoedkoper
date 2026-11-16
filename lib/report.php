@@ -113,6 +113,7 @@ function wg_report_content(array $prepared): array {
     $txt.="Belangrijk om te weten:\n- ".implode("\n- ",$notes)."\n\n";
     $txt.="Vrijblijvend advies van NIVO Groep Holland aanvragen? Dat kan alleen als je zelf een aparte aanvraag doet: ".$url."\n";
     $txt.="Een rapportmail geeft geen toestemming voor commerciële opvolging of marketing.\n";
+    $txt.="Je rapport wordt bij een latere adviesaanvraag niet automatisch meegestuurd. Vermeld zelf welke keuzes of bedragen je wilt bespreken.\n";
     $txt.="\nWattGoedkoper.nl — Dit is een indicatie, geen offerte.\n";
     $chips=implode('',array_map(static fn(string $label): string =>
         '<span style="display:inline-block;border:1px solid #dae3d6;background:#f4f7ed;border-radius:99px;padding:9px 14px;margin:0 7px 8px 0;font-size:13px;color:#26484b;">'.wg_report_escape($label).'</span>',$chosen));
@@ -143,6 +144,7 @@ function wg_report_content(array $prepared): array {
        .'<div style="background:#143b4c;border-radius:14px;padding:24px;margin:25px 0 3px;color:#fff;">'
        .'<div style="font-family:Georgia,serif;font-size:22px;">Even samen naar je huis kijken?</div>'
        .'<p style="color:#cfdfdf;font-size:13px;line-height:1.6;">Vraag zelf vrijblijvend advies aan bij NIVO Groep Holland. Geen verplichting en geen automatische opvolging vanuit deze rapportmail.</p>'
+       .'<p style="color:#cfdfdf;font-size:12px;line-height:1.6;">Je rapport wordt bij een adviesvraag niet automatisch meegestuurd. Vermeld zelf de belangrijkste keuzes of bedragen uit deze e-mail.</p>'
        .'<a href="'.$url.'" style="display:inline-block;background:#ffda4a;border-radius:9px;padding:13px 18px;font-size:13px;font-weight:700;color:#173948;text-decoration:none;">Vraag vrijblijvend advies</a>'
        .'</div></div></div><p style="font-size:11px;color:#72827e;text-align:center;line-height:1.7;padding:16px 20px;">'
        .'Je ontvangt dit rapport omdat om verzending naar dit e-mailadres is gevraagd. Geen marketingabonnement. Indicatie, geen offerte. '
