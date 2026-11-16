@@ -1,5 +1,9 @@
 # WattGoedkoper — agentregels, actuele productie en leesvolgorde
 
+## Actuele eigenaarsverklaring — 16 november 2026
+
+De eigenaar bevestigde dat **WattGoedkoper een initiatief van NIVO Groep Holland** is. De rechtspersoon is publiek verifieerbaar als **NIVO Groep Holland B.V.**, KvK **95227768**, Lireweg 52, 2153 PH Nieuw-Vennep. Publieke privacycontacten: `info@wattgoedkoper.nl` en het officiële `info@nivogroepholland.nl`. De consumentrapportmail is door de eigenaar daadwerkelijk in de inbox ontvangen; de bevestigings-UX en afzonderlijke double-opt-in nieuwsbriefmodule zijn via PR #46/#47 live getest. **De nieuwsbrief blijft standaard UIT** en vereist een aparte private flag; oude rapportadressen nooit automatisch als abonnee inschrijven. GSC, verse private operationele controle en commerciële eind-GO blijven open. Oudere statusnotities hieronder zijn historisch, niet opnieuw uit te voeren.
+
 ## Definitieve afsluitopdracht — 16 november 2026
 
 **Actuele bron van waarheid voor alle nieuwe agents:** [HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md](docs/HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md), [SEO-LANDING-FACTORY-PLAYBOOK.md](docs/SEO-LANDING-FACTORY-PLAYBOOK.md) en [START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md](docs/START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md). Deze **overrulen de oudere opsomming van P0-back-up/restore als harde groeiblokkade**; historische code- en productiebewijzen blijven geldig.
