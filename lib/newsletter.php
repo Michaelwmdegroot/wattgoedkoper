@@ -2,11 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Separate, confirmed newsletter opt-in. A report delivery is never a subscription.
- * The existing private AES key encrypts addresses; the HMAC key indexes opaque
- * tokens. No CRM, bulk mailer, analytics event or second cron is added.
+ * One deliberate click after an SMTP-accepted report is the current opt-in.
+ * Legacy two-step confirmation links remain valid until their expiry.
+ * The existing AES key encrypts addresses; HMAC indexes opaque tokens.
+ * No CRM, bulk mailer, analytics event or second cron is added.
  */
-const WG_NEWSLETTER_CONSENT_VERSION = '2026-11-newsletter-v1';
+const WG_NEWSLETTER_CONSENT_VERSION = '2026-11-newsletter-v2-single';
+const WG_NEWSLETTER_LEGACY_CONSENT_VERSION = '2026-11-newsletter-v1';
 const WG_NEWSLETTER_CONSENT_TEXT = 'Ja, ik ontvang graag ongeveer maandelijks e-mails van WattGoedkoper met energiebespaartips en af en toe aanbiedingen van NIVO Groep Holland. Ik kan mij altijd gratis afmelden.';
 
 function wg_newsletter_enabled(array $config): bool {
@@ -16,6 +18,16 @@ function wg_newsletter_enabled(array $config): bool {
 function wg_newsletter_hash(array $config, string $scope, string $value): string {
     return hash_hmac('sha256', 'newsletter-'.$scope.'|'.$value, $config['hmac_key']);
 }
+/** Binds a single marketing choice to an SMTP-accepted report in this session. */
+function wg_newsletter_report_proof_matches(array $config, mixed $proof, string $email, int $now): bool {
+    if (!is_array($proof) || !is_string($proof['emailHash']??null)
+        || !is_int($proof['at']??null) || $proof['at']>$now
+        || $proof['at']<$now-86400) {
+        return false;
+    }
+    return hash_equals(wg_newsletter_hash($config,'report',$email),$proof['emailHash']);
+}
+
 function wg_newsletter_schema(PDO $db): void {
     if (wg_is_mysql($db)) {
         $db->exec("CREATE TABLE IF NOT EXISTS newsletter_subscribers (
@@ -66,7 +78,7 @@ function wg_newsletter_prepare(PDO $db, array $config, string $email): array {
         'pending', wg_newsletter_hash($config,'confirm',$confirm),
         gmdate('Y-m-d\TH:i:s\Z',time()+7*86400),
         wg_newsletter_hash($config,'unsubscribe',$unsubscribe),
-        WG_NEWSLETTER_CONSENT_VERSION,'report_success',$now,$now,
+        WG_NEWSLETTER_LEGACY_CONSENT_VERSION,'report_success',$now,$now,
     ];
     if ($previous) {
         $db->prepare("UPDATE newsletter_subscribers SET payload=?,status='pending',
@@ -83,6 +95,48 @@ function wg_newsletter_prepare(PDO $db, array $config, string $email): array {
     }
     return ['send'=>true,'token'=>$confirm,'email'=>$email];
 }
+/**
+ * Only call after server-side validation of the *same browser session's*
+ * SMTP-accepted report and an independent affirmative newsletter click.
+ * No verification email is sent. This cannot prove mailbox ownership, so
+ * the API rate-limits requests and binds the target to a just-mailed report.
+ */
+function wg_newsletter_subscribe_single(PDO $db, array $config, string $email): array {
+    wg_newsletter_schema($db);
+    $email=strtolower(wg_text($email,'e-mailadres',254,true));
+    if (!filter_var($email,FILTER_VALIDATE_EMAIL) || preg_match('/[<>\\r\\n]/',$email)) {
+        wg_fail(422,'VALIDATION','Controleer je e-mailadres.');
+    }
+    $id=wg_newsletter_hash($config,'email',$email);
+    $q=$db->prepare('SELECT status FROM newsletter_subscribers WHERE email_hash=?');
+    $q->execute([$id]);$previous=$q->fetch();
+    if ($previous && $previous['status']==='active') {
+        return ['subscribed'=>true,'alreadySubscribed'=>true];
+    }
+    $now=gmdate('Y-m-d\\TH:i:s\\Z');
+    $unsubscribe=bin2hex(random_bytes(32));
+    $payload=wg_encrypt(['email'=>$email,'unsubscribeToken'=>$unsubscribe,
+        'consentText'=>WG_NEWSLETTER_CONSENT_TEXT],$config);
+    $unsubscribeHash=wg_newsletter_hash($config,'unsubscribe',$unsubscribe);
+    if ($previous) {
+        $db->prepare("UPDATE newsletter_subscribers SET payload=?,status='active',
+            confirm_hash=NULL,confirm_expires_at=NULL,unsubscribe_hash=?,
+            consent_version=?,consent_source=?,requested_at=?,confirmed_at=?,
+            unsubscribed_at=NULL,updated_at=? WHERE email_hash=?")
+            ->execute([$payload,$unsubscribeHash,WG_NEWSLETTER_CONSENT_VERSION,
+                'report_success_single_click',$now,$now,$now,$id]);
+    } else {
+        $db->prepare("INSERT INTO newsletter_subscribers
+            (email_hash,payload,status,confirm_hash,confirm_expires_at,
+             unsubscribe_hash,consent_version,consent_source,requested_at,
+             confirmed_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+            ->execute([$id,$payload,'active',null,null,$unsubscribeHash,
+                WG_NEWSLETTER_CONSENT_VERSION,'report_success_single_click',$now,$now,$now]);
+    }
+    return ['subscribed'=>true,'alreadySubscribed'=>false];
+}
+
 function wg_newsletter_confirmation_mail(string $token): array {
     $url='https://wattgoedkoper.nl/nieuwsbrief/#bevestig='.$token;
     $subject='Bevestig je aanmelding voor WattGoedkoper energietips';

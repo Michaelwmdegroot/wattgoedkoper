@@ -94,7 +94,7 @@ function serverStart(){return new Promise(resolve=>{
      actions.push(action);
      if(action==='session')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,configured:true,csrf:'synthetic-csrf',createdAt:0,reportMailEnabled:true,newsletterOptInEnabled:true})});
      if(action==='report_email')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,accepted:true,replayed:false})});
-     if(action==='newsletter_subscribe')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,confirmationRequested:true})});
+     if(action==='newsletter_subscribe')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,subscribed:true,alreadySubscribed:false})});
      throw Error('Unexpected route during report-only QA: '+action);
    });
    await page.goto(base+'/',{waitUntil:'load'});
@@ -115,17 +115,20 @@ function serverStart(){return new Promise(resolve=>{
      assert.match(await page.locator('.ps-newsletter-prompt').innerText(),/NIVO Groep Holland/);
    });
    await page.locator('#newsletter-join').click();
-   await check(viewport.width+' explicit opt-in is separate, no NIVO lead',async()=>{
-     await page.locator('.ps-newsletter-pending').waitFor();
+   await check(viewport.width+' explicit opt-in is immediate, no NIVO lead',async()=>{
+     await page.locator('.ps-newsletter-done').waitFor();
+     assert.match(await page.locator('.ps-newsletter-done').innerText(),/Je bent aangemeld/);
      assert.equal(actions.filter(x=>x==='newsletter_subscribe').length,1);
      assert.equal(actions.filter(x=>x==='report_email').length,1);
      assert.ok(!actions.some(x=>['leads','events'].includes(x)));
    });
    await page.locator('#dialog-close').click();
    await page.locator('#open-plan').click();
-   await check(viewport.width+' reopening keeps sent status without new mail',async()=>{
+   await check(viewport.width+' reopening keeps sent report and subscription',async()=>{
      await page.locator('#report-success').waitFor();
+     await page.locator('.ps-newsletter-done').waitFor();
      assert.equal(actions.filter(x=>x==='report_email').length,1);
+     assert.equal(actions.filter(x=>x==='newsletter_subscribe').length,1);
    });
    await page.locator('[data-report-reset]').click();
    await check(viewport.width+' changing address is explicit',async()=>{
@@ -134,8 +137,8 @@ function serverStart(){return new Promise(resolve=>{
    });
    await page.close();
  }
- // Mail clients and automated link previews may follow a link, but may NEVER
- // activate or unsubscribe without an explicit second click on our page.
+ // Legacy double-opt-in links remain valid for earlier pending signups.
+ // The new single-click signup never requires this page.
  for(const [mode,action] of [['bevestig','newsletter_confirm'],['afmelden','newsletter_unsubscribe']]){
    const page=await browser.newPage({viewport:{width:390,height:844}});
    const requests=[];
@@ -146,12 +149,12 @@ function serverStart(){return new Promise(resolve=>{
      throw Error('Unexpected newsletter confirmation request: '+op);
    });
    await page.goto(base+'/nieuwsbrief/#'+mode+'='+('a'.repeat(64)),{waitUntil:'load'});
-   await check('newsletter '+mode+' link alone makes no consent write',async()=>{
+   await check('legacy newsletter '+mode+' link alone makes no consent write',async()=>{
      assert.deepEqual(requests,[]);
      assert.ok(await page.locator('#choice-button').isVisible());
    });
    await page.locator('#choice-button').click();
-   await check('newsletter '+mode+' requires deliberate click',async()=>{
+   await check('legacy newsletter '+mode+' requires deliberate click',async()=>{
      await page.locator('#choice-result:not([hidden])').waitFor();
      assert.deepEqual(requests,['session',action]);
      assert.equal(await page.evaluate(()=>location.hash),'');

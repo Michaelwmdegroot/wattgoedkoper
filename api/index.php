@@ -64,12 +64,21 @@ try {
         $prepared=wg_report_validate($data);
         $attempt=wg_report_reserve($db,$config,$prepared);
         if ($attempt['state']==='replayed') {
+            $_SESSION['newsletter_report_proof']=[
+                'emailHash'=>wg_newsletter_hash($config,'report',$prepared['email']),
+                'at'=>time()
+            ];
             wg_json(['ok'=>true,'accepted'=>true,'replayed'=>true]);
         }
         $letter=wg_report_content($prepared);
         try {
             wg_mail_send($config,$prepared['email'],$letter['subject'],$letter['text'],$letter['html']);
             wg_report_finish($db,$attempt['id'],true);
+            // Proof is strictly server-side and records no marketing consent.
+            $_SESSION['newsletter_report_proof']=[
+                'emailHash'=>wg_newsletter_hash($config,'report',$prepared['email']),
+                'at'=>time()
+            ];
         } catch (Throwable $error) {
             // A timeout after SMTP DATA can be ambiguous. Never blindly retry.
             wg_report_finish($db,$attempt['id'],false);
@@ -90,21 +99,20 @@ try {
             wg_fail(422,'NEWSLETTER_CONSENT_REQUIRED','Kies bewust of je de energietips wilt ontvangen.');
         }
         wg_rate($db,$config,'newsletter_signup',3,3600);
-        $email=wg_text($data['email']??'','e-mailadres',254,true);
-        $intent=wg_newsletter_prepare($db,$config,$email);
-        if ($intent['send']) {
-            $letter=wg_newsletter_confirmation_mail($intent['token']);
-            try {
-                wg_mail_send($config,$intent['email'],$letter['subject'],$letter['text'],$letter['html']);
-            } catch(Throwable $error) {
-                // The confirmation may have been accepted before a timeout;
-                // a pending token is intentionally never auto-mailed again.
-                wg_fail(503,'NEWSLETTER_CONFIRMATION_UNCERTAIN',
-                    'De bevestigingsmail is niet zeker verzonden. Controleer je inbox en spammap.');
-            }
+        $email=strtolower(wg_text($data['email']??'','e-mailadres',254,true));
+        if (!filter_var($email,FILTER_VALIDATE_EMAIL)) {
+            wg_fail(422,'VALIDATION','Controleer je e-mailadres.');
         }
-        // No marketing delivery, CRM/NIVO lead or analytics event.
-        wg_json(['ok'=>true,'confirmationRequested'=>true]);
+        if (!wg_newsletter_report_proof_matches(
+            $config,$_SESSION['newsletter_report_proof']??null,$email,time())) {
+            wg_fail(403,'REPORT_SESSION_REQUIRED',
+                'We kunnen deze aanmelding niet aan je verstuurde rapport koppelen. Verstuur eerst je energieplan opnieuw vanaf dit apparaat.');
+        }
+        $outcome=wg_newsletter_subscribe_single($db,$config,$email);
+        // One independent affirmative click. No confirmation email or
+        // marketing campaign, CRM/NIVO lead, analytics event, or new cron.
+        wg_json(['ok'=>true,'subscribed'=>true,
+            'alreadySubscribed'=>$outcome['alreadySubscribed']]);
     }
     if ($action === 'newsletter_confirm') {
         $data=wg_input($config);
@@ -235,7 +243,7 @@ try {
         header('Content-Disposition: attachment; filename="wattgoedkoper-optin-mailinglijst-'.gmdate('Y-m-d').'.csv"');
         header('X-Content-Type-Options: nosniff');
         $out=fopen('php://output','wb');fwrite($out,"\xEF\xBB\xBF");
-        fputcsv($out,['E-mailadres','Bevestigd (UTC)','Toestemmingsversie','Bron','Afmeldlink'],';', '"', '');
+        fputcsv($out,['E-mailadres','Toestemming gegeven (UTC)','Toestemmingsversie','Bron','Afmeldlink'],';', '"', '');
         foreach($rows as $row) {
             fputcsv($out,array_map('wg_csv_cell',[$row['email'],$row['confirmedAt'],
                 $row['consentVersion'],$row['source'],$row['unsubscribeUrl']]),';','"','');

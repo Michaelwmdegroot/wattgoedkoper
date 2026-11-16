@@ -70,3 +70,16 @@ test('report receipt escapes untrusted email text',()=>{
  const html=renderReportSuccess('<script>alert(1)</script>@example.test');
  assert.doesNotMatch(html,/<script>/);
 });
+
+test('single-click newsletter is separate from the free report and immediately confirms',()=>{
+ const initial=renderReportSuccess('persoon@example.test',{newsletterEnabled:true});
+ assert.match(initial,/id="newsletter-join"/);
+ assert.match(initial,/Ja, meld mij aan/);
+ assert.doesNotMatch(initial,/bevestigingsmail|newsletter_confirm/);
+ const done=renderReportSuccess('persoon@example.test',{newsletterEnabled:true,newsletterSubscribed:true});
+ assert.match(done,/Je bent aangemeld/);
+ assert.match(done,/Afmelden kan via elke e-mail/);
+ assert.doesNotMatch(done,/id="newsletter-join"/);
+ const disabled=renderReportSuccess('persoon@example.test',{newsletterEnabled:false});
+ assert.doesNotMatch(disabled,/newsletter-join|ps-newsletter-prompt/);
+});

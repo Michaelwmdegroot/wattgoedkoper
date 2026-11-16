@@ -1,11 +1,13 @@
 # WattGoedkoper.nl
 
-**Actueel per 16 november 2026:** WattGoedkoper is volgens de eigenaar een initiatief van **NIVO Groep Holland B.V.** (KvK 95227768). De gratis tool en NIVO-only leadroute werken. De eigenaar heeft de aparte energieplanrapportmail daadwerkelijk op zijn eigen adres ontvangen. De duidelijke verzendbevestiging (PR #46) en de **standaard uitgeschakelde** vrijwillige nieuwsbriefopt-in (PR #47) zijn getest en live. De juridische/privacyinformatie wordt via de kleine actuele uitvoerings-PR bijgewerkt; GSC en laatste bedrijfsacceptatie blijven extern open. Eerdere statusmomenten hieronder zijn historische ontwikkelnotities.
+**Nieuw consumentenbesluit — 16 november 2026:** nieuwsbriefaanmelding na de rapportmail wordt **één aparte vrijwillige klik**, zonder verificatiemail of bevestigingspagina. We bewaren de expliciete toestemmingsversie, exacte tekst, bron en datum versleuteld; de knop activeert niet automatisch vanuit een rapport. De bestaande privéfeatureflag blijft ongewijzigd. Oude dubbele bevestigingen kunnen nog verlopen. Zie [single-click-acceptatierunbook](docs/NEWSLETTER-OPTIN-RUNBOOK.md). De uiteindelijke commerciële GSC-/operations-/eigenaar-GO blijft apart open.
+
+**Actueel per 16 november 2026:** WattGoedkoper is volgens de eigenaar een initiatief van **NIVO Groep Holland B.V.** (KvK 95227768). De gratis tool en NIVO-only leadroute werken. De eigenaar heeft de aparte energieplanrapportmail daadwerkelijk op zijn eigen adres ontvangen. De duidelijke verzendbevestiging (PR #46) en de door eigenaar geactiveerde vrijwillige nieuwsbriefopt-in (PR #47) zijn getest en live. De juridische/privacyinformatie wordt via de kleine actuele uitvoerings-PR bijgewerkt; GSC en laatste bedrijfsacceptatie blijven extern open. Eerdere statusmomenten hieronder zijn historische ontwikkelnotities.
 
 
 **Nieuwe projectoverdracht — 16 november 2026:** [commerciële Finish Line & afsluitcriteria](docs/HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md) · [herhaalbaar SEO-leadsite playbook](docs/SEO-LANDING-FACTORY-PLAYBOOK.md) · [startprompt volgende agent](docs/START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md).
 
-De hoofdmijlpaal is nu **snel een aantoonbaar werkende, zelfstandig draaiende SEO→gratis tool→rapportmail/optioneel NIVO-adviesroute afronden** en daarna door naar een volgende onderscheidende site. Historische productie-/beveiligingsdocs hieronder bewijzen voorgaande stappen, maar zijn **niet** de huidige ontwikkelprioriteit. Een huidige Google-indexering/ranking of werkende rapportmail is **nog niet bevestigd**.
+De hoofdmijlpaal is nu **snel een aantoonbaar werkende, zelfstandig draaiende SEO→gratis tool→rapportmail/optioneel NIVO-adviesroute afronden** en daarna door naar een volgende onderscheidende site. Historische productie-/beveiligingsdocs hieronder bewijzen voorgaande stappen, maar zijn **niet** de huidige ontwikkelprioriteit. Een huidige Google-indexering/ranking is **nog niet bevestigd**; de rapportmail is wél daadwerkelijk op een eigen adres ontvangen.
 
 
 
