@@ -1,6 +1,6 @@
 # WattGoedkoper — veilig back-up- en herstelrunbook (P0)
 
-**15 november 2026 · #21 / #25 / #26.** De bestaande Hostinger-MySQL, versleutelde leadpayloads, private sleutels en NIVO-transport blijven ongewijzigd. **Deze PR bevat herstelgereedschap en synthetische tests, géén bewijs van een geslaagde productieback-up of productierestore.**
+**Bijgewerkt 16 november 2026 · #21 / #25 / #26.** De bestaande Hostinger-MySQL, versleutelde leadpayloads, private sleutels en NIVO-transport blijven ongewijzigd. **PR #37 met het herstelgereedschap is gemerged en de Hostinger-live smoke is geslaagd. Dat bewijst de uitgerolde code, NIET een geslaagde productieback-up of productierestore. De read-only voorcontrole wordt afzonderlijk ontwikkeld en moet vóór productie-export worden uitgerold en gemeten.**
 
 ## Veiligheidsvoorwaarden
 
@@ -15,6 +15,34 @@
 Op PR #37 is behalve de cryptografische integriteitstest ook een **volledige MySQL-herstelketen op een tijdelijke GitHub Actions MySQL 8-testservice** geslaagd: een fictieve versleutelde lead → echte `mysqldump` → direct versleuteld `.wgbk`-archief → authenticatie → uitpakken buiten de applicatie → import in **een aparte nieuwe testdatabase** → volledige teruglezing met de oorspronkelijke ongewijzigde AES-sleutel. Geen productieverbinding, persoonsgegevens of private Hostinger-config gebruikt. Zie [CI-uitvoering](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43753633161) en `tests/backup_mysql_roundtrip_test.php`.
 
 Dit bewijst de programmeerbare roundtrip **in CI**, maar bewijst nadrukkelijk **niet** dat de bestaande Hostinger-productiedatabase is geback-upt, dat de Hostinger CLI alle vereiste programma's aanbiedt, dat off-site bewaring werkt of dat herstel van echte productiegegevens is gelukt. De vier externe gates onderaan blijven open.
+
+## 0. Hostinger-gereedheid vaststellen vóór enige export
+
+Na review, merge en Hostinger-deployment van de [back-upvoorcontrole-PR](https://github.com/Michaelwmdegroot/wattgoedkoper/pulls) is het nieuwe **alleen-lezen** commando:
+
+```sh
+cd /home/u886757484/domains/wattgoedkoper.nl/public_html
+php scripts/backup-preflight.php --directory=/home/u886757484/domains/wattgoedkoper.nl/wg-backups
+```
+
+**Maak de map eerst aan** als die ontbreekt, met `mkdir -m 700 /home/u886757484/domains/wattgoedkoper.nl/wg-backups`. Maak nooit een back-upmap binnen `public_html`. Controleer of de map inderdaad `0700` is.
+
+De voorcontrole maakt **geen archief, mail of databaseverbinding** en verandert geen bestanden. Hij controleert uitsluitend: bestaande valide private MySQL-config, `0700` privémappen/`0600` private configbestanden, PHP-sodium/Argon2id, PDO MySQL, `proc_open`, een uitvoerbare `mysqldump`/`mariadb-dump` op `PATH`, een exclusieve veilige back-upmap buiten webroot en eventuele achtergebleven tijdelijke MySQL-clientcredentials (alleen een waarschuwing, nooit inhoud tonen of automatisch verwijderen). De JSON bevat **geen paden, gebruikersnamen, sleutel- of wachtwoordwaarden**.
+
+De output `readyToAttemptBackup:true` is uitsluitend een **prerequisite-GO** om een éénmalige handmatige versleutelde export te proberen; het bewijst **niet** dat de exporter daadwerkelijk MySQL mag lezen, dat er voldoende ruimte is, of dat de archiefinhoud herstelbaar is. De velden `archiveCreated`, `archiveAuthenticated` en `isolatedRestoreVerified` blijven in deze controle **altijd `false`**, ook bij volledig groen resultaat.
+
+Als `readyToAttemptBackup:false`: **stop**, publiceer uitsluitend de generieke `issues`-codes en laat geen oude installatiescripts of onbeveiligde SQL-export draaien.
+
+| Veilige code | Betekenis / actie |
+|---|---|
+| `PRIVATE_MYSQL_CONFIG_UNAVAILABLE` | Bestaande private MySQL-config ontbreekt of is ongeldig; **niet** resetten of opnieuw installeren |
+| `PRIVATE_PERMISSIONS_REVIEW` | Rechten van bestaande private map/config/mailconfig laten nakijken; niets blind overschrijven |
+| `SODIUM_UNAVAILABLE`, `PDO_MYSQL_UNAVAILABLE`, `PROC_OPEN_UNAVAILABLE` | Benodigde PHP-functie ontbreekt; controleer Hostinger PHP-CLI, niet de website of credentials |
+| `MYSQL_DUMP_BINARY_UNAVAILABLE` | MySQL-clientexporter niet vindbaar op `PATH`; niet met plaintext SQL improviseren |
+| `BACKUP_DIRECTORY_UNSAFE_OR_MISSING` | Maak een aparte `0700` map **buiten** de webroot; geen symlinks of publieke permissies |
+| `TEMP_MYSQL_CREDENTIAL_FILE_REVIEW` | Mogelijk tijdelijke credentiebestanden van een onderbroken export; eerst veilig onderzoeken, niet in issues tonen of automatisch verwijderen |
+
+**Nog niet uitgevoerd:** deze Hostinger-preflight, feitelijke versleutelde productie-export, off-site kopie en geïsoleerde restore. Een groene GitHub CI-suite met fictieve data vervangt geen van deze vier bewijzen.
 
 ## 1. Eén beveiligde productie-export
 
@@ -36,7 +64,7 @@ mkdir -m 700 /home/u886757484/domains/wattgoedkoper.nl/wg-backups
 Kies een **nieuw** archiefpad, bijvoorbeeld:
 
 ```sh
-bash scripts/backup-safe.sh create /home/u886757484/domains/wattgoedkoper.nl/wg-backups/wattgoedkoper-20261115-01.wgbk
+bash scripts/backup-safe.sh create /home/u886757484/domains/wattgoedkoper.nl/wg-backups/wattgoedkoper-20261116-01.wgbk
 ```
 
 De wrapper vraagt de herstelwachtzin **zonder echo** en tweemaal ter bevestiging (minimaal 20 tekens). Bewaar die **apart** in een wachtwoordmanager, niet op dezelfde server, in Git, scripts, chat of logs. Bestaande archieven worden niet overschreven. Het script meldt alleen of het archief is aangemaakt; een succesvolle code-exit bewijst nog geen restore.
@@ -46,7 +74,7 @@ Als alleen `mariadb-dump` beschikbaar is: beheerder kan na review de CLI rechtst
 ## 2. Onafhankelijke verificatie en off-site bewaring
 
 ```sh
-bash scripts/backup-safe.sh inspect /home/u886757484/domains/wattgoedkoper.nl/wg-backups/wattgoedkoper-20261115-01.wgbk
+bash scripts/backup-safe.sh inspect /home/u886757484/domains/wattgoedkoper.nl/wg-backups/wattgoedkoper-20261116-01.wgbk
 ```
 
 De inspectie moet `authenticated:true`, `configIncluded:true`, `sqlBytes>0` en (indien mailconfig aanwezig) `mailConfigIncluded:true` melden. Dit authenticeert de hele export inclusief laatste blok zonder gegevens weer te geven. Bewaar een **versleutelde kopie buiten Hostinger** bij voorkeur met versiebeheer/retentie en gescheiden wachtzin. Denk aan een vooraf goedgekeurde beschermde opslagplek; configureer geen betaalde dienst zonder akkoord.
@@ -79,4 +107,4 @@ Importeer het SQL-bestand **alleen in de afzonderlijke testdatabase**, met apart
 
 Automatische Hostinger-back-ups moeten aanvullend op hun eigen bewaartermijn en herstelbaarheid worden gecontroleerd. Dit hulpmiddel vervangt geen hostingbackupbeleid of periodieke externe controle. Dit is geen tweede cron en wijzigt de bestaande operationele taak niet.
 
-**Releaserichtlijn:** merge/deploy van dit herstelhulpmiddel pas na PR-/CI-review; productie-uitvoering uitsluitend door de bevoegde eigenaar. Zet API-`backup.status` pas van `not_verified` af als de echte isolatierestore is bewezen, nooit door alleen een succesvol CI-resultaat.
+**Releaserichtlijn:** het versleutelde herstelhulpmiddel is op `main` uitgeleverd via #37. De aparte voorcontrole krijgt zijn eigen CI/PR. Productie-uitvoering uitsluitend door de bevoegde eigenaar. Zet API-`backup.status` pas van `not_verified` af als de echte isolatierestore is bewezen, nooit door alleen een succesvol CI-resultaat.

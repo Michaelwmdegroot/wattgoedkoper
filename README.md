@@ -2,12 +2,16 @@
 
 **Premium interactieve energietool én functioneel werkende automatische NIVO-leadmachine** voor Nederlandse consumenten.
 
-> **Actuele productie — 15 november 2026.** De gratis interactieve woning, Plan Studio, MySQL/API, Dashboard 2.0 en NIVO-adviesketen zijn live. Een via de gewone consumentenwebsite ingediende technische testaanvraag `WG-5510214770E3` stond rond 19:02 in `/admin/` en werd rond 19:05 daadwerkelijk als automatische adviesmail ontvangen in **`portal@nivogroepholland.nl`**. Het eigen Hostinger SMTP-account is `info@wattgoedkoper.nl`. De één-per-vijf-minuten Hostinger-operationscron en werkende cronuitvoer zijn door de eigenaar aangetoond. **Geen NIVO Portal REST API:** dat is alleen een voorbereide toekomstige koppeling.
-
-**Productiestatus:** de kern van automatische NIVO-leadgeneratie is functioneel bewezen. **De gehele Finish Line is nog open:** gecontroleerde backup én restore, herhaalde cron-heartbeat/alerts en per-lead statusbewijs, afzonderlijke consumentenrapportmail, juridische privacyreview en echte Google Search Console-cijfers moeten nog apart worden geverifieerd. Alle merges [#28 t/m #35](https://github.com/Michaelwmdegroot/wattgoedkoper/pulls?q=is%3Apr+is%3Amerged) zijn verwerkt; codebaseline vóór deze doc-overdracht `f3c273dcffb03de05de13004fee410194ae659df`. [Live Hostinger-pariteitscheck](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43662312644): 14/14 checks groen.
+> **Actuele productie — 16 november 2026.** De premium gratis consumentenwebsite, MySQL/API, Dashboard 2.0, **één** vijfminuten-Hostinger-cron en de NIVO-only adviesroute per SMTP zijn live. PR's [#37](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/37), [#38](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/38) en [#39](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/39) zijn gemerged; `main` = `d1685bed065445dfc40a8fd40ae8e71adf178636`. [De 16/16 live-pariteitscheck](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43774049582), quality/MySQL en browserreview zijn geslaagd. De gewone testadviesaanvraag `WG-5510214770E3` werd al eerder door de eigenaar in de echte NIVO-inbox ontvangen; geen HTTPS-Portal-API aangesloten.
+>
+> **Nieuwe feitelijke Hostinger-meting:** `cron.status=fresh`, `operations_monitor_enabled=true`, twee afzonderlijke succesmomenten rond 01:10 en 01:15 NL-tijd, geen waarschuwingen en één geaggregeerde `smtp_accepted`-regel zonder wachtrij/fouten. De **individuele** status van die testlead is nog niet afzonderlijk afgelezen. De aparte consumentenrapportmail heeft mailboxconfig maar staat **bewust uit** (`reportRequested:false`). Back-ups zijn **nog niet op herstelbaarheid geverifieerd**. Ook de juridisch verantwoordelijke, buiten-app-retentie, off-site opslag, gratis GSC en externe alerts zijn nog open. Zie het [productiebewijsregister](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md).
+>
+> **Nieuwe P0-focus:** veilige Hostinger-MySQL-back-up met dezelfde ongewijzigde AES-sleutel, onafhankelijke archiefcontrole en **echte geïsoleerde restore**. Hiervoor is een read-only Hostinger-voorcontrole in ontwikkeling; geen encryptiesleutels, mailcredentials, database- of cronreset uitvoeren.
 
 ### Begin hier
 
+- **[Nieuwste feitelijke productieacceptatie](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md)** — live bewijs en onafhankelijke open gates.
+- **[P0 back-up/herstelrunbook](docs/BACKUP-RECOVERY-RUNBOOK.md)** — veilig vooronderzoek, ongewijzigde sleutels en geïsoleerde restore.
 - **[Actuele productieoverdracht](docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md)** — bewijsregister, status, grenzen en architectuur.
 - **[Prioriteiten voor zelfstandige leadgeneratie](docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md)** — P0 continuïteit, P1 product/SEO, P2 groei.
 - **[Startprompt voor volgende GPT-6 Pro-agent](docs/START-PROMPT-NEXT-AGENT-LEADGEN-2026-11-15.md)**.
