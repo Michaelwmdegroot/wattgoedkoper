@@ -60,7 +60,7 @@ De onderhoudstaak verwijdert oude aanvragen en oude counters/rate-limitvensters.
 - De toestemmingsversie, de volledige tekst, de geselecteerde partner en een serverdatum worden bij de aanvraag opgeslagen.
 - `analyticsConsent:true` is een afzonderlijke vrijwillige toestemming. De backend telt alleen dan een intern `lead_accepted`-event.
 - Het dashboard gebruikt `lead_accepted / scan_complete` voor conversie en toont het totale aantal aanvragen apart. Het zijn gebeurtenissen, geen unieke personen. Meerdere scans, herhaalverzoeken en ontbrekende metingen beïnvloeden dit getal. De geaggregeerde dataset ondersteunt geen betrouwbare unieke-bezoekerstelling of herleidbare klantreis.
-- Het consumentrapport alleen is **nooit** marketingtoestemming. Er is nu een afzonderlijke, standaard uitgeschakelde newsletter-opt-in **na** een geaccepteerd rapport, met bevestiging per e-mail en gratis afmelding. Het marketingadres wordt niet automatisch naar NIVO gestuurd, er ontstaat geen advieslead, en er draait geen campagne zonder aparte opdracht.
+- Het consumentrapport alleen is **nooit** marketingtoestemming. Er is nu een afzonderlijke, standaard uitgeschakelde newsletter-opt-in **na** een geaccepteerd rapport, met één expliciete klik zonder extra e-mailverificatie, sessiegebonden bewijs van het eerder geaccepteerde rapport en gratis afmelding. Het marketingadres wordt niet automatisch naar NIVO gestuurd, er ontstaat geen advieslead, en er draait geen campagne zonder aparte opdracht.
 
 ## API-contract
 
