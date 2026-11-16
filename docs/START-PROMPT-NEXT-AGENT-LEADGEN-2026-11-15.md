@@ -1,5 +1,9 @@
 # Startprompt — GPT-6 Pro | WattGoedkoper autonome leadgen & groeifase
 
+> **HISTORISCH / NIET MEER GEBRUIKEN VOOR NIEUWE OVERDRACHTEN (16 november 2026).** Deze oude startprompt noemt custom backup/restore als P0 en mist de bijgewerkte commerciële exit- en site-factorydoelen. Gebruik in plaats hiervan **[START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md](START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md)** en [definitieve overdracht](HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md). De rest van dit document is alleen geschiedenis.
+
+
+
 > Kopieer onderstaande tekst naar een nieuwe agent. Deze prompt vervangt de historische `docs/START-PROMPT-NEXT-AGENT.md` uit de vorige ontwikkelfase.
 
 ## BEGIN STARTPROMPT

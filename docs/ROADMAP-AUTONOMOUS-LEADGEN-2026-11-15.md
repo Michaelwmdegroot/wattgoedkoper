@@ -1,5 +1,9 @@
 # WattGoedkoper — commerciële roadmap: Traffic → Toolgebruik → NIVO-leads
 
+**Leidende uitvoerings- en exitlijst (16 november 2026):** [HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md](HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md). Deze beschrijft de zes concrete P0-lancering-/handoffgates en maakt duidelijk dat Google-clicks/rankings **niet** nodig zijn om het project als productiesite over te dragen. Voor nieuwe sites: [SEO-LANDING-FACTORY-PLAYBOOK.md](SEO-LANDING-FACTORY-PLAYBOOK.md). Voor de volgende agent: [START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md](START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md).
+
+
+
 **Koersbesluit eigenaar, 16 november 2026:** WattGoedkoper is in de eerste plaats een **publieke, premium, gratis energietool en leadgenerator voor NIVO Groep Holland**. Een werkende consumentenjourney, kwalitatief relevant verkeer en conversie hebben vanaf nu prioriteit boven extra infrastructuur. Deze roadmap vervangt de eerdere volgorde waarin custom back-up/restore als P0 vóór groei stond. Bestaande code, privacy, consent en veiligheidsgrenzen blijven behouden.
 
 **Repo:** [main](https://github.com/Michaelwmdegroot/wattgoedkoper) · **regie:** [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14) · **SEO:** [#24](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/24) · **product:** [#22](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/22), [#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/26) · **infrastructuur/back-up:** [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21).
