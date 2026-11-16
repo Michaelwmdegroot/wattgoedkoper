@@ -1,31 +1,30 @@
-# WattGoedkoper — vrijwillige energietips, ná rapportmail
+# WattGoedkoper — nieuwsbrief met één bewuste klik na rapportmail
 
-**Doel:** een kwalitatieve, apart bevestigde mailinglijst uit de bestaande gratis consumentenreis. Geen verplicht e-mailadres voor toolgebruik, geen marketingtoestemming door rapportbezorging, geen commerciële e-mails naar oudere rapportontvangers.
+**Eigenaarbesluit 16 november 2026:** zo min mogelijk drempels. De oude dubbele e-mailverificatie is vervangen. Toestemming voor commerciële energietips blijft **afzonderlijk en optioneel**, niet gekoppeld aan het gratis rapport, de energiescan of NIVO-advies.
 
-## Wat technisch gebouwd is (PR #47)
+## Consumentenroute
+1. De gratis tool berekent het indicatieve energieplan zonder account/contactmuur.
+2. De consument vraagt zelf een rapportmail aan. Alleen na aantoonbare **SMTP-serveracceptatie** is de verzendbevestiging zichtbaar. Dit alleen maakt **geen** nieuwsbriefabonnement, analytics-opt-in of NIVO-advieslead.
+3. In de succesweergave staat een expliciete losse knop **'Ja, meld mij aan'** bij de vermelding: ongeveer maandelijks WattGoedkoper-bespaartips en af en toe aanbiedingen van NIVO Groep Holland B.V.; gratis afmelden.
+4. Eén bewuste klik activeert het adres direct in de bestaande versleutelde nieuwsbriefdatabase. **Geen verificatiemail, bevestigingslink, tweede pagina of extra formulier.** Bezoeker ziet direct **'Je bent aangemeld'**.
+5. Alleen actieve toestemmingen verschijnen in de beveiligde opt-in-CSV in `/admin/#tools`. Elke toekomstige commerciële mail moet een persoonlijke gratis afmeldlink bevatten. Geen automatische marketingcampagne, tweede cron, CRM of automatische NIVO-lead.
 
-1. De primaire rapportmail wordt uitsluitend op verzoek verstuurd. Na SMTP-acceptatie toont de Plan Studio een duidelijk verzonden-bericht zonder actief verzendveld.
-2. **Alleen bij** private `newsletter_optin_enabled=true` ziet de bezoeker daarna een aparte, duidelijke keuze: ongeveer maandelijks e-mails van WattGoedkoper met bespaartips en af en toe aanbiedingen van NIVO Groep Holland. Geen vooraf aangevinkte checkbox en geen verplichting.
-3. Pas na **expliciete klik** maakt `POST newsletter_subscribe` een versleutelde tijdelijke aanvraag aan, en verstuurt via de bestaande Hostinger SMTP één bevestigingsmail. Een bevestigingslink alleen activeert niets; de ontvanger klikt op de website nogmaals expliciet `Ja, bevestig mijn aanmelding`.
-4. Pas `POST newsletter_confirm` zet de abonnee op **active**. Adres en afmeldsecret worden AES-GCM-versleuteld opgeslagen; HMAC-indexen voorkomen plaintext e-mailadressen/tokens in DB. Bron `report_success`, toestemmingstekstversie `2026-11-newsletter-v1` en bevestigingstijd worden bewaard; aanvragen verlopen na zeven dagen. `POST newsletter_unsubscribe` trekt toestemming in zonder login en wist de versleutelde contactgegevens uit de actieve lijst. Geen analytics- of NIVO-advieslead.
-5. Het bestaande `/admin/#tools` krijgt één knop **Download opt-in CSV**. Alleen **active/confirmed** abonnees, versie/datum en een persoonlijke afmeldlink. Er is **geen** ingebouwde nieuwsbriefflow of automatische reclamecampagne. Elke latere marketingmail moet een geldige individuele afmeldmogelijkheid bevatten. Exportbestand beveiligd bewaren.
+## Wat we aantoonbaar vastleggen
+- Exact e-mailadres encrypted AES-GCM, aparte HMAC-index en afmeldtoken.
+- Consent-versie `2026-11-newsletter-v2-single`, de **exacte toestemmingstekst**, server-tijdstip, herkomst `report_success_single_click` en actieve status. De bestaande kolom `confirmed_at` betekent voor nieuwe aanmeldingen **het moment van toestemming** (niet een e-mailbevestiging); CSV-kolom is daarom *Toestemming gegeven (UTC)*.
+- De API controleert of hetzelfde e-mailadres in **dezelfde browsersessie binnen 24 uur** gekoppeld is aan een eerder SMTP-geaccepteerd rapport. Die tijdelijke check bewaart uitsluitend HMAC, geen e-mailadres of marketingopt-in. Verder gelden bestaande CSRF/Origin-beveiliging en aanmeld-rate-limits.
+- Bij afmelding wordt de versleutelde contactpayload gewist en verdwijnt het adres uit de actieve export. Een eerdere uitschrijving wordt alleen na **een nieuwe eigen actieve klik** geactiveerd.
 
-## Privacypoort: standaard UIT
+**Belangrijk afwegingspunt:** een single opt-in bewijst niet op zichzelf dat de bezoeker de mailbox beheert. De rapport-sessiecheck en rate limits beperken ongeautoriseerd inschrijven, maar kunnen dit niet volledig uitsluiten. Bewaak klachten en bounces; bij structureel misbruik opnieuw beoordelen. Geen historische rapportontvangers automatisch inschrijven.
 
-**16 november 2026:** de eigenaar bevestigde dat WattGoedkoper een initiatief van NIVO Groep Holland is. De officiële rechtspersoon is publiek te verifiëren als **NIVO Groep Holland B.V.**, KvK **95227768**, Lireweg 52, 2153 PH Nieuw-Vennep (zie [publieke registratie](https://www.compadex.com/nl/businesses/nl/nivo-groep-holland-b-v-95227768-60652861) en [NIVO privacyverklaring](https://nivogroepholland.nl/privacy-verklaring/)). De WattGoedkoper-privacyverklaring vermeldt nu deze initiatiefnemer/verwerkingsverantwoordelijke en zowel `info@wattgoedkoper.nl` als het door NIVO zelf gepubliceerde `info@nivogroepholland.nl` voor privacyverzoeken. Controleer dit na de release live. **Deze documentatie of code activeert geen mailinglijst:** `newsletter_optin_enabled` blijft standaard uit totdat de bevoegde eigenaar de bestaande private flag bewust inschakelt. Indien NIVO op eigen naam losse marketing verzendt of contactdata anders overdraagt dan in de bestaande opt-in beschreven, is dat een afzonderlijke toestemming/verwerking; het huidige contract dekt e-mails van WattGoedkoper met eventueel NIVO-aanbiedingen.
+## Compatibiliteit
+Oude, al verstuurde `#bevestig=`-links blijven uitsluitend voor bestaande pending-aanmeldingen werken gedurende hun resterende geldigheid (maximaal zeven dagen). Nieuwe aanmeldingen gebruiken **nooit** dit pad; de losse `#afmelden=`-pagina blijft beschikbaar. Eerder bevestigde abonnees en individuele uitschrijvingen blijven onaangetast.
 
-**Bevoegde eigenaar, na zichtcontrole van de bijgewerkte privacy- en contactinformatie:** voeg aan de bestaande private `wattgoedkoper-private/config.php` uitsluitend `'newsletter_optin_enabled' => true` toe. Verander bestaande MySQL-, SMTP-, AES-, HMAC-, cron- of rapportinstellingen niet. Controleer op de site dat de aparte aanmeldoptie verschijnt na een eigen rapport.
+## Beheer / test
+- Bestaande eigenaar-flag `newsletter_optin_enabled=true` en `report_mail_enabled=true` blijven zoals ingesteld; **niet** sleutels, SMTP, MySQL of cron herinstalleren.
+- Dezelfde HTML/CSS en browsercontrole op 1366/390/320 px; synthetische SQLite en MySQL-test bewijzen consent, opslag en afmelding zonder echte persoonlijke berichten.
+- **Eén echte eigen-adresacceptatie op productie**: rapport aan eigen inbox, daarna één losse nieuwsbriefklik, directe successtatus, uitsluitend dat adres in de beveiligde CSV met v2-versie/tijd; controleer desgewenst de eigen afmeldlink. Geen e-mailadres/tokens/CSV in publieke GitHub-issues. Niet herhaaldelijk rapporten versturen voor tests.
+- Pas toekomstige nieuwsbrieven met passende mailingfunctionaliteit verzenden nadat de eigenaar dat afzonderlijk wil. Iedere marketingmail heeft een makkelijke afmeldlink en duidelijke NIVO-identiteit.
 
-## Eén gecontroleerde acceptatietest (alleen eigen adres)
-
-- Eerst de bestaande rapportmail naar een **eigen** gecontroleerd adres. Dat is reeds live bewezen voor rapportbezorging; verzend niet voortdurend nieuwe testmails.
-- Na rapportacceptatie klik je **Ja, stuur mij deze e-mails**. Controleer één aparte bevestigingsmail in inbox of spam.
-- Open de bevestigingslink; klik zelf expliciet op **Ja, bevestig mijn aanmelding**. Controleer op `/admin/#tools` via een beveiligde opt-in CSV of precies één testrecord als active is opgenomen. Maak geen persoonsgegevens/CSV publiek.
-- Controleer de persoonlijke afmeldlink en dat de actieve export daarna nul testadressen bevat. Test ook dat rapport zonder nieuwsbriefklik géén active-record aanmaakt, en dat losse advies- en analytics-opt-ins onveranderd blijven.
-- Bij onzekere SMTP-bevestiging nooit herhaaldelijk automatisch verzenden. Beoordeel eerst de eigen inbox, gebruik geen klantadressen als testgegevens.
-
-**Geen launchclaims zonder bewijs:** CI/Playwright en een groen API-fingerprint bewijzen geen echte bevestigingsmail, werkelijke contactgrondslag of privaat export-/afmeldbewijs. Die status wordt pas met eigenaarsbewijs in #14 en #26 afgetekend.
-
-## Minimale groeibeheercheck
-
-Maandelijks: alleen confirmed-lijst gebruiken, afgehandelde afmeldingen respecteren, verdachte/inactieve toestemming periodiek verwijderen, geen ongeautoriseerde data-export naar externe marketingtools, en bij Google/SEO-content wijzigingen de marketingtekst kritisch nalopen. Omzetten in geautomatiseerde marketing of NIVO-aflevering gebeurt alleen na aparte eigenaarbeslissing en passende AVG-/Telecommunicatiewetreview.
+## Juridisch/pragmatisch
+Volgens ACM is voorafgaande, bewuste, aantoonbare toestemming vereist voor e-mailreclame; volgens de Autoriteit Persoonsgegevens mag die toestemming online via een actieve knop worden gegeven. Dubbele e-mailverificatie is niet expliciet verplicht, maar sterkere bewijsvoering kan zinvol zijn. Initiatief/verwerkingsverantwoordelijke is NIVO Groep Holland B.V.; privacycontact via `info@wattgoedkoper.nl` en `info@nivogroepholland.nl`. De actuele privacyverklaring vermeldt de werkelijke single-click verwerking.
