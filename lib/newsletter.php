@@ -120,7 +120,7 @@ function wg_newsletter_unsubscribe(PDO $db, array $config, string $token): bool 
 function wg_newsletter_active(PDO $db, array $config): array {
     wg_newsletter_schema($db);
     $rows=$db->query("SELECT payload,consent_version,consent_source,confirmed_at
-        FROM newsletter_subscribers WHERE status='active' ORDER BY confirmed_at DESC LIMIT 5000")->fetchAll();
+        FROM newsletter_subscribers WHERE status='active' ORDER BY confirmed_at DESC")->fetchAll();
     $out=[];
     foreach ($rows as $r) {
         $data=wg_decrypt($r['payload'],$config);
