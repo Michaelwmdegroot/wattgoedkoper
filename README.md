@@ -1,5 +1,11 @@
 # WattGoedkoper.nl
 
+**Nieuwe projectoverdracht — 16 november 2026:** [commerciële Finish Line & afsluitcriteria](docs/HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md) · [herhaalbaar SEO-leadsite playbook](docs/SEO-LANDING-FACTORY-PLAYBOOK.md) · [startprompt volgende agent](docs/START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md).
+
+De hoofdmijlpaal is nu **snel een aantoonbaar werkende, zelfstandig draaiende SEO→gratis tool→rapportmail/optioneel NIVO-adviesroute afronden** en daarna door naar een volgende onderscheidende site. Historische productie-/beveiligingsdocs hieronder bewijzen voorgaande stappen, maar zijn **niet** de huidige ontwikkelprioriteit. Een huidige Google-indexering/ranking of werkende rapportmail is **nog niet bevestigd**.
+
+
+
 > **Koersbesluit 16 november 2026 — GROWTH FIRST.** We hebben een werkende premium energietool én NIVO-only leadmachine. De komende iteraties draaien om **organisch verkeer, de gratis interactieve scan, werkende rapportmail en meer kwalitatieve vrijwillige NIVO-adviesleads**. Custom Sodium/`proc_open`-back-up engineering is geparkeerd; minimale privacy-, data- en toegangsveiligheid blijft behouden. De [leidende commerciële roadmap](docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md) is herprioriteerd. De oude melding `P0` bij de back-upexporter beschrijft uitsluitend een open onderhoudsbeperking, **geen groeiblokkade**.
 
 
