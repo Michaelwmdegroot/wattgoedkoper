@@ -92,8 +92,9 @@ function serverStart(){return new Promise(resolve=>{
    await page.route('**/api/index.php?action=*',async route=>{
      const action=new URL(route.request().url()).searchParams.get('action');
      actions.push(action);
-     if(action==='session')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,configured:true,csrf:'synthetic-csrf',createdAt:0,reportMailEnabled:true})});
+     if(action==='session')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,configured:true,csrf:'synthetic-csrf',createdAt:0,reportMailEnabled:true,newsletterOptInEnabled:true})});
      if(action==='report_email')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,accepted:true,replayed:false})});
+     if(action==='newsletter_subscribe')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,confirmationRequested:true})});
      throw Error('Unexpected route during report-only QA: '+action);
    });
    await page.goto(base+'/',{waitUntil:'load'});
@@ -109,6 +110,17 @@ function serverStart(){return new Promise(resolve=>{
      assert.ok(!actions.some(x=>['leads','events'].includes(x)));
    });
    await screenshot(page,'seo-report-success-'+viewport.width);
+   await check(viewport.width+' newsletter signup never happens automatically',async()=>{
+     assert.equal(actions.filter(x=>x==='newsletter_subscribe').length,0);
+     assert.match(await page.locator('.ps-newsletter-prompt').innerText(),/NIVO Groep Holland/);
+   });
+   await page.locator('#newsletter-join').click();
+   await check(viewport.width+' explicit opt-in is separate, no NIVO lead',async()=>{
+     await page.locator('.ps-newsletter-pending').waitFor();
+     assert.equal(actions.filter(x=>x==='newsletter_subscribe').length,1);
+     assert.equal(actions.filter(x=>x==='report_email').length,1);
+     assert.ok(!actions.some(x=>['leads','events'].includes(x)));
+   });
    await page.locator('#dialog-close').click();
    await page.locator('#open-plan').click();
    await check(viewport.width+' reopening keeps sent status without new mail',async()=>{
