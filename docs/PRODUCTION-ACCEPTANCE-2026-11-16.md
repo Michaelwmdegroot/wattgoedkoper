@@ -48,6 +48,6 @@ De eigenaar heeft de **bestaande private** `operations_monitor_enabled=true` gez
 
 ## D. Huidige uitvoeringsfase
 
-De read-only Hostinger-back-upvoorcontrole wordt apart ontwikkeld. Daarmee verifiëren we vóór een export of het juiste beveiligde bestandspad, de MySQL-client, `proc_open`, sodium en minimale private bestandspermissies beschikbaar zijn. De voorcontrole start **geen** MySQL-dump en onthult geen credentials.
+De read-only Hostinger-back-upvoorcontrole is via [PR #40](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/40) gemerged naar `main fe7ab7d4328e2d815299c4da41a019e130cd247d`. De [live HTTP-/beveiligingssmoke](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43781069670) bevestigde **19/19 checks PASS**, waaronder afscherming van de backup-CLI-bestanden. In GitHub CI heeft de voorcontrole **18 fictieve no-write- en permissiechecks** doorstaan. De voorcontrole start **geen** MySQL-dump, maakt geen archief aan en onthult geen credentials. De **echte private Hostinger-prerequisite-meting is nog niet uitgevoerd of gedeeld**, dus readiness is nog onbekend.
 
-**Totdat eigenaar echte resultaten deelt blijven preflight, huidige productiebackup, import/restore en offsite bewaring feitelijk onbekend/niet bewezen.** De volgende update in dit register zal uitsluitend op nieuwe waarnemingen gebaseerd zijn.
+**Totdat de eigenaar de SSH-preflight uitvoert en daarna veilig export-, archief-, offsite- en geïsoleerd restorebewijs levert, blijven deze externe gates feitelijk onbekend/niet bewezen.** De volgende update in dit register zal uitsluitend op nieuwe waarnemingen gebaseerd zijn.

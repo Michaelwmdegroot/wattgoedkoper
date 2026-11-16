@@ -6,7 +6,7 @@
 >
 > **Nieuwe feitelijke Hostinger-meting:** `cron.status=fresh`, `operations_monitor_enabled=true`, twee afzonderlijke succesmomenten rond 01:10 en 01:15 NL-tijd, geen waarschuwingen en één geaggregeerde `smtp_accepted`-regel zonder wachtrij/fouten. De **individuele** status van die testlead is nog niet afzonderlijk afgelezen. De aparte consumentenrapportmail heeft mailboxconfig maar staat **bewust uit** (`reportRequested:false`). Back-ups zijn **nog niet op herstelbaarheid geverifieerd**. Ook de juridisch verantwoordelijke, buiten-app-retentie, off-site opslag, gratis GSC en externe alerts zijn nog open. Zie het [productiebewijsregister](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md).
 >
-> **Nieuwe P0-focus:** veilige Hostinger-MySQL-back-up met dezelfde ongewijzigde AES-sleutel, onafhankelijke archiefcontrole en **echte geïsoleerde restore**. Hiervoor is een read-only Hostinger-voorcontrole in ontwikkeling; geen encryptiesleutels, mailcredentials, database- of cronreset uitvoeren.
+> **Nieuwe P0-focus:** veilige Hostinger-MySQL-back-up met dezelfde ongewijzigde AES-sleutel, onafhankelijke archiefcontrole en **echte geïsoleerde restore**. De read-only Hostinger-voorcontrole is inmiddels [via PR #40](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/40) uitgebracht en publiek beschermd ([19/19 live checks](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43781069670)); **de daadwerkelijke Hostinger-uitvoer staat nog open**. Geen encryptiesleutels, mailcredentials, database- of cronreset uitvoeren.
 
 ### Begin hier
 

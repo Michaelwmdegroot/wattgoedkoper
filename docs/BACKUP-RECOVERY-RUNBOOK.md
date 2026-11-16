@@ -1,6 +1,6 @@
 # WattGoedkoper — veilig back-up- en herstelrunbook (P0)
 
-**Bijgewerkt 16 november 2026 · #21 / #25 / #26.** De bestaande Hostinger-MySQL, versleutelde leadpayloads, private sleutels en NIVO-transport blijven ongewijzigd. **PR #37 met het herstelgereedschap is gemerged en de Hostinger-live smoke is geslaagd. Dat bewijst de uitgerolde code, NIET een geslaagde productieback-up of productierestore. De read-only voorcontrole wordt afzonderlijk ontwikkeld en moet vóór productie-export worden uitgerold en gemeten.**
+**Bijgewerkt 16 november 2026 · #21 / #25 / #26.** De bestaande Hostinger-MySQL, versleutelde leadpayloads, private sleutels en NIVO-transport blijven ongewijzigd. **PR #37 met het herstelgereedschap is gemerged en de Hostinger-live smoke is geslaagd. Dat bewijst de uitgerolde code, NIET een geslaagde productieback-up of productierestore. De **read-only voorcontrole is via PR #40 gemerged en de Hostinger-live-smoke gaf 19/19 PASS**; de eigenaar moet de controle nog daadwerkelijk op de productie-SSH-terminal uitvoeren vóór enige back-up.**
 
 ## Veiligheidsvoorwaarden
 
@@ -18,7 +18,7 @@ Dit bewijst de programmeerbare roundtrip **in CI**, maar bewijst nadrukkelijk **
 
 ## 0. Hostinger-gereedheid vaststellen vóór enige export
 
-Na review, merge en Hostinger-deployment van de [back-upvoorcontrole-PR](https://github.com/Michaelwmdegroot/wattgoedkoper/pulls) is het nieuwe **alleen-lezen** commando:
+De [back-upvoorcontrole uit PR #40](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/40) is nu **op de live code aanwezig en publiek afgeschermd** ([GitHub Actions 19/19](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43781069670)). De bevoegde eigenaar kan de **nog niet uitgevoerde** veilige Hostinger-readinessmeting starten met:
 
 ```sh
 cd /home/u886757484/domains/wattgoedkoper.nl/public_html
@@ -96,7 +96,7 @@ Importeer het SQL-bestand **alleen in de afzonderlijke testdatabase**, met apart
 
 ## 4. Bewijsregister (alleen niet-gevoelige metadata)
 
-| Gate | Benodigd bewijs | Status op 15 november |
+| Gate | Benodigd bewijs | Status op 16 november |
 |---|---|---|
 | Archiveerbaar | Bestaande MySQL + private sleutels in nieuw `.wgbk`, tijdstip en beschermde opslag | **Open: nog geen live uitvoer** |
 | Integriteit | `authenticated:true`, SQL aanwezig, config aanwezig | **Open: alleen fictieve CI-fixture getest** |
@@ -107,4 +107,4 @@ Importeer het SQL-bestand **alleen in de afzonderlijke testdatabase**, met apart
 
 Automatische Hostinger-back-ups moeten aanvullend op hun eigen bewaartermijn en herstelbaarheid worden gecontroleerd. Dit hulpmiddel vervangt geen hostingbackupbeleid of periodieke externe controle. Dit is geen tweede cron en wijzigt de bestaande operationele taak niet.
 
-**Releaserichtlijn:** het versleutelde herstelhulpmiddel is op `main` uitgeleverd via #37. De aparte voorcontrole krijgt zijn eigen CI/PR. Productie-uitvoering uitsluitend door de bevoegde eigenaar. Zet API-`backup.status` pas van `not_verified` af als de echte isolatierestore is bewezen, nooit door alleen een succesvol CI-resultaat.
+**Releaserichtlijn:** het versleutelde herstelhulpmiddel is op `main` uitgeleverd via #37. De aparte voorcontrole is via PR #40 naar `main` gemerged, met CI en live smoke groen. **Een echte productie-export en restore blijven ongedaan en niet geverifieerd.** Productie-uitvoering uitsluitend door de bevoegde eigenaar. Zet API-`backup.status` pas van `not_verified` af als de echte isolatierestore is bewezen, nooit door alleen een succesvol CI-resultaat.
