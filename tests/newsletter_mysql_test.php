@@ -28,7 +28,20 @@ try {
   $token=explode('=', $active[0]['unsubscribeUrl'],2)[1];
   if(!wg_newsletter_unsubscribe($db,$config,$token))throw new RuntimeException('Unsubscribe failed');
   if(wg_newsletter_active($db,$config)!==[])throw new RuntimeException('Opt-out still exportable');
-  echo "NEWSLETTER MYSQL: schema, confirm and opt-out verified with synthetic data\n";
+  $click=wg_newsletter_subscribe_single($db,$config,'oneclick@example.test');
+  if(!$click['subscribed']||$click['alreadySubscribed'])throw new RuntimeException('Single-click consent not active');
+  $hash=wg_newsletter_hash($config,'email','oneclick@example.test');
+  $read=$db->prepare('SELECT status,confirm_hash,consent_version,consent_source,payload FROM newsletter_subscribers WHERE email_hash=?');
+  $read->execute([$hash]);$single=$read->fetch();
+  if($single['status']!=='active'||$single['confirm_hash']!==null
+     ||$single['consent_version']!==WG_NEWSLETTER_CONSENT_VERSION
+     ||$single['consent_source']!=='report_success_single_click')
+     throw new RuntimeException('MySQL single-click evidence invalid');
+  $decoded=wg_decrypt($single['payload'],$config);
+  if(($decoded['consentText']??'')!==WG_NEWSLETTER_CONSENT_TEXT)throw new RuntimeException('Consent text not encrypted');
+  if(!wg_newsletter_unsubscribe($db,$config,$decoded['unsubscribeToken']))throw new RuntimeException('MySQL single-click opt-out failed');
+  if(wg_newsletter_active($db,$config)!==[])throw new RuntimeException('Active export contains opted-out subscriber');
+  echo "NEWSLETTER MYSQL: legacy plus immediate single opt-in, encrypted proof and opt-out verified with synthetic data\n";
 } finally {
   $db->exec('DELETE FROM newsletter_subscribers');
 }
