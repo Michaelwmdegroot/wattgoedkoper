@@ -1,7 +1,7 @@
 import { DEFAULT_INPUT, formatEuro, MODEL_VERSION, SOURCES } from './model.mjs';
 import { simulateHome, UPGRADES } from './playground-model.mjs';
 import { renderHouseScene } from './house-scene.mjs';
-import { renderPlanDashboard, renderPlanWorkspace } from './plan-ui.mjs';
+import { renderPlanDashboard, renderPlanWorkspace, renderReportDelivery, renderReportSuccess } from './plan-ui.mjs';
 import { resolveContextEntry } from './context-entry.mjs';
 
 // A house to experiment with. Detailed inputs are optional; results never need contact details.
@@ -20,7 +20,7 @@ const STORE_ANALYTICS = 'wattgoedkoper-analytics-v1';
 const HOME_TYPES = [['terraced','Rijwoning'],['corner','Hoekhuis'],['semi','2-onder-1-kap'],['detached','Vrijstaand'],['apartment','Appartement']];
 const UPGRADE_ART = {solar:'/assets/images/solar-card.webp',battery:'/assets/images/battery-card.webp',heatpump:'/assets/images/heatpump-card.webp',insulation:'/assets/images/insulation-card.webp','smart-use':'/assets/images/smart-use-card.webp'};
 const PERIODS = [['before1945','Vóór 1945'],['1945-1974','1945 – 1974'],['1975-1991','1975 – 1991'],['1992-2005','1992 – 2005'],['after2005','Na 2005']];
-const state = { input:{...DEFAULT_INPUT}, selectedIds:[], tab:'home', view:'current', daylight:65, personalized:false, tariffsEdited:false, report:null, scene:null, history:[], dialog:null, dialogReturn:null, analytics:false, session:null, sessionPromise:null, leadFingerprint:null, leadKey:null, reportFingerprint:null, reportKey:null, started:false };
+const state = { input:{...DEFAULT_INPUT}, selectedIds:[], tab:'home', view:'current', daylight:65, personalized:false, tariffsEdited:false, report:null, scene:null, history:[], dialog:null, dialogReturn:null, analytics:false, session:null, sessionPromise:null, leadFingerprint:null, leadKey:null, reportFingerprint:null, reportKey:null, reportSent:null, started:false };
 try { state.analytics = localStorage.getItem(STORE_ANALYTICS) === 'yes'; } catch {}
 const ICONS = {
   solar:'<path d="M6 8h12l3 11H3L6 8Z"/><path d="M5 13h14M9 8 8 19m7-11 1 11M9 22h6M12 19v3M12 1v3M4 3l2 2m14-2-2 2"/>',
@@ -232,6 +232,20 @@ function openBattery() {
 const planUI={tab:'overview',period:'year',chart:'cost',reference:null,inspected:null};
 function planOptions(){return {r:state.report,personalized:state.personalized,tariffsEdited:state.tariffsEdited,ui:{...planUI,canUndo:state.history.length>0}};}
 function planBody(){return renderPlanDashboard(planOptions());}
+function reportSnapshot() {
+  const r=state.report;
+  return {modelVersion:MODEL_VERSION,year:r.year,homeType:state.input.homeType,
+    selectedIds:[...r.selectedIds],savingsLow:r.savingsLow,savingsHigh:r.savingsHigh,
+    investmentLow:r.investmentLow,investmentHigh:r.investmentHigh,
+    baselineCost:r.baseline.bill.total,plannedCost:r.scenario.bill.total,
+    electricityUse:r.baseline.flow.electricityUse,gasUse:r.baseline.flow.gasUse,
+    budgetOverBy:r.budget.exceeded?Math.max(0,r.budget.overBy):0};
+}
+function reportPlanKey(){return JSON.stringify(reportSnapshot());}
+function displayReportSuccess(email){
+  const el=$('#report-email-form');if(el)el.outerHTML=renderReportSuccess(email);
+  $('#report-success')?.focus({preventScroll:true});
+}
 function updatePlanWorkspace(focusAction=null,focusValue=''){
   if(state.dialog!=='plan')return;
   const panel=$('#ps-panel'),scroll=panel?.scrollTop||0;
@@ -242,6 +256,10 @@ function updatePlanWorkspace(focusAction=null,focusValue=''){
     button?.focus({preventScroll:true});
   }
   $('#plan-live-announcement').textContent=`Plan bijgewerkt. Besparing ${money(state.report.savings)} per jaar. Investering ${range(state.report.investmentLow,state.report.investmentHigh)}.`;
+  if(state.reportSent && state.reportSent.reportKey!==reportPlanKey()) {
+    state.reportSent=null;
+    const receipt=$('#report-success');if(receipt)receipt.outerHTML=renderReportDelivery();
+  }
 }
 let planReturnFromSettings=false;
 $('#tool-dialog').addEventListener('click',event=>{
@@ -280,6 +298,10 @@ $('#tool-dialog').addEventListener('keydown',event=>{
 
 function openPlan() {
   openDialog('plan','Jouw huis. Een slimmer plan.',planBody(),'JOUW PERSOONLIJKE ENERGIEPLAN');
+  if(state.reportSent?.reportKey===reportPlanKey()){
+    displayReportSuccess(state.reportSent.email);
+    return;
+  }
   track('scan_complete');
   if(document.querySelector('.preview-ribbon')){$('#report-status').textContent='Offline preview · geen e-mailverzending. Je plan blijft volledig bruikbaar.';return;} // offline demo never uses backend
   ensureSession().then(session=>{
@@ -362,15 +384,7 @@ async function submitReport(event) {
     showError(status,'Dit is een offline preview. Er worden geen e-mails verstuurd.');
     status.classList.add('is-error');return;
   }
-  const r=state.report;
-  const report={
-    modelVersion:MODEL_VERSION,year:r.year,homeType:state.input.homeType,
-    selectedIds:[...r.selectedIds],savingsLow:r.savingsLow,savingsHigh:r.savingsHigh,
-    investmentLow:r.investmentLow,investmentHigh:r.investmentHigh,
-    baselineCost:r.baseline.bill.total,plannedCost:r.scenario.bill.total,
-    electricityUse:r.baseline.flow.electricityUse,gasUse:r.baseline.flow.gasUse,
-    budgetOverBy:r.budget.exceeded?Math.max(0,r.budget.overBy):0
-  };
+  const report=reportSnapshot();
   const fingerprint=JSON.stringify({email,report});
   if(state.reportFingerprint!==fingerprint){
     state.reportFingerprint=fingerprint;state.reportKey=crypto.randomUUID();
@@ -381,13 +395,12 @@ async function submitReport(event) {
   try{
     const result=await apiPost('report_email',payload);
     if(!result.accepted)throw new Error('De verzendstatus kon niet worden bevestigd.');
-    status.textContent=result.replayed?'Dit verzoek is eerder door de mailserver geaccepteerd. Controleer je inbox.':
-      'De mailserver heeft je rapport geaccepteerd. Kijk ook in je spammap; bezorging kan even duren.';
-    status.classList.add('is-success');
+    state.reportSent={email,reportKey:JSON.stringify(report)};
+    displayReportSuccess(email);
   }catch(error){
     status.textContent=error.message;status.classList.add('is-error');
   }finally{
-    button.disabled=false;button.innerHTML='Mail mijn energieplan '+icon('arrow');
+    if($('#report-send')){button.disabled=false;button.innerHTML='Mail mijn energieplan '+icon('arrow');}
   }
 }
 
@@ -422,6 +435,7 @@ document.addEventListener('click',event=>{
   else if(button.hasAttribute('data-use-estimate')){changeInput('usageKnown',false);closeDialog();toast('Je huis rekent weer met de verbruiksschatting.');}
   else if(button.hasAttribute('data-save'))saveHome();
   else if(button.hasAttribute('data-restore'))restoreHome();
+  else if(button.hasAttribute('data-report-reset')){state.reportSent=null;const receipt=$('#report-success');if(receipt)receipt.outerHTML=renderReportDelivery();$('#report-email')?.focus();}
   else if(button.hasAttribute('data-delete-home')){try{localStorage.removeItem(STORE_HOME);localStorage.removeItem('wattgoedkoper-scan-v1');renderControls();toast('Het bewaarde huis is van dit apparaat verwijderd.');}catch{toast('Opslag is niet toegankelijk in deze browser.');}}
   else if(button.hasAttribute('data-save-privacy')){const previous=state.analytics;state.analytics=$('#analytics-consent').checked;try{localStorage.setItem(STORE_ANALYTICS,state.analytics?'yes':'no');}catch{}closeDialog();toast(state.analytics?'Gebruiksstatistieken staan aan.':'Gebruiksstatistieken staan uit.');if(state.analytics&&!previous)track('page_view');}
   else if(button.hasAttribute('data-print')){openPlan();$$('.plan-assumptions').forEach(item=>item.open=true);window.print();}
