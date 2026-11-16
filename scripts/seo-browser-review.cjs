@@ -134,6 +134,30 @@ function serverStart(){return new Promise(resolve=>{
    });
    await page.close();
  }
+ // Mail clients and automated link previews may follow a link, but may NEVER
+ // activate or unsubscribe without an explicit second click on our page.
+ for(const [mode,action] of [['bevestig','newsletter_confirm'],['afmelden','newsletter_unsubscribe']]){
+   const page=await browser.newPage({viewport:{width:390,height:844}});
+   const requests=[];
+   await page.route('**/api/index.php?action=*',async route=>{
+     const op=new URL(route.request().url()).searchParams.get('action');requests.push(op);
+     if(op==='session')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,configured:true,csrf:'synthetic-csrf',createdAt:0})});
+     if(op===action)return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,confirmed:mode==='bevestig',unsubscribed:mode==='afmelden'})});
+     throw Error('Unexpected newsletter confirmation request: '+op);
+   });
+   await page.goto(base+'/nieuwsbrief/#'+mode+'='+('a'.repeat(64)),{waitUntil:'load'});
+   await check('newsletter '+mode+' link alone makes no consent write',async()=>{
+     assert.deepEqual(requests,[]);
+     assert.ok(await page.locator('#choice-button').isVisible());
+   });
+   await page.locator('#choice-button').click();
+   await check('newsletter '+mode+' requires deliberate click',async()=>{
+     await page.locator('#choice-result:not([hidden])').waitFor();
+     assert.deepEqual(requests,['session',action]);
+     assert.equal(await page.evaluate(()=>location.hash),'');
+   });
+   await page.close();
+ }
  // A standalone offline preview must also show working interactive editorial content.
  const offline=await browser.newPage({viewport:{width:1366,height:768}});
  const outbound=[];
