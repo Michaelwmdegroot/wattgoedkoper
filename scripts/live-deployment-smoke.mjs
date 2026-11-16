@@ -9,7 +9,7 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const FILES=['api/index.php','lib/bootstrap.php','lib/delivery.php','lib/operations.php','lib/mail.php','lib/report.php'];
+const FILES=['api/index.php','lib/bootstrap.php','lib/delivery.php','lib/operations.php','lib/mail.php','lib/report.php','lib/newsletter.php'];
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 
 export async function localFingerprint(){
