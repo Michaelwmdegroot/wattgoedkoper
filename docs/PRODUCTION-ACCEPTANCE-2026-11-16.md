@@ -31,6 +31,17 @@ De eigenaar heeft de **bestaande private** `operations_monitor_enabled=true` gez
 
 **Bewijsgrens:** twee opeenvolgende successen zijn sterk consistent met de bestaande Hostinger-cron, maar hPanel/cronherkomst van beide individuele ticks is nog niet apart geregistreerd. `smtp_accepted=1` is een geaggregeerde SMTP-relayacceptatie, geen per-record statusbewijs en geen API-ACK of algemene inboxgarantie. De afzonderlijke reguliere testadviesmail `WG-5510214770E3` werd eerder wél door de eigenaar in de echte NIVO-inbox waargenomen.
 
+### Derde observatie, 16 november 2026 om 00:59:06 UTC — back-upvoorcontrole
+
+De eigenaar heeft op de bestaande Hostinger-SSH-console de naar `main` uitgerolde read-only opdracht `php scripts/backup-preflight.php --directory=/home/u886757484/domains/wattgoedkoper.nl/wg-backups` uitgevoerd. De privémappenstructuur werd zonder SQL-export voorbereid.
+
+- `privateConfigValid:true`, `privatePermissionsSafe:true`, `pdoMysqlAvailable:true`, `dumpBinary:"mysqldump"`, `backupDirectorySafe:true`, `tempCredentialFilesAbsent:true`.
+- `cryptoAvailable:false` → `SODIUM_UNAVAILABLE`.
+- `procOpenAvailable:false` → `PROC_OPEN_UNAVAILABLE`.
+- `readyToAttemptBackup:false`, `archiveCreated:false`, `archiveAuthenticated:false`, `isolatedRestoreVerified:false`.
+
+**Conclusie:** bestaande PHP-encrypted exporter op deze Hostinger-CLI **geblokkeerd**. De voorcontrole werkte zoals bedoeld en voorkwam een onveilige uitvoering. Geen export, keyrotatie of productie-DB-mutatie gedaan; `backupStatus:not_verified` blijft de juiste status. De twee externe Hostinger-mogelijkheden (beschikbare PHP CLI/extension en alternatieve SSH-encryptie-tools) moeten eerst read-only in kaart worden gebracht. Zie [runbook — P0-blocker](BACKUP-RECOVERY-RUNBOOK.md) en [issue #21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21#issuecomment-6904417729).
+
 ## C. Nog vereiste externe acceptatie
 
 | Gate | Werkelijke status | Volgende bewijsbron |
