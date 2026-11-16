@@ -16,6 +16,38 @@ Op PR #37 is behalve de cryptografische integriteitstest ook een **volledige MyS
 
 Dit bewijst de programmeerbare roundtrip **in CI**, maar bewijst nadrukkelijk **niet** dat de bestaande Hostinger-productiedatabase is geback-upt, dat de Hostinger CLI alle vereiste programma's aanbiedt, dat off-site bewaring werkt of dat herstel van echte productiegegevens is gelukt. De vier externe gates onderaan blijven open.
 
+## Productie-P0 blokkade — werkelijk gecontroleerd 16 november 2026
+
+De eigenaar voerde de live `scripts/backup-preflight.php` uit om `2026-11-16T00:59:06Z` (UTC). **De huidige PHP-export mag nog NIET worden gestart.** Feitelijke, niet-gevoelige resultaten:
+
+| Voorwaarde | Live meting | Betekenis |
+|---|---|---|
+| Private MySQL-config, rechten en pdo_mysql | `true` | Bestaande configuratie en rechten gecontroleerd |
+| `mysqldump` | aanwezig | Exportprogramma bestaat, maar er is géén export gemaakt |
+| Privé-back-upmap en geen restanten `.cnf` | `true` | Veilige map beschikbaar |
+| Sodium / Argon2id | `cryptoAvailable:false` | **`SODIUM_UNAVAILABLE`** |
+| PHP `proc_open` | `false` | **`PROC_OPEN_UNAVAILABLE`** |
+| Gemaakt/geauthenticeerd/hersteld archief | alles `false` | Geen productieherstelbewijs |
+
+**Fail-closed besluit:** `readyToAttemptBackup:false`. Het huidige `scripts/backup-create.php` gebruikt *zowel* sodium voor geauthenticeerde encryptie als `proc_open` voor het streamen van `mysqldump`. Niet zonder beoordeling functies vrijgeven via PHP-instellingen. Niet terugvallen op een onversleutelde `.sql`-dump. Geen export, restore, e-mail, keyrotatie of configuratiewijziging uitgevoerd.
+
+### Eerst omgeving onderzoeken (geen wijzigingen)
+
+Voer vanaf de bestaande Hostinger-terminal alleen de volgende niet-gevoelige checks uit:
+
+```sh
+php -v | head -n 2
+php --ini | head -n 12
+php -r 'echo "PHP_SAPI=",PHP_SAPI,PHP_EOL,"sodium=",extension_loaded("sodium")?"yes":"no",PHP_EOL,"proc_open=",function_exists("proc_open")?"yes":"no",PHP_EOL;'
+for x in php php82 php83 php84 gpg age openssl mysqldump mariadb-dump; do command -v "$x" || true; done
+```
+
+Deze opdrachten vragen niet om wachtwoorden of klantdata en roepen `proc_open`, een dump of cryptografische export **niet** aan. Vermijd een volledige `phpinfo()`- of `php -i`-dump in een publieke issue: die kan onnodige details tonen.
+
+Bekijk daarnaast in hPanel **Websites → Manage site → PHP Configuration → PHP extensions** of `sodium` aangeboden wordt en onder **PHP options** of `proc_open` in `disableFunctions` staat. **Bekijk eerst; verander nog niets.** Hostinger beschrijft de beschikbare [extensions/options](https://www.hostinger.com/support/4667515-how-to-manage-php-extensions-and-options-in-hostinger/) en [disabled functions](https://www.hostinger.com/support/3212034-how-to-enable-disabled-php-functions-in-hostinger/); dit bewijst niet welke opties in dit specifieke account beschikbaar zijn, noch dat een verandering alleen de CLI raakt. Het vrijgeven van `proc_open` voor web-PHP vergroot mogelijk ook de uitvoeringsmogelijkheden van webapplicaties.
+
+**Vervolgkeuze na de inventarisatie:** (a) zo mogelijk een aparte geschikte **CLI**-PHP-binary zonder wijzigingen aan publieke web-PHP, of (b) een eigen, beveiligde SSH/Bash-back-upstream met vooraf vastgestelde geauthenticeerde encryptie en geïsoleerde hersteltest als aparte geteste PR. Geen betaald plan of ongeteste cryptografische workaround gebruiken. In beide gevallen blijven echte archiefauthenticatie, off-site kopie en restore onafgetekend tot daadwerkelijk bewijs is gedeeld.
+
 ## 0. Hostinger-gereedheid vaststellen vóór enige export
 
 De [back-upvoorcontrole uit PR #40](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/40) is nu **op de live code aanwezig en publiek afgeschermd** ([GitHub Actions 19/19](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43781069670)). De bevoegde eigenaar kan de **nog niet uitgevoerde** veilige Hostinger-readinessmeting starten met:

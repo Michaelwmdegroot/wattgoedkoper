@@ -8,6 +8,8 @@
 >
 > **Nieuwe P0-focus:** veilige Hostinger-MySQL-back-up met dezelfde ongewijzigde AES-sleutel, onafhankelijke archiefcontrole en **echte geïsoleerde restore**. De read-only Hostinger-voorcontrole is inmiddels [via PR #40](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/40) uitgebracht en publiek beschermd ([19/19 live checks](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43781069670)); **de daadwerkelijke Hostinger-uitvoer staat nog open**. Geen encryptiesleutels, mailcredentials, database- of cronreset uitvoeren.
 
+**Open P0-beperking sinds 16 november 2026:** de echte Hostinger-voorcontrole meldt `SODIUM_UNAVAILABLE` en `PROC_OPEN_UNAVAILABLE`. De huidige PHP-back-upexporter is daardoor nog **niet uitvoerbaar** op deze CLI. Config/permissies, MySQL, exporter en private back-upmap zijn in orde. Er is geen export, archiefauthenticatie of restore uitgevoerd. Zie [herstelprocedure](docs/BACKUP-RECOVERY-RUNBOOK.md) en [feitelijke productieacceptatie](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md); onderzoek eerst beschikbare PHP CLI-/encryptieopties zonder beveiligingsinstellingen of sleutels blind te veranderen.
+
 ### Begin hier
 
 - **[Nieuwste feitelijke productieacceptatie](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md)** — live bewijs en onafhankelijke open gates.
