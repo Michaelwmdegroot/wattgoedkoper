@@ -84,6 +84,44 @@ function serverStart(){return new Promise(resolve=>{
    });
    await page.close();
  }
+ // Fully synthetic accepted report: exact consumer transition without an email,
+ // lead, analytics event, or any write to production.
+ for(const viewport of [{width:1366,height:768},{width:390,height:844},{width:320,height:700}]){
+   const page=await browser.newPage({viewport});
+   const actions=[];
+   await page.route('**/api/index.php?action=*',async route=>{
+     const action=new URL(route.request().url()).searchParams.get('action');
+     actions.push(action);
+     if(action==='session')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,configured:true,csrf:'synthetic-csrf',createdAt:0,reportMailEnabled:true})});
+     if(action==='report_email')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,accepted:true,replayed:false})});
+     throw Error('Unexpected route during report-only QA: '+action);
+   });
+   await page.goto(base+'/',{waitUntil:'load'});
+   await page.locator('#open-plan').click();
+   await page.locator('#report-email').fill('persoon@example.test');
+   await page.locator('#report-send').click();
+   await page.locator('#report-success').waitFor();
+   await check(viewport.width+' accepted report replaces input and submit',async()=>{
+     assert.equal(await page.locator('#report-email').count(),0);
+     assert.equal(await page.locator('#report-send').count(),0);
+     assert.match(await page.locator('#report-success').innerText(),/Je rapport is verstuurd/);
+     assert.equal(actions.filter(x=>x==='report_email').length,1);
+     assert.ok(!actions.some(x=>['leads','events'].includes(x)));
+   });
+   await screenshot(page,'seo-report-success-'+viewport.width);
+   await page.locator('#dialog-close').click();
+   await page.locator('#open-plan').click();
+   await check(viewport.width+' reopening keeps sent status without new mail',async()=>{
+     await page.locator('#report-success').waitFor();
+     assert.equal(actions.filter(x=>x==='report_email').length,1);
+   });
+   await page.locator('[data-report-reset]').click();
+   await check(viewport.width+' changing address is explicit',async()=>{
+     await page.locator('#report-email').waitFor();
+     assert.equal(actions.filter(x=>x==='report_email').length,1);
+   });
+   await page.close();
+ }
  // A standalone offline preview must also show working interactive editorial content.
  const offline=await browser.newPage({viewport:{width:1366,height:768}});
  const outbound=[];
