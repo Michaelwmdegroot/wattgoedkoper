@@ -416,7 +416,7 @@ async function requestNewsletterOptIn() {
     state.reportSent.newsletterPending=true;
     const success=$('#report-success');
     if(success)success.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:true,newsletterPending:true});
-    toast('Controleer je e-mail om de aanmelding te bevestigen. Tot die tijd ontvang je geen marketingmails.');
+    toast('Controleer je inbox. Een nieuwe aanmelding wordt pas actief na jouw e-mailbevestiging.');
   }catch(error){
     button.disabled=false;button.textContent='Ja, stuur mij deze e-mails ↗';
     let notice=$('#newsletter-error');
