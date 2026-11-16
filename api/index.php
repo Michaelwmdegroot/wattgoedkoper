@@ -103,12 +103,8 @@ try {
         if (!filter_var($email,FILTER_VALIDATE_EMAIL)) {
             wg_fail(422,'VALIDATION','Controleer je e-mailadres.');
         }
-        $proof=$_SESSION['newsletter_report_proof']??null;
-        $expected=wg_newsletter_hash($config,'report',$email);
-        if (!is_array($proof) || !is_string($proof['emailHash']??null)
-            || !hash_equals($expected,$proof['emailHash'])
-            || time()-(int)($proof['at']??0)>86400
-            || (int)($proof['at']??0)>time()) {
+        if (!wg_newsletter_report_proof_matches(
+            $config,$_SESSION['newsletter_report_proof']??null,$email,time())) {
             wg_fail(403,'REPORT_SESSION_REQUIRED',
                 'We kunnen deze aanmelding niet aan je verstuurde rapport koppelen. Verstuur eerst je energieplan opnieuw vanaf dit apparaat.');
         }
