@@ -3,6 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/lib/bootstrap.php';
 require dirname(__DIR__) . '/lib/mail.php';
 require dirname(__DIR__) . '/lib/report.php';
+require dirname(__DIR__) . '/lib/newsletter.php';
 require dirname(__DIR__) . '/lib/delivery.php';
 require dirname(__DIR__) . '/lib/operations.php';
 wg_headers();
@@ -20,13 +21,13 @@ try {
         }
         wg_json(['ok'=>true, 'service'=>'WattGoedkoper', 'configured'=>$config !== null && $databaseReady, 'databaseReady'=>$databaseReady, 'version'=>'1.2.0', 'releaseFingerprint'=>wg_release_fingerprint()]);
     }
-    if ($action === 'session' && !$config) { wg_method('GET'); wg_json(['ok'=>true,'configured'=>false,'csrf'=>null,'createdAt'=>null,'authenticated'=>false,'reportMailEnabled'=>false]); }
+    if ($action === 'session' && !$config) { wg_method('GET'); wg_json(['ok'=>true,'configured'=>false,'csrf'=>null,'createdAt'=>null,'authenticated'=>false,'reportMailEnabled'=>false,'newsletterOptInEnabled'=>false]); }
     $config = wg_require_config($config);
     $db = wg_db($config);
     wg_housekeeping($db, $config);
     if ($action === 'session') {
         wg_method('GET'); wg_rate($db,$config,'session',120,600); wg_session($config);
-        wg_json(['ok'=>true,'configured'=>true,'csrf'=>$_SESSION['csrf'],'createdAt'=>$_SESSION['created_at'],'authenticated'=>!empty($_SESSION['admin']),'reportMailEnabled'=>wg_report_enabled($config)]);
+        wg_json(['ok'=>true,'configured'=>true,'csrf'=>$_SESSION['csrf'],'createdAt'=>$_SESSION['created_at'],'authenticated'=>!empty($_SESSION['admin']),'reportMailEnabled'=>wg_report_enabled($config),'newsletterOptInEnabled'=>wg_newsletter_enabled($config)]);
     }
     if ($action === 'leads') {
         $data = wg_input($config); wg_rate($db,$config,'lead',8,3600);
@@ -75,6 +76,53 @@ try {
             wg_fail(503,'REPORT_SEND_UNCERTAIN','Verzending is niet bevestigd. Controleer je inbox voordat je een nieuw verzoek doet.');
         }
         wg_json(['ok'=>true,'accepted'=>true,'replayed'=>false]);
+    }
+    if ($action === 'newsletter_subscribe') {
+        $data=wg_input($config);
+        if (!wg_newsletter_enabled($config)) {
+            wg_fail(503,'NEWSLETTER_DISABLED','Aanmelden voor energietips is momenteel niet beschikbaar.');
+        }
+        if (time()-(int)$_SESSION['created_at']<2) {
+            wg_fail(429,'TOO_FAST','Probeer het over enkele seconden opnieuw.');
+        }
+        if (($data['consent']??null)!==true || ($data['consentVersion']??'')!==WG_NEWSLETTER_CONSENT_VERSION
+            || ($data['website']??'')!=='') {
+            wg_fail(422,'NEWSLETTER_CONSENT_REQUIRED','Kies bewust of je de energietips wilt ontvangen.');
+        }
+        wg_rate($db,$config,'newsletter_signup',3,3600);
+        $email=wg_text($data['email']??'','e-mailadres',254,true);
+        $intent=wg_newsletter_prepare($db,$config,$email);
+        if ($intent['send']) {
+            $letter=wg_newsletter_confirmation_mail($intent['token']);
+            try {
+                wg_mail_send($config,$intent['email'],$letter['subject'],$letter['text'],$letter['html']);
+            } catch(Throwable $error) {
+                // The confirmation may have been accepted before a timeout;
+                // a pending token is intentionally never auto-mailed again.
+                wg_fail(503,'NEWSLETTER_CONFIRMATION_UNCERTAIN',
+                    'De bevestigingsmail is niet zeker verzonden. Controleer je inbox en spammap.');
+            }
+        }
+        // No marketing delivery, CRM/NIVO lead or analytics event.
+        wg_json(['ok'=>true,'confirmationRequested'=>true]);
+    }
+    if ($action === 'newsletter_confirm') {
+        $data=wg_input($config);
+        wg_rate($db,$config,'newsletter_confirm',20,3600);
+        $token=wg_text($data['token']??'','bevestigingscode',80,true);
+        if(!wg_newsletter_confirm($db,$config,$token)){
+            wg_fail(410,'NEWSLETTER_LINK_EXPIRED','Deze link is verlopen of al gebruikt.');
+        }
+        wg_json(['ok'=>true,'confirmed'=>true]);
+    }
+    if ($action === 'newsletter_unsubscribe') {
+        $data=wg_input($config);
+        wg_rate($db,$config,'newsletter_unsubscribe',30,3600);
+        $token=wg_text($data['token']??'','afmeldcode',80,true);
+        if(!wg_newsletter_unsubscribe($db,$config,$token)){
+            wg_fail(410,'NEWSLETTER_LINK_EXPIRED','Deze afmeldlink is verlopen of al gebruikt. Mail ons voor hulp.');
+        }
+        wg_json(['ok'=>true,'unsubscribed'=>true]);
     }
     if ($action === 'events') {
         $data=wg_input($config); wg_rate($db,$config,'events',120,600);
@@ -179,6 +227,20 @@ try {
         $body=wg_text($data['body']??'','bericht',15000,true);
         wg_mail_send($config,$to,$subject,$body);
         wg_json(['ok'=>true,'sent'=>true]);
+    }
+    if ($action === 'admin_newsletter_export') {
+        wg_input($config);
+        $rows=wg_newsletter_active($db,$config);
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="wattgoedkoper-optin-mailinglijst-'.gmdate('Y-m-d').'.csv"');
+        header('X-Content-Type-Options: nosniff');
+        $out=fopen('php://output','wb');fwrite($out,"\xEF\xBB\xBF");
+        fputcsv($out,['E-mailadres','Bevestigd (UTC)','Toestemmingsversie','Bron','Afmeldlink'],';', '"', '');
+        foreach($rows as $row) {
+            fputcsv($out,array_map('wg_csv_cell',[$row['email'],$row['confirmedAt'],
+                $row['consentVersion'],$row['source'],$row['unsubscribeUrl']]),';','"','');
+        }
+        fclose($out);exit;
     }
     if ($action === 'admin_export') {
         wg_input($config);$rows=$db->query('SELECT * FROM leads ORDER BY created_at DESC LIMIT 5000');

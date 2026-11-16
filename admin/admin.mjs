@@ -403,6 +403,21 @@ $('#tools-check').addEventListener('click',()=>loadToolStatus());
 $('#previous').addEventListener('click',()=>{state.offset=Math.max(0,state.offset-50);refresh().catch(error=>message(error.message));});
 $('#next').addEventListener('click',()=>{state.offset+=50;refresh().catch(error=>message(error.message));});
 $('#export').addEventListener('click',async()=>{const button=$('#export');button.disabled=true;try{const response=await fetch(apiBase+'admin_export',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':state.csrf},body:'{}'});if(!response.ok){const data=await response.json();throw new Error(data.error?.message||'Exporteren is niet gelukt.');}const blob=await response.blob();const url=URL.createObjectURL(blob);const a=el('a');a.href=url;a.download='wattgoedkoper-aanvragen-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);message('Export gedownload. De CSV bevat persoonsgegevens; bewaar hem veilig.',true);}catch(error){message(error.message);}finally{button.disabled=false;}});
+$('#newsletter-export').addEventListener('click',async()=>{
+  const button=$('#newsletter-export');button.disabled=true;
+  try{
+    const response=await fetch(apiBase+'admin_newsletter_export',{
+      method:'POST',credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/json','X-CSRF-Token':state.csrf},body:'{}'
+    });
+    if(!response.ok){const data=await response.json();throw new Error(data.error?.message||'De lijst kan niet worden geëxporteerd.');}
+    const blob=await response.blob(),url=URL.createObjectURL(blob),a=el('a');
+    a.href=url;a.download='wattgoedkoper-optin-mailinglijst-'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    message('Bevestigde mailinglijst gedownload. Beveilig dit bestand; gebruik de afmeldlinks bij iedere mailing.',true);
+  }catch(error){message(error.message);}finally{button.disabled=false;}
+});
 for(const a of document.querySelectorAll('[data-admin-tab]'))a.addEventListener('click',()=>selectView(a.dataset.adminTab));
 window.addEventListener('hashchange',()=>selectView(location.hash.slice(1)));
 try{const initial=await session();if(!initial.configured){message('De beveiligde serverinstallatie is nog niet voltooid. Het dashboard blijft gesloten totdat de beheerder de private configuratie heeft ingesteld.');$('#login-form button').disabled=true;}else if(initial.authenticated){showDashboard();await refresh();await loadMailbox();}}catch(error){message(error.message);}

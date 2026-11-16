@@ -45,6 +45,8 @@ jobs:
       - run: python3 tests/backend_test.py --php php
       - run: php tests/mail_safety_test.php
       - run: php tests/report_mail_test.php
+      - name: Verify separate newsletter double consent, storage and opt-out (synthetic)
+        run: php tests/newsletter_test.php
       - name: Verify report-only readiness flag is private and does not send mail
         run: php tests/report_preflight_test.php
       - name: Verify NIVO delivery outbox, receipts, retry and consent without network
@@ -69,6 +71,12 @@ jobs:
           WG_TEST_MYSQL_USER: wattgoedkoper_ci
           WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
         run: php tests/mysql_backend_test.php
+      - name: Verify consented newsletter lifecycle in isolated CI MySQL
+        env:
+          WG_TEST_MYSQL_NAME: wattgoedkoper_ci
+          WG_TEST_MYSQL_USER: wattgoedkoper_ci
+          WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
+        run: php tests/newsletter_mysql_test.php
       - name: Ensure MySQL client CLI is available for isolated restore simulation
         run: |
           if ! command -v mysqldump >/dev/null 2>&1 || ! command -v mysql >/dev/null 2>&1; then

@@ -10,7 +10,7 @@ declare(strict_types=1);
  */
 function wg_release_fingerprint(): string {
     $root=dirname(__DIR__);
-    $paths=['api/index.php','lib/bootstrap.php','lib/delivery.php','lib/operations.php','lib/mail.php','lib/report.php'];
+    $paths=['api/index.php','lib/bootstrap.php','lib/delivery.php','lib/operations.php','lib/mail.php','lib/report.php','lib/newsletter.php'];
     $hashes=[];
     foreach($paths as $file){
         $digest=hash_file('sha256',$root.'/'.$file);
