@@ -87,7 +87,7 @@
 .ps-newsletter-join{white-space:nowrap;flex:none;align-self:center;border:1px solid #a8c39c;background:#ffffff;color:#24533c;font-size:10px;font-weight:750;border-radius:7px;padding:7px 9px;cursor:pointer}
 .ps-newsletter-join:hover,.ps-newsletter-join:focus-visible{border-color:#336b4c;background:#edf6e8}
 .ps-newsletter-join:disabled{opacity:.65;cursor:wait}
-.ps-newsletter-pending{font-size:10px;line-height:1.4;color:#276342}
+.ps-newsletter-done{font-size:10px;line-height:1.4;color:#276342}
 #newsletter-error{display:block;font-size:10px;line-height:1.4;color:#9d342f}
 @media(max-width:800px){.ps-newsletter-prompt{gap:6px;flex-wrap:wrap}.ps-newsletter-prompt small{font-size:9px;flex-basis:100%}.ps-newsletter-join{font-size:10px;padding:5px 8px}}
 /* Interactive workspace panels */
