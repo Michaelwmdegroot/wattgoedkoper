@@ -71,6 +71,8 @@ try {
         'Plain-text report has NIVO voluntary advice and explicit consent separation');
     ok(str_contains($mail['html'],'multipart')===false && str_contains($mail['html'],'Jouw maatregelen') &&
         str_contains($mail['html'],'https://wattgoedkoper.nl/#advies'), 'Safe HTML report has a working advice URL');
+    ok(str_contains($mail['text'],'niet automatisch meegestuurd') && str_contains($mail['html'],'niet automatisch meegestuurd'),
+        'Report CTA explains that a separate advice request does not automatically attach the report');
     ok(!str_contains($mail['text'],$base['email']) && !str_contains($mail['html'],$base['email']),
         'Mail body does not expose address or add a tracking pixel');
     if (extension_loaded('pdo_sqlite')) {
