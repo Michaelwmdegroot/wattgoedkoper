@@ -49,6 +49,8 @@ jobs:
         run: php tests/report_preflight_test.php
       - name: Verify NIVO delivery outbox, receipts, retry and consent without network
         run: php tests/delivery_test.php
+      - name: Verify read-only Hostinger backup prerequisite check with synthetic fixtures
+        run: php tests/backup_preflight_test.php
       - name: Verify authenticated recovery archive and isolated extraction with fictitious data
         run: php tests/backup_test.php
       - name: Validate safe interactive backup wrapper syntax
