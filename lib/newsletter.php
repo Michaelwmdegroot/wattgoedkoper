@@ -18,6 +18,16 @@ function wg_newsletter_enabled(array $config): bool {
 function wg_newsletter_hash(array $config, string $scope, string $value): string {
     return hash_hmac('sha256', 'newsletter-'.$scope.'|'.$value, $config['hmac_key']);
 }
+/** Binds a single marketing choice to an SMTP-accepted report in this session. */
+function wg_newsletter_report_proof_matches(array $config, mixed $proof, string $email, int $now): bool {
+    if (!is_array($proof) || !is_string($proof['emailHash']??null)
+        || !is_int($proof['at']??null) || $proof['at']>$now
+        || $proof['at']<$now-86400) {
+        return false;
+    }
+    return hash_equals(wg_newsletter_hash($config,'report',$email),$proof['emailHash']);
+}
+
 function wg_newsletter_schema(PDO $db): void {
     if (wg_is_mysql($db)) {
         $db->exec("CREATE TABLE IF NOT EXISTS newsletter_subscribers (
