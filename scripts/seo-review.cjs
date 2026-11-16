@@ -58,6 +58,13 @@ for(const p of all){
 }
 assert.ok(contextLinks>=6,'missing relevant context entry links');
 const home=read('index.html');assert.ok(home.includes('href="/kennis/"'),'knowledge hub link from homepage');
+const privacy=read('privacy.html'),method=read('rekenmodel.html');
+for(const [page,html] of [['privacy',privacy],['method',method],['homepage',home]]) {
+  assert.ok(html.includes('NIVO Groep Holland B.V.'),page+' identifies actual NIVO initiator');
+}
+assert.ok(privacy.includes('95227768')&&privacy.includes('Lireweg 52'), 'privacy identifies registered company');
+assert.ok(privacy.includes('info@wattgoedkoper.nl')&&privacy.includes('info@nivogroepholland.nl'), 'privacy has both direct and group contact');
+assert.ok(!privacy.includes('De juridische verwerkingsverantwoordelijke moet'), 'privacy no unresolved legal placeholder');
 const map=read('sitemap.xml');
 const sitemaps=[...map.matchAll(/<url><loc>([^<]+)<\/loc><lastmod>([^<]+)<\/lastmod><\/url>/g)].map(x=>({url:x[1],lastmod:x[2]}));
 assert.equal(sitemaps.length,all.length+1,'sitemap routes count');
