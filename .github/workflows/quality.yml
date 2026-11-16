@@ -71,6 +71,12 @@ jobs:
           WG_TEST_MYSQL_USER: wattgoedkoper_ci
           WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
         run: php tests/mysql_backend_test.php
+      - name: Verify consented newsletter lifecycle in isolated CI MySQL
+        env:
+          WG_TEST_MYSQL_NAME: wattgoedkoper_ci
+          WG_TEST_MYSQL_USER: wattgoedkoper_ci
+          WG_TEST_MYSQL_PASSWORD: ci-password-not-a-secret
+        run: php tests/newsletter_mysql_test.php
       - name: Ensure MySQL client CLI is available for isolated restore simulation
         run: |
           if ! command -v mysqldump >/dev/null 2>&1 || ! command -v mysql >/dev/null 2>&1; then
