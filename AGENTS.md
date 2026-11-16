@@ -1,5 +1,15 @@
 # WattGoedkoper — agentregels, actuele productie en leesvolgorde
 
+## Definitieve afsluitopdracht — 16 november 2026
+
+**Actuele bron van waarheid voor alle nieuwe agents:** [HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md](docs/HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md), [SEO-LANDING-FACTORY-PLAYBOOK.md](docs/SEO-LANDING-FACTORY-PLAYBOOK.md) en [START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md](docs/START-PROMPT-NEXT-AGENT-FINAL-GROWTH-2026-11-16.md). Deze **overrulen de oudere opsomming van P0-back-up/restore als harde groeiblokkade**; historische code- en productiebewijzen blijven geldig.
+
+**Missie:** WattGoedkoper afronden als zelfstandig gehoste SEO-tool/leadsite: gratis GSC-property + sitemapindexatiecontrole, werkende aparte rapportmail met eigen-inboxbewijs, duidelijke mobiele en desktop SEO→tool→vrijwillige NIVO-funnel, correcte exploitant/privacy, gezonde bestaande NIVO-mail/cron en minimale overdracht. SEO-clicks en rankings zijn niet vooraf vereist. Na eigenaar-go: afsluiten als lancering/overdracht en de **volgende unieke** SEO-leadsite bouwen, niet opnieuw langdurig investeren in Sodium/proc_open of extra dashboards.
+
+**Uitvoerregel:** bewijsrijke, kleine PR's, nieuwe code alleen als die verkeer/tooldoorloop/leads bevordert, behoud bestaande secrets, consent, gegevens en cron. Beslissingen en open eigenaarstaken documenteren in issue #14; geen nieuwe betaalde connectors.
+
+
+
 ## Leidend eigenaarbesluit — GROWTH FIRST (16 november 2026)
 
 **WattGoedkoper is primair een commerciële, premium leadgenerator voor NIVO Groep Holland; geen bank, eigen CRM of beveiligingsplatform.** De grootste actuele knelpunten zijn gebrek aan bewezen organisch verkeer (gratis GSC-property/echte zoekdata ontbreekt) en de nog **uitgeschakelde consumentenrapportmail**. De werkende energiehuistool, NIVO-only SMTP, MySQL, één cron en dashboard zijn al bewezen; herbouw ze niet.
