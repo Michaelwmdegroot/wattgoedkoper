@@ -243,7 +243,9 @@ function reportSnapshot() {
 }
 function reportPlanKey(){return JSON.stringify(reportSnapshot());}
 function displayReportSuccess(email){
-  const el=$('#report-email-form');if(el)el.outerHTML=renderReportSuccess(email);
+  const el=$('#report-email-form');
+  const options={newsletterEnabled:state.session?.newsletterOptInEnabled===true,newsletterPending:state.reportSent?.newsletterPending===true};
+  if(el)el.outerHTML=renderReportSuccess(email,options);
   $('#report-success')?.focus({preventScroll:true});
 }
 function updatePlanWorkspace(focusAction=null,focusValue=''){
@@ -299,7 +301,8 @@ $('#tool-dialog').addEventListener('keydown',event=>{
 function openPlan() {
   openDialog('plan','Jouw huis. Een slimmer plan.',planBody(),'JOUW PERSOONLIJKE ENERGIEPLAN');
   if(state.reportSent?.reportKey===reportPlanKey()){
-    displayReportSuccess(state.reportSent.email);
+    const el=$('#report-email-form');
+    if(el)el.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:state.session?.newsletterOptInEnabled===true,newsletterPending:state.reportSent.newsletterPending===true});
     return;
   }
   track('scan_complete');
@@ -363,7 +366,7 @@ async function ensureSession() {
   state.sessionPromise=(async()=>{
     let response;try{response=await fetch('/api/index.php?action=session',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});}catch{throw new Error('Aanvragen zijn nu niet beschikbaar. Je kunt je energiehuis wel gewoon gebruiken.');}
     let data;try{data=await response.json();}catch{throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je energiehuis blijft volledig werken.');}
-    if(!response.ok||!data.ok||!data.configured||!data.csrf)throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je kunt je plan wel bewaren.');state.session={csrf:data.csrf,createdAt:data.createdAt,reportMailEnabled:data.reportMailEnabled===true};return state.session;
+    if(!response.ok||!data.ok||!data.configured||!data.csrf)throw new Error('Adviesaanvragen zijn nog niet beschikbaar. Je kunt je plan wel bewaren.');state.session={csrf:data.csrf,createdAt:data.createdAt,reportMailEnabled:data.reportMailEnabled===true,newsletterOptInEnabled:data.newsletterOptInEnabled===true};return state.session;
   })().finally(()=>{state.sessionPromise=null;});return state.sessionPromise;
 }
 async function apiPost(action,body) {
@@ -404,6 +407,23 @@ async function submitReport(event) {
   }
 }
 
+async function requestNewsletterOptIn() {
+  if(!state.reportSent || state.reportSent.newsletterPending || state.session?.newsletterOptInEnabled!==true)return;
+  const button=$('#newsletter-join');if(!button)return;
+  button.disabled=true;button.textContent='Bevestiging aanvragen…';
+  try{
+    await apiPost('newsletter_subscribe',{email:state.reportSent.email,consent:true,consentVersion:'2026-11-newsletter-v1',website:''});
+    state.reportSent.newsletterPending=true;
+    const success=$('#report-success');
+    if(success)success.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:true,newsletterPending:true});
+    toast('Controleer je e-mail om de aanmelding te bevestigen. Tot die tijd ontvang je geen marketingmails.');
+  }catch(error){
+    button.disabled=false;button.textContent='Ja, stuur mij deze e-mails ↗';
+    let notice=$('#newsletter-error');
+    if(!notice){notice=document.createElement('small');notice.id='newsletter-error';notice.setAttribute('role','alert');button.after(notice);}
+    notice.textContent=error.message;
+  }
+}
 async function submitLead(event) {
   event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;const data=new FormData(form),email=String(data.get('email')||'').trim(),phone=String(data.get('phone')||'').trim(),errorElement=$('#advice-error');
   if(!email&&!phone){showError(errorElement,'Vul een e-mailadres of telefoonnummer in, zodat de adviseur je kan bereiken.');$('#lead-email').focus();return;}
@@ -436,6 +456,7 @@ document.addEventListener('click',event=>{
   else if(button.hasAttribute('data-save'))saveHome();
   else if(button.hasAttribute('data-restore'))restoreHome();
   else if(button.hasAttribute('data-report-reset')){state.reportSent=null;const receipt=$('#report-success');if(receipt)receipt.outerHTML=renderReportDelivery();$('#report-email')?.focus();}
+  else if(button.id==='newsletter-join')requestNewsletterOptIn();
   else if(button.hasAttribute('data-delete-home')){try{localStorage.removeItem(STORE_HOME);localStorage.removeItem('wattgoedkoper-scan-v1');renderControls();toast('Het bewaarde huis is van dit apparaat verwijderd.');}catch{toast('Opslag is niet toegankelijk in deze browser.');}}
   else if(button.hasAttribute('data-save-privacy')){const previous=state.analytics;state.analytics=$('#analytics-consent').checked;try{localStorage.setItem(STORE_ANALYTICS,state.analytics?'yes':'no');}catch{}closeDialog();toast(state.analytics?'Gebruiksstatistieken staan aan.':'Gebruiksstatistieken staan uit.');if(state.analytics&&!previous)track('page_view');}
   else if(button.hasAttribute('data-print')){openPlan();$$('.plan-assumptions').forEach(item=>item.open=true);window.print();}
