@@ -1,5 +1,9 @@
 # WattGoedkoper.nl
 
+> **Koersbesluit 16 november 2026 — GROWTH FIRST.** We hebben een werkende premium energietool én NIVO-only leadmachine. De komende iteraties draaien om **organisch verkeer, de gratis interactieve scan, werkende rapportmail en meer kwalitatieve vrijwillige NIVO-adviesleads**. Custom Sodium/`proc_open`-back-up engineering is geparkeerd; minimale privacy-, data- en toegangsveiligheid blijft behouden. De [leidende commerciële roadmap](docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md) is herprioriteerd. De oude melding `P0` bij de back-upexporter beschrijft uitsluitend een open onderhoudsbeperking, **geen groeiblokkade**.
+
+
+
 **Premium interactieve energietool én functioneel werkende automatische NIVO-leadmachine** voor Nederlandse consumenten.
 
 > **Actuele productie — 16 november 2026.** De premium gratis consumentenwebsite, MySQL/API, Dashboard 2.0, **één** vijfminuten-Hostinger-cron en de NIVO-only adviesroute per SMTP zijn live. PR's [#37](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/37), [#38](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/38) en [#39](https://github.com/Michaelwmdegroot/wattgoedkoper/pull/39) zijn gemerged; `main` = `d1685bed065445dfc40a8fd40ae8e71adf178636`. [De 16/16 live-pariteitscheck](https://github.com/Michaelwmdegroot/wattgoedkoper/actions/runs/43774049582), quality/MySQL en browserreview zijn geslaagd. De gewone testadviesaanvraag `WG-5510214770E3` werd al eerder door de eigenaar in de echte NIVO-inbox ontvangen; geen HTTPS-Portal-API aangesloten.

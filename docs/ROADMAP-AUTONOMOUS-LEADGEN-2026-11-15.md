@@ -1,59 +1,62 @@
-# WattGoedkoper — roadmap naar onderhoudsarme automatische leadgeneratie
+# WattGoedkoper — commerciële roadmap: Traffic → Toolgebruik → NIVO-leads
 
-**Startpunt 15 november 2026:** [actuele productieoverdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md). NIVO SMTP-keten **functioneel live en één echte end-to-end test bewezen**. Nog geen afgeronde algehele productie-/SEO-acceptatie.  
-**Hoofdissue:** [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14) · [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21)–[#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/26).  
-**Productdoel:** consumenten vanuit betrouwbare informatie en een premium interactieve gratis berekening bij voorkeur vrijwillig een goede NIVO-adviesaanvraag laten doen, met continuïteit en zonder dagelijkse handmatige overdracht.
+**Koersbesluit eigenaar, 16 november 2026:** WattGoedkoper is in de eerste plaats een **publieke, premium, gratis energietool en leadgenerator voor NIVO Groep Holland**. Een werkende consumentenjourney, kwalitatief relevant verkeer en conversie hebben vanaf nu prioriteit boven extra infrastructuur. Deze roadmap vervangt de eerdere volgorde waarin custom back-up/restore als P0 vóór groei stond. Bestaande code, privacy, consent en veiligheidsgrenzen blijven behouden.
 
-## Bewijsniveaus
+**Repo:** [main](https://github.com/Michaelwmdegroot/wattgoedkoper) · **regie:** [#14](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/14) · **SEO:** [#24](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/24) · **product:** [#22](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/22), [#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/26) · **infrastructuur/back-up:** [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21).
 
-- **Gereed en bewezen:** publieke energiehuis/Plan Studio, beveiligde MySQL/API, goedgekeurde homepage en dashboard, NIVO-consent/outbox/SMTP, eigenaar-confirmatie inbox voor echte testlead `WG-5510214770E3`, Hostinger-cronuitvoer, technische en browser-CI, live release-smoke, twee kwalitatieve contentclusters.
-- **Code gereed; operationeel nog controleren:** individuele deliverystatus `smtp_accepted`, herhaalde cron-heartbeats en ingeschakelde monitorwaarschuwingen, report-only API en template.
-- **Niet geverifieerd:** MySQL-back-up + sleutels + succesvolle restore, definitieve exploitant/privacy-aftekening, rapport-only SMTP-ontvangst, Search Console-query's/indexatie, echte organische leadattributie, externe storingsalerts.
-- **Niet in scope voor deze fase:** automatische NIVO CRM-/Portal-API-synchronisatie, betaalde marketingdiensten, accounts, AI-autopublicatie of een nieuw ontwerp van de bestaande homepage.
+## Wat al werkt — niet opnieuw bouwen
 
-## P0 — betrouwbaarheid en zelfstandig beheer
+- Premium interactief **energiehuis / Plan Studio**, zonder inlog- of contactverplichting, met scenario's en indicatieve besparingen.
+- Eigen PHP/MySQL-backend, consent `2026-11-v2`, NIVO-only adviesaanvraag, dashboard en **daadwerkelijk ontvangen technische NIVO-testlead** `WG-5510214770E3`.
+- Eén Hostinger vijfminuten-cron, recente gescheiden succeswaarnemingen en ingeschakelde dashboardmonitoring; 0 pending/failed en 1 geaggregeerde `smtp_accepted` bij laatste ownermeting.
+- Twee kwalitatieve SEO-clusters met 15 URL's in sitemap, interne links, bronverwijzingen en code-/browser-/live-smokechecks.
+- **Niet bewezen:** daadwerkelijke Search Console-indexatie/impressies, aantallen organische bezoekers of conversie, individuele technische testleadstatus, werkelijke aflevering van consumentenrapportmail.
+- **Nog uitgeschakeld:** `report_mail_enabled=false` op Hostinger; bestaande rapportmail- en mailconfigcode zijn aanwezig. Dit is nu een **commerciële funnelblokkade**, geen reden voor een SMTP-herbouw.
 
-| Taak | Werkelijke uitgangssituatie | Acceptatiebewijs | Issue |
-|---|---|---|---|
-| Backup en restore | MySQL met versleutelde leads draait, restore niet bewezen | Beveiligd backup-pakket en echte testrestore op geïsoleerde omgeving; juiste private sleutel, database, permissions en leesproef met uitsluitend testdata; geen prod overwrite | [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21), [#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/26) |
-| Laatste testlead afronden | Testcode `WG-5510214770E3` zichtbaar in admin en NIVO-mailbox | Per-lead status `smtp_accepted` of duidelijke afwijking bekeken en gelogd zonder PII; daarna gericht uit dashboard verwijderen; geen DB-reset | [#23](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/23) |
-| Cron-monitor echt activeren | 5-minuten Hostinger-job en minimaal één cronuitvoer bewezen | Twee gescheiden succesvolle `ops_last_success_at`-metingen, maximaal toegestane age, na verifiëren private `operations_monitor_enabled=true`; dashboard waarschuwt bij stale/fail | [#25](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/25) |
-| Alerting en fouten | Dashboard heeft waarschuwingen, externe bezorging niet afgetekend | Eigenaar-goedgekeurd alertkanaal of expliciet dashboard-only beheerafspraak, test failed outbox/stale cron zonder productie-leads te herverzenden, incident-owner vastgelegd | [#25](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/25) |
-| Security/privacy | Consentvariant en dataminimalisatie in code, juridische entiteit/verwerkers nog te verifiëren | Feitelijke exploitant, privacycontact, grondslag, bewaartermijn, gegevensdeling met NIVO, DPA/verwerkingsrollen, SPF/DKIM/DMARC en toegang/rechten bij eigenaar nagelopen; bron-/privacytekst zonodig na review aangepast | [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21), [#26](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/26) |
+## Commerciële prioriteiten: volgorde van uitvoering
 
-**Operationele regel:** de huidige NIVO SMTP-adapter is live. Test geen retries met bestaande echte leads en schakel `nivo_delivery_enabled` niet zonder incident uit. Bestaande cron exact één keer; geen extra `maintenance.php` of `deliver-leads.php` cron.
+### P0-A — Vindbaarheid en gratis organische instroom (eerst)
 
-## P1 — consumentproduct en conversie compleet
+1. Maak via de **gratis** Google Search Console een domein- of URL-property aan/valideer de bestaande property; dien `https://wattgoedkoper.nl/sitemap.xml` in. Dit vereist een bevoegd Google-/DNS-account. Niets claimen als reeds verbonden zolang de eigenaar geen bewijs heeft.
+2. Controleer feitelijke indexatie en prestaties: pagina's met/impressies zonder clicks, crawlfouten, queries, clicks, CTR en best presterende landingspagina's. Neem een **echte nulmeting** op; geen betaalde GSC Wizard of zelfbedachte aantallen.
+3. Verbeter de bestaande hubs en maak pas daarna **gerichte, hoogwaardige SEO-landingspagina's** voor zoekintentie rond energiekosten/besparing berekenen, zonnepanelen na 2027, thuisbatterij en energiecontracten. Elke pagina moet iets unieks oplossen, actuele claims controleren bij officiële bronnen en leiden naar de interactieve tool, geen AI-massapagina's of doorwaylocaties.
+4. SEO-acceptatie: crawlbare echte inhoud, unieke titles/metadescriptions/canonical, relevante interne links naar de tool, mobile snelheid, geen defecte CTA's of indexeerblokkades. Publicatie is geen bewijs van ranking; kwaliteit en daadwerkelijke groei meten.
 
-| Taak | Acceptatiebewijs | Issue |
-|---|---|---|
-| Rapportmail afzonderlijk live toetsen | Test naar gecontroleerd eigen adres, body met transparante indicaties en CTA, rate limit/dedup; **geen** nieuwe lead, geen analytics- of marketing-opt-in; expliciete eigenaar-go voor `report_mail_enabled` | #21, #26 |
-| Dashboard als operationele cockpit afronden | Echte SMTP-status, heartbeat, lost/stale state en aflevertelling inzichtelijk; geen fictieve ontvangst, SEO/GSC netjes onbekend; mobiel en toetsenbord bruikbaar | #22, #25 |
-| Google Search Console gratis property | Site ownership/sitemap/index coverage, eerste echte impressies, klikken, zoekopdrachten en landingspagina's; geen betaalde GSC Wizard en geen rangschikkingsclaims zonder bron | #24 |
-| SEO-bronupdate en technische SEO | Officiële RVO/ACM/Milieu Centraal-data en 2027-claims opnieuw gecontroleerd; canonicals, structured data, sitemap, intern linken, 404/mobiel & Core Web Vitals getoetst | #24 |
-| Focus op intentie i.p.v. volume | Kwalitatieve zoekvragen en relevante kenniscontent → contextueel gratis energiehuis → optioneel NIVO-advies; geen thin/duplicated, locatie-doorway- of massale AI-pagina's | #24 |
+### P0-B — Bezoeker → persoonlijk energieplan → optionele NIVO-advieslead
 
-## P2 — meten en gericht verbeteren
+1. **Consumentenrapportmail afronden en inschakelen.** De code en Hostinger-mailconfig bestaan; schakel alleen de bestaande *aparte* flag in na één gerichte eigen-adrestest en bevestig echte inboxontvangst. Controleer dat het geen NIVO-adviesaanvraag, marketingtoestemming of nieuwe analytische opt-in creëert. Geen nieuwe SMTP-service bouwen.
+2. Controleer de funnel op mobiel en desktop: landingspagina → relevante maatregel in energiehuis → één-scherm Plan Studio met zichtbaar voordeel/voorbehoud → mail mijn plan → in e-mail passende, duidelijke **vrijwillige** NIVO-advies-CTA. Zo nodig gerichte UX-copy- of layout-PR's, zonder een tweede redesign.
+3. Verbeter de bestaande advies-CTA op het juiste moment na inzicht, niet als contactmuur. NIVO is de enige adviesopvolger; toestemmingsvakje blijft standaard uit en gegevens gaan pas mee na expliciete aanvraag.
+4. Acceptatie: minimaal één afzonderlijke, werkelijk ontvangen *rapport-only* testmail en één bestaande bevestigde NIVO-testketen, beide met heldere fout-/bevestigingsberichten; geen duplicaten of blind herverzenden.
 
-**Metricbron en definitie:**
+### P1 — Meet, leer en schaal wat werkt
 
-1. **Servergeaccepteerde adviesaanvragen**: distinct nieuwe lead-ID's uit MySQL over 7/30 dagen, onafhankelijk van analytics-toestemming; geen claim over organische herkomst zonder bron.
-2. **Technische aflevering**: `smtp_accepted / nieuw ontstane NIVO-outbox` voor dezelfde cohort/periode; `failed`, `processing` en `pending` afzonderlijk; “aanvaard door SMTP” niet verwarren met echte NIVO-inbox-ACK.
-3. **Ervaring**: geaggregeerde `scan_complete` / andere events **alleen indien analytics-consent gegeven**; geen landelijke gebruikersnoemer of cross-device attributie claimen.
-4. **Organic**: GSC-clicks/impressies en zoekopdrachten **uitsluitend uit verbonden Google Search Console**, eerst nulmeting. Conversie uit organisch alleen bij rechtmatig te meten bron-/referrer-/toestemmingspad, zonder PII/URL-tracking.
-5. **Kwaliteit en economie**: owner kan handmatig een status/follow-up in NIVO registreren; opbrengst/qualified-rate nooit verzinnen. Bij onvoldoende werkelijke steekproef geen optimalisatiepercentages claimen.
+- **SEO:** GSC clicks/impressies, geïndexeerde pagina's en zoekopdrachten (uitsluitend echte GSC-bron).
+- **Leads:** servergeaccepteerde NIVO-adviesaanvragen per 7/30 dagen en afleveringstatus; noem `smtp_accepted` niet gelijk aan NIVO Portal-API-ACK.
+- **Funnel:** geaggregeerde tool-/scan-/CTA-events alleen wanneer de consument aparte analytics-toestemming heeft verleend. Geen bezoekersaantallen of conversieratio zonder geldige noemer.
+- **Kwaliteit:** commerciële relevantie van aanvragen laten terugkoppelen door NIVO; pas daarna copy, bestaande content, uitleg en CTA's optimaliseren.
+- Gebruik eerst het **bestaande admin-dashboard**. Bouw geen nieuw dashboard, eventtrackingplatform, CRM of analytics-stack voordat een concreet gemeten knelpunt dat rechtvaardigt.
+- Growth-distributie: selectieve organische content, verdienste-gebaseerde verwijzingen/partners waar passend en eventueel later een kleine betaalde test na eigenaar-go. Geen paid tool als voorwaarde.
 
-**Te bouwen na basiscontinuïteit:** hoogwaardige interactieve educatieve keuzepaden, relevantere instappen in Plan Studio, duidelijker rapport, consentvriendelijke funnel-verbeteringen en SEO-aanpassingen op basis van aantoonbare gebruiksvragen. Hou designkwaliteit en rekenwaarheid boven oppervlakkige conversietrucs.
+### P2 — Proportioneel onderhoud en veiligheid (geen blokkade voor P0-A/B)
 
-## P3 — toekomstige NIVO Portal API-integratie
+- **Blijven doen:** bestaande login/toegangsrechten, MySQL/AES en secretbescherming, anti-spam/rate-limits, expliciete consent, juiste privacyverklaring, eenvoudige monitoring, één cron, bestaande Hostinger-back-ups/retentie waar beschikbaar. Reële storingen of privacyrisico's direct repareren.
+- **Niet verder uitbouwen tijdens growth sprint:** custom Sodium/Argon2id-back-upketen, `proc_open`-workarounds, langdurige geïsoleerde restore-experimenten, nieuwe agent-/CRM-infrastructuur of observabilityproject. De werkelijke Hostinger-preflight is een **NO-GO** voor de huidige *custom* exporter (`SODIUM_UNAVAILABLE`, `PROC_OPEN_UNAVAILABLE`). Laat dat als technische schuld in [#21](https://github.com/Michaelwmdegroot/wattgoedkoper/issues/21); **niet** opnieuw oplossen tenzij verliesrisico/incident of duidelijke eigenaarbeslissing.
+- Eerst bestaande **Hostinger-native back-upvoorzieningen** en eenvoudige organisatorische herstelmogelijkheid inventariseren, zonder database te resetten, credentials te publiceren of het SMTP-leadpad te wijzigen. Dat is onderhoud, geen voorwaarde om SEO- en conversie-PR's te shippen.
+- Feitelijke verwerkingsverantwoordelijke/privacycontact en correcte dataverwerking op de publieke site blijven noodzakelijke korte eigenaarstaken, géén reden voor een security-platformproject.
 
-Alleen wanneer de eigen NIVO Portal een veilige ontvangende API beschikbaar heeft: contract voor `requestId`, authenticatie, least privilege, privacygrondslag, idempotentie/ACK, beperkte retries/backoff, gescheiden productie/staging en migratieplan. De bestaande werkende e-mailroute mag niet stilzwijgend dubbel gaan versturen. API-ontvangst is momenteel **niet live**.
+### P3 — Later, alleen op aantoonbare vraag
 
-## Praktische Definition of Done
+Uitbreiding met NIVO Portal REST API, CRM-autosynchronisatie, betaald verkeer op schaal, complexe personalisatie, extra energiedatasets, cross-device accounts en automatische marketing zijn optioneel. De huidige werkende SMTP-route wordt niet dubbel gestart of gereset.
 
-- **Product en leadmachine:** end-to-end test via echte consumentenjourney en NIVO-inbox bewezen op 15 november. Functioneel klaar.
-- **Operationeel zelfstandig:** cron meerdere intervallen bevestigd, monitor/alerts werkzaam, backup én restore getest, testlead veilig opgeschoond, geen onduidelijke failed status. **Nog open.**
-- **Product compleet:** aparte consumentenrapportmail test en privacy/juridische acceptatie geslaagd. **Nog open.**
-- **Growth-ready:** indexeerbare kwalitatieve content, meetbare GSC-baseline en volgbare KPI's zonder toestemming te schenden. Content staat live; **echte meting nog open**.
+## Werkafspraak voor alle volgende agents
 
-**Werkwijze volgende agent:** start vanuit actuele GitHub-main, lees [overdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md), inspecteer tests en open issues, voer veilige read-only verificaties direct uit, bouw concrete fixes/rapporten als PR, laat niet bewezen externe Hostinger-acties in duidelijke eigenaarshandelingen achter. Bewaar uitsluitend echte validatiebewijzen in documentatie en geen persoonlijke of geheime informatie.
+**Elke ontwikkelstap moet één van drie doelen dienen:** (1) meer relevante bezoekers, (2) meer mensen die de tool gebruiken en het plan begrijpen, (3) meer kwalitatieve vrijwillige NIVO-adviesaanvragen. Begin elk PR met welke KPI/consumentstap het verbetert. Kleine werkende productie-iteraties boven grote architectuurvoorstellen; bestaande designkwaliteit en rekeneerlijkheid behouden.
+
+**Nu doen:** GSC-property/sitemap/indexatie, rapportmail live eigen-adrestest, bestaande SEO-landingspagina's/CTA's gericht verbeteren, echte eerste verkeers- en leadmetingen.
+
+**Nu niet doen:** verdere Sodium/`proc_open`-architectuur, nieuwe back-upcrypto op maat, extra dashboards/agents, eindeloze releasegates die de toch al werkende leadketen blokkeren.
+
+**Niet onderhandelbaar:** geen onjuist financieel rendement, misleidende leadtoestemming, publieke secrets/klantdata of destructieve MySQL-migraties. Security en privacy zijn basishygiëne, geen zelfstandig productdoel.
+
+**Historische operationele details:** [productiebewijsregister](PRODUCTION-ACCEPTANCE-2026-11-16.md), [herstelrunbook](BACKUP-RECOVERY-RUNBOOK.md), [vroegere ontwikkeloverdracht](HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md). Deze houden eerdere feiten vast maar bepalen niet langer de commerciële werkvolgorde.
