@@ -244,7 +244,7 @@ function reportSnapshot() {
 function reportPlanKey(){return JSON.stringify(reportSnapshot());}
 function displayReportSuccess(email){
   const el=$('#report-email-form');
-  const options={newsletterEnabled:state.session?.newsletterOptInEnabled===true,newsletterPending:state.reportSent?.newsletterPending===true};
+  const options={newsletterEnabled:state.session?.newsletterOptInEnabled===true,newsletterSubscribed:state.reportSent?.newsletterSubscribed===true};
   if(el)el.outerHTML=renderReportSuccess(email,options);
   $('#report-success')?.focus({preventScroll:true});
 }
@@ -302,7 +302,7 @@ function openPlan() {
   openDialog('plan','Jouw huis. Een slimmer plan.',planBody(),'JOUW PERSOONLIJKE ENERGIEPLAN');
   if(state.reportSent?.reportKey===reportPlanKey()){
     const el=$('#report-email-form');
-    if(el)el.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:state.session?.newsletterOptInEnabled===true,newsletterPending:state.reportSent.newsletterPending===true});
+    if(el)el.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:state.session?.newsletterOptInEnabled===true,newsletterSubscribed:state.reportSent.newsletterSubscribed===true});
     return;
   }
   track('scan_complete');
@@ -408,17 +408,18 @@ async function submitReport(event) {
 }
 
 async function requestNewsletterOptIn() {
-  if(!state.reportSent || state.reportSent.newsletterPending || state.session?.newsletterOptInEnabled!==true)return;
+  if(!state.reportSent || state.reportSent.newsletterSubscribed || state.session?.newsletterOptInEnabled!==true)return;
   const button=$('#newsletter-join');if(!button)return;
   button.disabled=true;button.textContent='Bevestiging aanvragen…';
   try{
-    await apiPost('newsletter_subscribe',{email:state.reportSent.email,consent:true,consentVersion:'2026-11-newsletter-v1',website:''});
-    state.reportSent.newsletterPending=true;
+    const answer=await apiPost('newsletter_subscribe',{email:state.reportSent.email,consent:true,consentVersion:'2026-11-newsletter-v2-single',website:''});
+    if(answer.subscribed!==true)throw new Error('Je aanmelding is nog niet bevestigd door de server.');
+    state.reportSent.newsletterSubscribed=true;
     const success=$('#report-success');
-    if(success)success.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:true,newsletterPending:true});
-    toast('Controleer je inbox. Een nieuwe aanmelding wordt pas actief na jouw e-mailbevestiging.');
+    if(success)success.outerHTML=renderReportSuccess(state.reportSent.email,{newsletterEnabled:true,newsletterSubscribed:true});
+    toast('Je bent aangemeld voor energietips. Afmelden kan via iedere e-mail.');
   }catch(error){
-    button.disabled=false;button.textContent='Ja, stuur mij deze e-mails ↗';
+    button.disabled=false;button.textContent='Ja, meld mij aan ↗';
     let notice=$('#newsletter-error');
     if(!notice){notice=document.createElement('small');notice.id='newsletter-error';notice.setAttribute('role','alert');button.after(notice);}
     notice.textContent=error.message;
