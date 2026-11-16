@@ -1,6 +1,8 @@
 # WattGoedkoper — agentregels, actuele productie en leesvolgorde
 
-**Actuele mijlpaal (15 november 2026):** de premium consumentenwebsite, beveiligde MySQL/API, Dashboard 2.0, één Hostinger 5-minuten-cron en de **vrijwillige NIVO-adviesaflevering per SMTP** zijn functioneel live. De eigenaar bewees dit met een gewone testaanvraag `WG-5510214770E3`, zichtbaar in het admin-dashboard rond 19:02 en ontvangen rond 19:05 in de echte **`portal@nivogroepholland.nl`**-inbox. Code-`main` vóór de documentatieoverdracht: `f3c273dcffb03de05de13004fee410194ae659df` (PR #35); controleer altijd actuele HEAD. Alle PR's #28–#35 zijn gemerged. De **algemene Finish Line is nog niet afgerond**: back-up/restore, monitoring-acceptatie, individuele afleverstatus, aparte rapportmail, juridische/privacygegevens en echte GSC-cijfers blijven open.
+**Actuele productieacceptatie (16 november 2026):** `main` = `d1685bed065445dfc40a8fd40ae8e71adf178636`. PR's **#37, #38 en #39 zijn gemerged**; publieke Hostinger-releasepariteit **16/16 PASS**, backend/MySQL/quality en premium-browserreview beide PASS. De gratis premium tool, beveiligde MySQL/API, één bestaande Hostinger `*/5`-operationscron en vrijwillige NIVO-only SMTP-leadmachine blijven functioneel live, zonder herinstallatie. De eigenaar verifieerde `php scripts/ops-readonly.php`: twee gescheiden succesvolle cronmomenten (`2026-11-16T00:10:03Z`, `00:15:02Z`), `cron.status=fresh`, private **`operations_monitor_enabled=true`**, geen warnings/fouten, één geaggregeerde `smtp_accepted`-outboxregel en nul pending/failed. `php scripts/report-preflight.php` bevestigde mailconfig aanwezig, maar **`report_mail_enabled=false`**. **Back-upstatus blijft `not_verified`**. Echte Hostinger-export+geïsoleerde restore/offsite, individuele SMTP-testleadstatus, privacy/juridische aftekening, consumentrapport-inbox en gratis GSC-cijfers zijn dus nog open. **Leidende feitelijke bewijsbron:** [docs/PRODUCTION-ACCEPTANCE-2026-11-16.md](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md).
+
+**Nieuwe P0-ontwikkelfase:** een afzonderlijke **read-only** back-upvoorcontrole met gescheiden tests en PR. Het hulpmiddel controleert alleen Hostinger-vereisten; ook een volledig groene voorcontrole bewijst **geen** back-up of restore. Gebruik nooit een eerste-installatiescript, laat de enige cron en SMTP-leadroute ongemoeid en publiceer geen geheimen of persoonlijke records in GitHub.
 
 **Leidende overdracht:** [docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md](docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md).  
 **Nieuwe roadmap:** [docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md](docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md).  
@@ -10,6 +12,7 @@
 ## Verplichte leesvolgorde
 
 1. Actuele GitHub-`main` en dit `AGENTS.md`.
+   **Lees daarna meteen [het actuele bewijsregister](docs/PRODUCTION-ACCEPTANCE-2026-11-16.md) en [veilige herstelprocedure](docs/BACKUP-RECOVERY-RUNBOOK.md); historische overdrachten zijn niet de huidige externe acceptatiestatus.**
 2. `docs/HANDOFF-LEADGEN-PRODUCTION-2026-11-15.md`.
 3. `docs/ROADMAP-AUTONOMOUS-LEADGEN-2026-11-15.md`.
 4. `docs/backend.md`, `docs/OPERATIONS-RUNBOOK-V1.md`, `docs/NIVO-DELIVERY-CONTRACT-V1.md` en `docs/NIVO-SMTP-PRODUCTION-RUNBOOK.md`.
