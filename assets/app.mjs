@@ -305,8 +305,11 @@ function openPrivacy() {
 }
 
 function openAdvice() {
+  const isReportEntryWithoutPlan = location.hash === '#advies' && !state.personalized && state.selectedIds.length === 0;
   const html=[
-    '<p class="dialog-intro">Wil je dat er iemand met je meedenkt? Laat een contactmogelijkheid achter. Je energieplan gaat mee.</p>',
+    isReportEntryWithoutPlan
+      ? '<p class="dialog-intro">Kom je vanuit je gemailde energieplan? Dat rapport wordt op dit apparaat niet automatisch geladen of meegestuurd. Vermeld in je toelichting de maatregelen of bedragen die je wilt bespreken. NIVO neemt alleen contact op na je toestemming hieronder.</p>'
+      : '<p class="dialog-intro">Wil je dat er iemand met je meedenkt? Laat een contactmogelijkheid achter. Je huidige energieplan gaat mee.</p>',
     '<form id="advice-form" class="advice-compact">',
       '<div class="dialog-grid">',
         '<div class="field"><label for="lead-name">Je naam</label><input id="lead-name" name="name" autocomplete="name" maxlength="100" required></div>',
@@ -393,7 +396,7 @@ async function submitLead(event) {
   if(!email&&!phone){showError(errorElement,'Vul een e-mailadres of telefoonnummer in, zodat de adviseur je kan bereiken.');$('#lead-email').focus();return;}
   if(phone&&(!/^[+\d\s().-]+$/.test(phone)||phone.replace(/\D/g,'').length<8||phone.replace(/\D/g,'').length>15)){showError(errorElement,'Controleer je telefoonnummer. Gebruik 8 tot 15 cijfers.');$('#lead-phone').focus();return;}
   const r=state.report;
-  const payload={name:String(data.get('name')||'').trim(),email,phone,postcode:String(data.get('postcode')||'').trim().toUpperCase(),partner:'nivo',interests:[...new Set(r.selectedIds.filter(id=>['solar','battery','heatpump','insulation'].includes(id)).concat('planning'))],consent:data.get('consent')==='on',consentVersion:'2026-11-v2',analyticsConsent:state.analytics,website:String(data.get('website')||''),inputs:{...state.input},summary:{modelVersion:MODEL_VERSION,year:r.year,annualSavingsLow:r.savingsLow,annualSavingsHigh:r.savingsHigh,investmentLow:r.investmentLow,investmentHigh:r.investmentHigh,baselineAnnualCost:r.baseline.bill.total,plannedAnnualCost:r.scenario.bill.total,selectedIds:[...r.selectedIds]},note:`Gekozen in het energiehuis: ${r.selectedIds.map(labelFor).join(', ')||'nog geen upgrades'}.\n${String(data.get('note')||'').trim()}`.slice(0,1000)};
+  const payload={name:String(data.get('name')||'').trim(),email,phone,postcode:String(data.get('postcode')||'').trim().toUpperCase(),partner:'nivo',interests:[...new Set(r.selectedIds.filter(id=>['solar','battery','heatpump','insulation'].includes(id)).concat('planning'))],consent:data.get('consent')==='on',consentVersion:'2026-11-v2',analyticsConsent:state.analytics,website:String(data.get('website')||''),inputs:{...state.input},summary:{modelVersion:MODEL_VERSION,year:r.year,annualSavingsLow:r.savingsLow,annualSavingsHigh:r.savingsHigh,investmentLow:r.investmentLow,investmentHigh:r.investmentHigh,baselineAnnualCost:r.baseline.bill.total,plannedAnnualCost:r.scenario.bill.total,selectedIds:[...r.selectedIds]},note:`${!state.personalized && r.selectedIds.length===0 ? 'Let op: ongewijzigd voorbeeldhuis. Geen persoonlijke woninginstellingen geladen; vraag bij opvolging naar het eigen rapport of werkelijke cijfers.' : 'Gekozen in het energiehuis: '+r.selectedIds.map(labelFor).join(', ')+'.'}\n${String(data.get('note')||'').trim()}`.slice(0,1000)};
   const fingerprint=JSON.stringify(payload);if(fingerprint!==state.leadFingerprint){state.leadFingerprint=fingerprint;state.leadKey=crypto.randomUUID();}payload.idempotencyKey=state.leadKey;const button=$('#lead-submit');button.disabled=true;button.textContent='Je aanvraag wordt opgeslagen…';errorElement.hidden=true;
   try{const receipt=await apiPost('leads',payload);if(!receipt.id)throw new Error('Je aanvraag is niet bevestigd. Probeer opnieuw.');if(state.dialog==='advice')openDialog('receipt','Je plan is goed ontvangen.',`<p class="dialog-intro">Je aanvraag is opgeslagen voor NIVO Groep Holland en staat klaar voor opvolging.</p><p>Ontvangstnummer: <code>${escape(receipt.id)}</code></p><button class="button button-yellow" data-dialog="plan">Terug naar mijn energieplan ↗</button>`,'AANVRAAG OPGESLAGEN');}catch(error){if(state.dialog==='advice'){showError(errorElement,error.message);button.disabled=false;button.innerHTML=`Bespreek mijn plan ${icon('arrow')}`;}}
 }
@@ -456,6 +459,7 @@ refresh();
 if(state.analytics)track('page_view');
 // A knowledge page may open a relevant explanation, but may never change choices.
 function showContentEntry(){
+  if(location.hash==='#advies'){openAdvice();return;}
   const entry=resolveContextEntry(location.hash);
   if(!entry)return;
   if(entry.kind==='upgrade')openUpgrade(entry.id);
@@ -467,5 +471,4 @@ window.addEventListener('wg:content-entry',event=>{
   if(entry?.kind==='upgrade')openUpgrade(entry.id);
   else if(entry?.kind==='plan')openPlan();
 });
-if(location.hash==='#advies')openAdvice();
-else showContentEntry();
+showContentEntry();
