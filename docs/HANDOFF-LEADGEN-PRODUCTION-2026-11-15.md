@@ -1,5 +1,9 @@
 # WattGoedkoper — productieoverdracht: NIVO-leadmachine functioneel live
 
+> **Historische technische overdracht van 15 november 2026.** Actuele uitvoeringsprioriteiten/afsluitcriteria zijn op 16 november commercieel herijkt: [HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md](HANDOFF-FINAL-GROWTH-EXIT-2026-11-16.md). De productiefeiten hieronder zijn nuttige achtergrond; er is **geen** verplicht nieuw maatwerk-back-uptraject voordat SEO en rapportmail worden afgerond.
+
+
+
 **Datum:** 15 november 2026, tijdzone Europe/Amsterdam  
 **Website:** https://wattgoedkoper.nl  
 **GitHub:** https://github.com/Michaelwmdegroot/wattgoedkoper  
