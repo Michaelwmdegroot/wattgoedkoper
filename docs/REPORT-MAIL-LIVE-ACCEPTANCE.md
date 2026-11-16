@@ -41,6 +41,10 @@ Voorbeeld van het **formaat**, niet van de echte productie-uitkomst:
 6. Test replay vanuit dezelfde browser zonder nieuwe aanvraag (geen dubbele mail). Bij `REPORT_SEND_UNCERTAIN` of onbekende status: **niet blind opnieuw verzenden**; eerst mailboxcontrole vanwege mogelijke SMTP-acceptatie.
 7. Noteer uitsluitend datum, vooraf/achteraf serveraantallen, geanonimiseerde statuscodes, inbox-ontvangst ja/nee en eigenaaracceptatie. **Geen** emailadres, mailbody, klantdata, screenshots of sleutels in publieke GitHub-issues.
 
+## Rapportmail → vrijwillig advies: juiste context
+
+De rapportmail verwijst naar `/#advies`. Dat opent uitsluitend een **afzonderlijk adviesformulier** met uitgevinkte toestemming; geen lead ontstaat door alleen op de link te klikken. Een gemaild rapport wordt om privacyredenen **niet automatisch op een ander apparaat geladen of met een adviesaanvraag meegestuurd**. De bezoeker krijgt daarom een duidelijke aanwijzing om relevante keuzes/bedragen in de toelichting te vermelden; een ongewijzigd voorbeeldhuis mag niet als persoonlijk doorgerekend plan worden voorgesteld. De browserreview test dit op desktop en mobiele schermen. Dit bewijs vervangt **niet** de nog open live inboxacceptatie.
+
 ## Bewijs en resterende afhankelijkheden
 
 | Gate | Codebewijs | Echte productiestatus |
