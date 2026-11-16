@@ -66,6 +66,18 @@ async function liveCheck(origin,expected){
       throw new Error('Backend fingerprint differs from current main; Hostinger backend release not proven');
     if(typeof health.version!=='string')throw new Error('Backend lacks version field');
   });
+  // Flags are already public session booleans; verify readiness without any
+  // customer details, mail transport, credentials or mutating application calls.
+  await check('public-mail-feature-readiness','/api/index.php?action=session',[200],async response=>{
+    const session=await response.json();
+    if(session.ok!==true||session.configured!==true
+      ||typeof session.reportMailEnabled!=='boolean'
+      ||typeof session.newsletterOptInEnabled!=='boolean') {
+      throw new Error('Public session missing safe mail feature booleans');
+    }
+    console.log('Public mail readiness: report='+session.reportMailEnabled
+      +' newsletter='+session.newsletterOptInEnabled);
+  });
   for(const path of ['/lib/bootstrap.php','/scripts/operations.php','/scripts/backup-preflight.php','/scripts/backup-create.php','/scripts/backup-inspect.php','/docs/NIVO-DELIVERY-CONTRACT-V1.md','/.git/config',
     '/wg-denied-test.wgbk','/wg-denied-test.cnf']){
     await check('private-denied '+path,path,[403,404]);
